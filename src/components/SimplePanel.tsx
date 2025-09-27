@@ -43,6 +43,10 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height, fie
         const svgElement = svgRef.current.querySelector('svg');
         if (svgElement) {
           svgElement.style.backgroundColor = 'transparent';
+          svgElement.style.width = '100%';
+          svgElement.style.height = '100%';
+          svgElement.style.maxWidth = '100%';
+          svgElement.style.maxHeight = '100%';
           
           const backgroundPolygons = svgElement.querySelectorAll('polygon[fill="white"]');
           backgroundPolygons.forEach(polygon => polygon.setAttribute('fill', 'none'));
