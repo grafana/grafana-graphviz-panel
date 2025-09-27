@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { PanelProps } from '@grafana/data';
 import { SimpleOptions } from 'types';
 import { css, cx } from '@emotion/css';
 import { useStyles2, useTheme2 } from '@grafana/ui';
 import { PanelDataErrorView } from '@grafana/runtime';
+import { Graphviz } from '@hpcc-js/wasm';
 
 interface Props extends PanelProps<SimpleOptions> {}
 
@@ -30,6 +31,22 @@ const getStyles = () => {
 export const SimplePanel: React.FC<Props> = ({ options, data, width, height, fieldConfig, id }) => {
   const theme = useTheme2();
   const styles = useStyles2(getStyles);
+  const svgRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!options.dotDiagram || !svgRef.current) return;
+
+    Graphviz.load().then((graphviz) => {
+      const svg = graphviz.layout(options.dotDiagram, 'svg', 'dot');
+      if (svgRef.current) {
+        svgRef.current.innerHTML = svg;
+      }
+    }).catch(() => {
+      if (svgRef.current) {
+        svgRef.current.innerHTML = '<p>Error rendering DOT diagram</p>';
+      }
+    });
+  }, [options.dotDiagram]);
 
   if (data.series.length === 0) {
     return <PanelDataErrorView fieldConfig={fieldConfig} panelId={id} data={data} needsStringField />;
@@ -45,38 +62,22 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height, fie
         `
       )}
     >
-      <svg
+      <div
+        ref={svgRef}
         className={styles.svg}
-        width={width}
-        height={height}
-        xmlns="http://www.w3.org/2000/svg"
-        xmlnsXlink="http://www.w3.org/1999/xlink"
-        viewBox={`-${width / 2} -${height / 2} ${width} ${height}`}
-      >
-        <g>
-          <circle data-testid="simple-panel-circle" style={{ fill: theme.colors.primary.main }} r={100} />
-        </g>
-      </svg>
+        style={{ 
+          width, 
+          height, 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center' 
+        }}
+      />
 
       <div className={styles.textBox}>
         {options.showSeriesCount && (
           <div data-testid="simple-panel-series-counter">Number of series: {data.series.length}</div>
         )}
-        <div style={{ marginTop: '10px' }}>
-          <strong>DOT Diagram:</strong>
-          <pre style={{ 
-            fontSize: '12px', 
-            backgroundColor: theme.colors.background.secondary, 
-            padding: '8px', 
-            borderRadius: '4px',
-            marginTop: '4px',
-            whiteSpace: 'pre-wrap',
-            maxHeight: '150px',
-            overflow: 'auto'
-          }}>
-            {options.dotDiagram}
-          </pre>
-        </div>
       </div>
     </div>
   );
