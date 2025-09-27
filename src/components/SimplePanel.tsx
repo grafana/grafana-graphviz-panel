@@ -79,6 +79,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height, fie
           const textElements = svgElement.querySelectorAll('text');
           textElements.forEach(element => {
             element.setAttribute('fill', theme.colors.text.primary);
+            element.setAttribute('font-family', theme.typography.fontFamily);
           });
         }
       }
