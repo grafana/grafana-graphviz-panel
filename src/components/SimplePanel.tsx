@@ -37,7 +37,8 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height, fie
     if (!options.dotDiagram || !svgRef.current) return;
 
     Graphviz.load().then((graphviz) => {
-      const svg = graphviz.layout(options.dotDiagram, 'svg', 'dot');
+      const dotWithRankdir = `digraph G {\n  rankdir=${options.rankDirection};\n${options.dotDiagram.replace(/digraph\s+\w*\s*\{/, '').replace(/}$/, '')}\n}`;
+      const svg = graphviz.layout(dotWithRankdir, 'svg', 'dot');
       if (svgRef.current) {
         svgRef.current.innerHTML = svg;
         const svgElement = svgRef.current.querySelector('svg');
@@ -86,7 +87,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height, fie
         svgRef.current.innerHTML = '<p>Error rendering DOT diagram</p>';
       }
     });
-  }, [options.dotDiagram]);
+  }, [options.dotDiagram, options.rankDirection]);
 
   if (data.series.length === 0) {
     return <PanelDataErrorView fieldConfig={fieldConfig} panelId={id} data={data} needsStringField />;
@@ -114,11 +115,6 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height, fie
         }}
       />
 
-      <div className={styles.textBox}>
-        {options.showSeriesCount && (
-          <div data-testid="simple-panel-series-counter">Number of series: {data.series.length}</div>
-        )}
-      </div>
     </div>
   );
 };
