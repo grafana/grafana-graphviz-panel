@@ -62,7 +62,21 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height, fie
         {options.showSeriesCount && (
           <div data-testid="simple-panel-series-counter">Number of series: {data.series.length}</div>
         )}
-        <div>Text option value: {options.text}</div>
+        <div style={{ marginTop: '10px' }}>
+          <strong>DOT Diagram:</strong>
+          <pre style={{ 
+            fontSize: '12px', 
+            backgroundColor: theme.colors.background.secondary, 
+            padding: '8px', 
+            borderRadius: '4px',
+            marginTop: '4px',
+            whiteSpace: 'pre-wrap',
+            maxHeight: '150px',
+            overflow: 'auto'
+          }}>
+            {options.dotDiagram}
+          </pre>
+        </div>
       </div>
     </div>
   );
