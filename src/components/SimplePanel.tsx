@@ -29,8 +29,8 @@ const getStyles = () => {
 };
 
 export const SimplePanel: React.FC<Props> = ({ options, data, width, height, fieldConfig, id }) => {
-  const theme = useTheme2();
   const styles = useStyles2(getStyles);
+  const theme = useTheme2();
   const svgRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -40,6 +40,42 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height, fie
       const svg = graphviz.layout(options.dotDiagram, 'svg', 'dot');
       if (svgRef.current) {
         svgRef.current.innerHTML = svg;
+        const svgElement = svgRef.current.querySelector('svg');
+        if (svgElement) {
+          svgElement.style.backgroundColor = 'transparent';
+          
+          const backgroundPolygons = svgElement.querySelectorAll('polygon[fill="white"]');
+          backgroundPolygons.forEach(polygon => polygon.setAttribute('fill', 'none'));
+          
+          const ellipseNodes = svgElement.querySelectorAll('ellipse');
+          ellipseNodes.forEach(element => {
+            element.setAttribute('stroke', theme.colors.border.medium);
+            element.setAttribute('fill', theme.colors.background.secondary);
+          });
+          
+          const polygonNodes = svgElement.querySelectorAll('g.node polygon');
+          polygonNodes.forEach(element => {
+            element.setAttribute('stroke', theme.colors.border.medium);
+            element.setAttribute('fill', theme.colors.background.secondary);
+          });
+          
+          const edgePaths = svgElement.querySelectorAll('path');
+          edgePaths.forEach(element => {
+            element.setAttribute('stroke', theme.colors.border.medium);
+            element.setAttribute('fill', 'none');
+          });
+          
+          const arrowheads = svgElement.querySelectorAll('g.edge polygon');
+          arrowheads.forEach(element => {
+            element.setAttribute('fill', theme.colors.border.medium);
+            element.setAttribute('stroke', theme.colors.border.medium);
+          });
+          
+          const textElements = svgElement.querySelectorAll('text');
+          textElements.forEach(element => {
+            element.setAttribute('fill', theme.colors.text.primary);
+          });
+        }
       }
     }).catch(() => {
       if (svgRef.current) {
