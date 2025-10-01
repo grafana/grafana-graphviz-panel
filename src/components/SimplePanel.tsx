@@ -5,6 +5,7 @@ import { css, cx } from '@emotion/css';
 import { useStyles2, useTheme2 } from '@grafana/ui';
 import { PanelDataErrorView } from '@grafana/runtime';
 import { useThemedDotSvg } from '../hooks';
+import { ErrorDisplay } from './ErrorDisplay';
 
 interface Props extends PanelProps<SimpleOptions> {}
 
@@ -33,10 +34,14 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height, fie
   const theme = useTheme2();
   const svgRef = useRef<HTMLDivElement>(null);
 
-  useThemedDotSvg(svgRef, options.dotDiagram, options.rankDirection, theme);
+  const renderError = useThemedDotSvg(svgRef, options.dotDiagram, options.rankDirection, theme);
 
   if (data.series.length === 0) {
     return <PanelDataErrorView fieldConfig={fieldConfig} panelId={id} data={data} needsStringField />;
+  }
+
+  if (renderError) {
+    return <ErrorDisplay errorMessage={renderError.message} errorInfo={renderError.errorInfo} />;
   }
 
   return (
