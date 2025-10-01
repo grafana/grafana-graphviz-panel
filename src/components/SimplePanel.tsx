@@ -34,7 +34,14 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height, fie
   const theme = useTheme2();
   const svgRef = useRef<HTMLDivElement>(null);
 
-  const renderError = useThemedDotSvg(svgRef, options.dotDiagram, options.rankDirection, theme);
+  const renderError = useThemedDotSvg(
+    svgRef,
+    options.dotDiagram,
+    options.rankDirection,
+    options.edgeStyleMappings || [],
+    options.nodeStyleMappings || [],
+    theme
+  );
 
   if (data.series.length === 0) {
     return <PanelDataErrorView fieldConfig={fieldConfig} panelId={id} data={data} needsStringField />;

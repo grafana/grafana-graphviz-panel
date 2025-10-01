@@ -5,7 +5,21 @@ export enum RankDirection {
   RIGHT_TO_LEFT = 'RL',
 }
 
+export interface EdgeStyleMapping {
+  id: string;
+  targetEdgeIds: string[];
+  strokeColor: string;
+}
+
+export interface NodeStyleMapping {
+  id: string;
+  targetNodeIds: string[];
+  strokeColor: string;
+}
+
 export interface SimpleOptions {
   dotDiagram: string;
   rankDirection: RankDirection;
+  edgeStyleMappings: EdgeStyleMapping[];
+  nodeStyleMappings: NodeStyleMapping[];
 }
