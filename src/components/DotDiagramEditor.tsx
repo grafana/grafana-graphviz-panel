@@ -1,20 +1,18 @@
 import React from 'react';
 import { StandardEditorProps } from '@grafana/data';
-import { TextArea } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { CodeEditor } from '@grafana/ui';
 
 export const DotDiagramEditor: React.FC<StandardEditorProps<string>> = ({ value, onChange }) => {
-  const textAreaStyles = css`
-    font-family: monospace;
-  `;
-
   return (
-    <TextArea
+    <CodeEditor
       value={value || ''}
-      onChange={(e) => onChange(e.currentTarget.value)}
-      placeholder="Enter DOT diagram syntax..."
-      rows={10}
-      className={textAreaStyles}
+      language="plaintext"
+      width="100%"
+      height="300px"
+      showLineNumbers={true}
+      showMiniMap={false}
+      onBlur={(newValue) => onChange(newValue)}
+      onSave={(newValue) => onChange(newValue)}
     />
   );
 };
