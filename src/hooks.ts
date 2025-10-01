@@ -1,6 +1,7 @@
 import { useEffect, RefObject, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { validateDotSyntax } from './validation';
+import { deriveEdgeIds } from './enhancements';
 import { renderDotToSvg } from './dot';
 import { applySvgTheming } from './theming';
 
@@ -46,7 +47,8 @@ export function useThemedDotSvg(
           return;
         }
 
-        const svg = await renderDotToSvg(dotDiagram, rankDirection);
+        const enhancedDot = deriveEdgeIds(dotDiagram);
+        const svg = await renderDotToSvg(enhancedDot, rankDirection);
 
         if (!svgRef.current) {
           return;
