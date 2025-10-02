@@ -1,14 +1,13 @@
 import { useEffect, RefObject, useState } from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
-import { validateDotSyntax } from './validation';
+import { GrafanaTheme2, PanelData, FieldConfigSource } from '@grafana/data';
+import { validateDotSyntax, ValidationErrorInfo } from './validation';
 import { sanitizeDotColors } from './sanitization';
 import { deriveEdgeIds } from './enhancements';
-import { applyEdgeStyleMappings, applyNodeStyleMappings } from './mappings';
+import { applyEdgeStyleMappings, applyNodeStyleMappings, applyDataDrivenColors } from './mappings';
+import { processDataFieldBindings } from './data';
 import { renderDotToSvg } from './dot';
 import { applySvgTheming } from './theming';
 import { EdgeStyleMapping, NodeStyleMapping } from './types';
-
-import { ValidationErrorInfo } from './validation';
 
 export interface RenderError {
   message: string;
@@ -24,6 +23,8 @@ export interface RenderError {
  * @param rankDirection - The direction of the graph layout (TB, BT, LR, RL)
  * @param edgeMappings - Array of edge style mappings to apply
  * @param nodeMappings - Array of node style mappings to apply
+ * @param data - Panel data from datasource
+ * @param fieldConfig - Field configuration including thresholds
  * @param theme - The Grafana theme object for styling
  * @returns Error state if rendering fails
  */
@@ -33,6 +34,8 @@ export function useThemedDotSvg(
   rankDirection: string,
   edgeMappings: EdgeStyleMapping[],
   nodeMappings: NodeStyleMapping[],
+  data: PanelData,
+  fieldConfig: FieldConfigSource,
   theme: GrafanaTheme2
 ): RenderError | null {
   const [renderError, setRenderError] = useState<RenderError | null>(null);
@@ -58,7 +61,11 @@ export function useThemedDotSvg(
         const dotWithEdgeIds = deriveEdgeIds(sanitizedDot);
         const dotWithEdgeStyles = applyEdgeStyleMappings(dotWithEdgeIds, edgeMappings);
         const dotWithNodeStyles = applyNodeStyleMappings(dotWithEdgeStyles, nodeMappings);
-        const svg = await renderDotToSvg(dotWithNodeStyles, rankDirection);
+        
+        const dataDrivenColors = processDataFieldBindings(data, fieldConfig, nodeMappings, edgeMappings, theme);
+        const dotWithDataColors = applyDataDrivenColors(dotWithNodeStyles, dataDrivenColors);
+        
+        const svg = await renderDotToSvg(dotWithDataColors, rankDirection);
 
         if (!svgRef.current) {
           return;
@@ -82,7 +89,7 @@ export function useThemedDotSvg(
     };
 
     renderPipeline();
-  }, [dotDiagram, rankDirection, edgeMappings, nodeMappings, theme, svgRef]);
+  }, [dotDiagram, rankDirection, edgeMappings, nodeMappings, data, fieldConfig, theme, svgRef]);
 
   return renderError;
 }

@@ -9,12 +9,18 @@ export interface EdgeStyleMapping {
   id: string;
   targetEdgeIds: string[];
   strokeColor: string;
+  matchFieldName?: string;
+  matchValue?: string;
+  colorFieldName?: string;
 }
 
 export interface NodeStyleMapping {
   id: string;
   targetNodeIds: string[];
   strokeColor: string;
+  matchFieldName?: string;
+  matchValue?: string;
+  colorFieldName?: string;
 }
 
 export interface SimpleOptions {

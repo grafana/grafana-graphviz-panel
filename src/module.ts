@@ -5,7 +5,9 @@ import { DotDiagramEditor } from './components/DotDiagramEditor';
 import { EdgeStyleMappingsEditor } from './components/ElementStyleMappingsEditor';
 import { NodeStyleMappingsEditor } from './components/NodeStyleMappingsEditor';
 
-export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).setPanelOptions((builder) => {
+export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel)
+  .useFieldConfig()
+  .setPanelOptions((builder) => {
   return builder
     .addSelect({
       path: 'rankDirection',

@@ -1,5 +1,6 @@
 import * as graphlibDot from 'graphlib-dot';
 import { EdgeStyleMapping, NodeStyleMapping } from './types';
+import { DataDrivenColors } from './data';
 
 /**
  * Applies edge style mappings to the graph.
@@ -56,6 +57,43 @@ export function applyNodeStyleMappings(dotString: string, nodeMappings: NodeStyl
         });
       }
     });
+  });
+
+  return graphlibDot.write(graph);
+}
+
+/**
+ * Applies data-driven colors from field bindings to nodes and edges.
+ * Data-driven colors override static colors.
+ * 
+ * @param dotString - The DOT notation string to process
+ * @param dataDrivenColors - Colors calculated from data fields and thresholds
+ * @returns DOT string with data-driven colors applied
+ */
+export function applyDataDrivenColors(dotString: string, dataDrivenColors: DataDrivenColors): string {
+  const graph = graphlibDot.read(dotString);
+
+  dataDrivenColors.nodeColors.forEach((color, nodeId) => {
+    if (graph.hasNode(nodeId)) {
+      const nodeData = graph.node(nodeId);
+      graph.setNode(nodeId, {
+        ...nodeData,
+        color,
+      });
+    }
+  });
+
+  graph.edges().forEach((edgeObj) => {
+    const edgeData = graph.edge(edgeObj);
+    const edgeId = edgeData?.id || `${edgeObj.v}__to__${edgeObj.w}`;
+    
+    const color = dataDrivenColors.edgeColors.get(edgeId);
+    if (color) {
+      graph.setEdge(edgeObj.v, edgeObj.w, {
+        ...edgeData,
+        color,
+      });
+    }
   });
 
   return graphlibDot.write(graph);
