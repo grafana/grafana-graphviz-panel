@@ -6,6 +6,10 @@ export interface DataDrivenColors {
   edgeColors: Map<string, string>;
 }
 
+export interface DataDrivenWidths {
+  edgeWidths: Map<string, number>;
+}
+
 /**
  * Processes data field bindings from rules and applies thresholds to determine colors for nodes and edges.
  * Extracts stroke color rules from mappings and processes them.
@@ -78,6 +82,82 @@ export function processDataFieldBindings(
   });
 
   return { nodeColors, edgeColors };
+}
+
+/**
+ * Processes width rules from edge mappings to determine stroke widths.
+ * 
+ * @param data - Panel data from datasource
+ * @param edgeMappings - Edge mappings containing width rules
+ * @returns Map of edge IDs to their widths
+ */
+export function processWidthRules(
+  data: PanelData,
+  edgeMappings: EdgeMapping[]
+): DataDrivenWidths {
+  const edgeWidths = new Map<string, number>();
+
+  if (!data.series || data.series.length === 0) {
+    return { edgeWidths };
+  }
+
+  edgeMappings.forEach(mapping => {
+    const widthRules = mapping.rules.filter(r => r.kind === RuleKind.STROKE_WIDTH);
+    
+    widthRules.forEach(rule => {
+      if (rule.matchFieldName && rule.matchValue && rule.widthFieldName) {
+        const width = findWidthForMatchingRow(
+          data.series,
+          rule.matchFieldName,
+          rule.matchValue,
+          rule.widthFieldName
+        );
+        
+        if (width !== undefined) {
+          mapping.targetEdgeIds.forEach((edgeId: string) => {
+            edgeWidths.set(edgeId, width);
+          });
+        }
+      } else if (rule.staticWidth !== undefined) {
+        mapping.targetEdgeIds.forEach((edgeId: string) => {
+          edgeWidths.set(edgeId, rule.staticWidth!);
+        });
+      }
+    });
+  });
+
+  return { edgeWidths };
+}
+
+/**
+ * Finds the row where matchField equals matchValue and gets the width value.
+ */
+function findWidthForMatchingRow(
+  series: DataFrame[],
+  matchFieldName: string,
+  matchValue: string,
+  widthFieldName: string
+): number | undefined {
+  for (const frame of series) {
+    const matchField = frame.fields.find(f => f.name === matchFieldName);
+    const widthField = frame.fields.find(f => f.name === widthFieldName);
+
+    if (!matchField || !widthField) {
+      continue;
+    }
+
+    for (let i = 0; i < matchField.values.length; i++) {
+      if (String(matchField.values[i]) === matchValue) {
+        const widthValue = widthField.values[i];
+        
+        if (widthValue != null && widthField.type === FieldType.number) {
+          return Number(widthValue);
+        }
+      }
+    }
+  }
+
+  return undefined;
 }
 
 /**

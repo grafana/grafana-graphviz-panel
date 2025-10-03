@@ -1,6 +1,6 @@
 import * as graphlibDot from 'graphlib-dot';
 import { EdgeMapping, NodeMapping, RuleKind } from './types';
-import { DataDrivenColors } from './data';
+import { DataDrivenColors, DataDrivenWidths } from './data';
 
 /**
  * Applies edge mappings (static color rules) to the graph.
@@ -104,6 +104,36 @@ export function applyDataDrivenColors(dotString: string, dataDrivenColors: DataD
       graph.setEdge(edgeObj.v, edgeObj.w, {
         ...edgeData,
         color,
+      });
+    }
+  });
+
+  return graphlibDot.write(graph);
+}
+
+/**
+ * Applies data-driven widths from width rules to edges.
+ * 
+ * @param dotString - The DOT notation string to process
+ * @param dataDrivenWidths - Widths calculated from data fields
+ * @returns DOT string with widths applied
+ */
+export function applyDataDrivenWidths(dotString: string, dataDrivenWidths: DataDrivenWidths): string {
+  const graph = graphlibDot.read(dotString);
+
+  graph.edges().forEach((edgeObj) => {
+    const edgeData = graph.edge(edgeObj);
+    const edgeId = edgeData?.id || `${edgeObj.v}__to__${edgeObj.w}`;
+    
+    const width = dataDrivenWidths.edgeWidths.get(edgeId);
+    if (width !== undefined) {
+      const clampedWidth = Math.min(Math.max(width, 0.1), 5);
+      const arrowSize = Math.min(clampedWidth / 1.0, 1.5);
+      
+      graph.setEdge(edgeObj.v, edgeObj.w, {
+        ...edgeData,
+        penwidth: clampedWidth,
+        arrowsize: arrowSize,
       });
     }
   });

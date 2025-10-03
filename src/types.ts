@@ -17,6 +17,7 @@ export enum RankDirection {
 
 export enum RuleKind {
   STROKE_COLOR = 'strokeColor',
+  STROKE_WIDTH = 'strokeWidth',
 }
 
 export interface StrokeColorRule {
@@ -27,7 +28,15 @@ export interface StrokeColorRule {
   staticColor?: string;
 }
 
-export type Rule = StrokeColorRule;
+export interface StrokeWidthRule {
+  kind: RuleKind.STROKE_WIDTH;
+  matchFieldName?: string;
+  matchValue?: string;
+  widthFieldName?: string;
+  staticWidth?: number;
+}
+
+export type Rule = StrokeColorRule | StrokeWidthRule;
 
 export interface EdgeMapping {
   id: string;

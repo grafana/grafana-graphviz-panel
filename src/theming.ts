@@ -12,6 +12,8 @@ import * as d3 from 'd3-selection';
 export function applySvgTheming(svgElement: SVGSVGElement, theme: GrafanaTheme2): void {
   const svg = d3.select(svgElement);
   
+  const edgeColor = theme.colors.text.primary;
+  
   svg.style('background-color', 'transparent')
     .style('width', '100%')
     .style('height', '100%')
@@ -25,7 +27,7 @@ export function applySvgTheming(svgElement: SVGSVGElement, theme: GrafanaTheme2)
     .each(function() {
       const element = d3.select(this);
       if (isDefaultColor(element.attr('stroke'))) {
-        element.attr('stroke', theme.colors.border.medium);
+        element.attr('stroke', edgeColor);
       }
       if (isDefaultColor(element.attr('fill'))) {
         element.attr('fill', theme.colors.background.secondary);
@@ -36,7 +38,7 @@ export function applySvgTheming(svgElement: SVGSVGElement, theme: GrafanaTheme2)
     .each(function() {
       const element = d3.select(this);
       if (isDefaultColor(element.attr('stroke'))) {
-        element.attr('stroke', theme.colors.border.medium);
+        element.attr('stroke', edgeColor);
       }
       if (isDefaultColor(element.attr('fill'))) {
         element.attr('fill', theme.colors.background.secondary);
@@ -47,7 +49,7 @@ export function applySvgTheming(svgElement: SVGSVGElement, theme: GrafanaTheme2)
     .each(function() {
       const element = d3.select(this);
       if (isDefaultColor(element.attr('stroke'))) {
-        element.attr('stroke', theme.colors.border.medium);
+        element.attr('stroke', edgeColor);
       }
       element.attr('fill', 'none');
     });
@@ -55,12 +57,14 @@ export function applySvgTheming(svgElement: SVGSVGElement, theme: GrafanaTheme2)
   svg.selectAll('g.edge polygon')
     .each(function() {
       const element = d3.select(this);
-      if (isDefaultColor(element.attr('fill'))) {
-        element.attr('fill', theme.colors.border.medium);
-      }
-      if (isDefaultColor(element.attr('stroke'))) {
-        element.attr('stroke', theme.colors.border.medium);
-      }
+      const fillColor = element.attr('fill');
+      const strokeColor = element.attr('stroke');
+      
+      const useThemeColor = isDefaultColor(fillColor) || isDefaultColor(strokeColor);
+      const finalColor = useThemeColor ? edgeColor : (fillColor || strokeColor);
+      
+      element.attr('fill', finalColor);
+      element.attr('stroke', finalColor);
     });
   
   svg.selectAll('text')
@@ -83,4 +87,5 @@ function isDefaultColor(color: string | null): boolean {
   const defaultColors = ['black', 'none', 'white', '#000000', '#ffffff'];
   return defaultColors.includes(color.toLowerCase());
 }
+
 

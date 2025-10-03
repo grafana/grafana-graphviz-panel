@@ -1,7 +1,7 @@
 import React from 'react';
 import { StandardEditorProps, SelectableValue } from '@grafana/data';
 import { Button, Field, MultiSelect, ColorPicker, IconButton, Select } from '@grafana/ui';
-import { EdgeMapping, StrokeColorRule, Rule, RuleKind } from '../types';
+import { EdgeMapping, StrokeColorRule, StrokeWidthRule, Rule, RuleKind } from '../types';
 import { css } from '@emotion/css';
 
 interface Props extends StandardEditorProps<EdgeMapping[]> {}
@@ -36,6 +36,17 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
       const newRule: StrokeColorRule = {
         kind: RuleKind.STROKE_COLOR,
         staticColor: '#FF0000',
+      };
+      updateMapping(mappingId, { rules: [...mapping.rules, newRule] });
+    }
+  };
+
+  const addWidthRule = (mappingId: string) => {
+    const mapping = mappings.find(m => m.id === mappingId);
+    if (mapping) {
+      const newRule: StrokeWidthRule = {
+        kind: RuleKind.STROKE_WIDTH,
+        staticWidth: 1,
       };
       updateMapping(mappingId, { rules: [...mapping.rules, newRule] });
     }
@@ -108,7 +119,7 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
           {mapping.rules.map((rule, ruleIndex) => (
             <div key={ruleIndex} className={ruleContainerStyle}>
               <div className={headerStyle}>
-                <strong>Color Rule</strong>
+                <strong>{rule.kind === RuleKind.STROKE_COLOR ? 'Color Rule' : 'Width Rule'}</strong>
                 <IconButton name="trash-alt" onClick={() => removeRule(mapping.id, ruleIndex)} tooltip="Remove rule" size="sm" />
               </div>
 
@@ -168,12 +179,79 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
                   )}
                 </>
               )}
+
+              {rule.kind === RuleKind.STROKE_WIDTH && (
+                <>
+                  <Field label="Match Field (Optional)">
+                    <Select
+                      value={rule.matchFieldName}
+                      options={[{ label: 'None (static width)', value: undefined }, ...stringFields]}
+                      onChange={(selection) => updateRule(mapping.id, ruleIndex, {
+                        matchFieldName: selection.value,
+                        matchValue: undefined,
+                        widthFieldName: undefined,
+                      })}
+                      placeholder="Select match field..."
+                      isClearable
+                    />
+                  </Field>
+
+                  {rule.matchFieldName && (
+                    <>
+                      <Field label="Match Value">
+                        <Select
+                          value={rule.matchValue}
+                          options={extractFieldValues(context.data, rule.matchFieldName)}
+                          onChange={(selection) => updateRule(mapping.id, ruleIndex, { matchValue: selection.value })}
+                          placeholder="Select value..."
+                        />
+                      </Field>
+
+                      {numericFields.length > 1 && (
+                        <Field label="Width Field">
+                          <Select
+                            value={rule.widthFieldName}
+                            options={numericFields}
+                            onChange={(selection) => updateRule(mapping.id, ruleIndex, { widthFieldName: selection.value })}
+                            placeholder="Select width field..."
+                          />
+                        </Field>
+                      )}
+                      {numericFields.length === 1 && !rule.widthFieldName && (
+                        (() => {
+                          updateRule(mapping.id, ruleIndex, { widthFieldName: numericFields[0].value });
+                          return null;
+                        })()
+                      )}
+                    </>
+                  )}
+
+                  {!rule.matchFieldName && (
+                    <Field label="Static Width (px)">
+                      <input
+                        type="number"
+                        value={rule.staticWidth || 1}
+                        onChange={(e) => updateRule(mapping.id, ruleIndex, { staticWidth: parseFloat(e.target.value) || 1 })}
+                        min={0.1}
+                        max={5}
+                        step={0.5}
+                        style={{ width: '100%', padding: '6px' }}
+                      />
+                    </Field>
+                  )}
+                </>
+              )}
             </div>
           ))}
 
-          <Button icon="plus" onClick={() => addColorRule(mapping.id)} variant="secondary" size="sm">
-            Add Color Rule
-          </Button>
+          <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+            <Button icon="plus" onClick={() => addColorRule(mapping.id)} variant="secondary" size="sm">
+              Add Color Rule
+            </Button>
+            <Button icon="plus" onClick={() => addWidthRule(mapping.id)} variant="secondary" size="sm">
+              Add Width Rule
+            </Button>
+          </div>
         </div>
       ))}
 

@@ -3,8 +3,8 @@ import { GrafanaTheme2, PanelData, FieldConfigSource } from '@grafana/data';
 import { validateDotSyntax, ValidationErrorInfo } from './validation';
 import { sanitizeDotColors } from './sanitization';
 import { deriveEdgeIds } from './enhancements';
-import { applyEdgeStyleMappings, applyNodeStyleMappings, applyDataDrivenColors } from './mappings';
-import { processDataFieldBindings } from './data';
+import { applyEdgeStyleMappings, applyNodeStyleMappings, applyDataDrivenColors, applyDataDrivenWidths } from './mappings';
+import { processDataFieldBindings, processWidthRules } from './data';
 import { renderDotToSvg } from './dot';
 import { applySvgTheming } from './theming';
 import { EdgeMapping, NodeMapping } from './types';
@@ -66,7 +66,10 @@ export function useThemedDotSvg(
         const dataDrivenColors = processDataFieldBindings(data, fieldConfig, nodeMappings, edgeMappings, theme);
         const dotWithDataColors = applyDataDrivenColors(dotWithNodeStyles, dataDrivenColors);
         
-        const svg = await renderDotToSvg(dotWithDataColors, layoutEngine, rankDirection);
+        const dataDrivenWidths = processWidthRules(data, edgeMappings);
+        const dotWithDataWidths = applyDataDrivenWidths(dotWithDataColors, dataDrivenWidths);
+        
+        const svg = await renderDotToSvg(dotWithDataWidths, layoutEngine, rankDirection);
 
         if (!svgRef.current) {
           return;
