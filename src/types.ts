@@ -1,3 +1,13 @@
+// NOTE: This is a subset including only the most useful layout engines from:
+//       https://graphviz.org/docs/layouts/
+export enum LayoutEngine {
+  HIERARCHICAL = 'dot',
+  NETWORK = 'neato',
+  FORCE_DIRECTED = 'fdp',
+  CIRCULAR = 'circo',
+  RADIAL = 'twopi',
+}
+
 export enum RankDirection {
   TOP_TO_BOTTOM = 'TB',
   BOTTOM_TO_TOP = 'BT',
@@ -25,6 +35,7 @@ export interface NodeStyleMapping {
 
 export interface SimpleOptions {
   dotDiagram: string;
+  layoutEngine: LayoutEngine;
   rankDirection: RankDirection;
   edgeStyleMappings: EdgeStyleMapping[];
   nodeStyleMappings: NodeStyleMapping[];

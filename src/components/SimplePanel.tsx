@@ -37,6 +37,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height, fie
   const renderError = useThemedDotSvg(
     svgRef,
     options.dotDiagram,
+    options.layoutEngine,
     options.rankDirection,
     options.edgeStyleMappings || [],
     options.nodeStyleMappings || [],

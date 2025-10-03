@@ -31,6 +31,7 @@ export interface RenderError {
 export function useThemedDotSvg(
   svgRef: RefObject<HTMLDivElement>,
   dotDiagram: string | undefined,
+  layoutEngine: string,
   rankDirection: string,
   edgeMappings: EdgeStyleMapping[],
   nodeMappings: NodeStyleMapping[],
@@ -65,7 +66,7 @@ export function useThemedDotSvg(
         const dataDrivenColors = processDataFieldBindings(data, fieldConfig, nodeMappings, edgeMappings, theme);
         const dotWithDataColors = applyDataDrivenColors(dotWithNodeStyles, dataDrivenColors);
         
-        const svg = await renderDotToSvg(dotWithDataColors, rankDirection);
+        const svg = await renderDotToSvg(dotWithDataColors, layoutEngine, rankDirection);
 
         if (!svgRef.current) {
           return;
@@ -89,7 +90,7 @@ export function useThemedDotSvg(
     };
 
     renderPipeline();
-  }, [dotDiagram, rankDirection, edgeMappings, nodeMappings, data, fieldConfig, theme, svgRef]);
+  }, [dotDiagram, layoutEngine, rankDirection, edgeMappings, nodeMappings, data, fieldConfig, theme, svgRef]);
 
   return renderError;
 }

@@ -50,7 +50,37 @@
           "rawFrameContent": "[\n  {\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"Label\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"Value\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"A\", 10],\n      [1609462800000, \"B\", 20],\n      [1609466400000, \"C\", 15],\n      [1609470000000, \"D\", 25],\n      [1609473600000, \"E\", 30]\n    ]\n  },\n{\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"Label\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"Value\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"A\", 40],\n      [1609462800000, \"B\", 50],\n      [1609466400000, \"C\", 45],\n      [1609470000000, \"D\", 55],\n      [1609473600000, \"E\", 60]\n    ]\n  }\n]"
         }
       ],
-      "title": "Sample Panel Title",
+      "title": "Directed Graph (digraph) Example",
+      "type": "grafana-mesh-panel"
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "gridPos": {
+        "h": 16,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "id": 2,
+      "options": {
+        "dotDiagram": "graph Network {\n  A -- B;\n  A -- C;\n  B -- C;\n  B -- D;\n  C -- D;\n  D -- E;\n  E -- F;\n  F -- A;\n  \n  subgraph cluster_group {\n    label=\"Connected Group\";\n    style=rounded;\n    \n    G -- H;\n    H -- I;\n    I -- G;\n  }\n  \n  D -- G;\n}",
+        "layoutEngine": "neato"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "db84e60d-b92a-4089-82cb-34842fb1754b"
+          },
+          "refId": "A",
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[\n  {\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"Label\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"Value\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"A\", 10],\n      [1609462800000, \"B\", 20],\n      [1609466400000, \"C\", 15],\n      [1609470000000, \"D\", 25],\n      [1609473600000, \"E\", 30]\n    ]\n  }\n]"
+        }
+      ],
+      "title": "Undirected Graph (graph) Example",
       "type": "grafana-mesh-panel"
     }
   ],
