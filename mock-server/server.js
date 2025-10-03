@@ -5,20 +5,25 @@ const fs = require('fs').promises;
 const UPLOAD_DIR = path.join(__dirname, 'uploads');
 const DOT_FILE_PATH = path.join(UPLOAD_DIR, 'diagram.dot');
 
-const DEFAULT_DOT_DIAGRAM = `digraph HowToUpload {
-  rankdir=TB;
-  node [shape=box, style=rounded];
+const DEFAULT_DOT_DIAGRAM = `digraph HowToUploadDotFile {
+  node [shape=box];
   
-  Start [label="No DOT file uploaded yet", shape=oval, fillcolor=lightyellow, style=filled];
-  CreateFile [label="Create a file:\\necho 'digraph { A -> B; }' > diagram.dot"];
-  Upload [label="Upload with cURL:\\ncurl -X POST -F file@diagram.dot\\nhttp://localhost:3001/dot"];
-  Success [label="✓ File uploaded!", shape=oval, fillcolor=lightgreen, style=filled];
-  Reload [label="Refresh Grafana panel\\nto see your diagram"];
+  Start [shape=circle];
+  FileUploadedYet [label="File\\nuploaded\\nyet?", shape=diamond];
+  CreateFile [label="Create file: my.dot\\ndigraph { A -> B; }"];
+  Upload [label="Upload:\\ncurl -X POST -F file@my.dot\\nhttp://localhost:3001/dot"];
+  Download [label="Download:\\ncurl http://localhost:3001/dot"];
+  NeedChanges [label="Needs\\nchanges?", shape=diamond];
+  End [shape=circle];
   
-  Start -> CreateFile;
+  Start -> FileUploadedYet;
+  FileUploadedYet -> Upload [label="No"];
+  FileUploadedYet -> CreateFile [label="Yes"];
   CreateFile -> Upload;
-  Upload -> Success;
-  Success -> Reload;
+  Upload -> Download;
+  Download -> NeedChanges;
+  NeedChanges -> Upload [label="Yes"];
+  NeedChanges -> End [label="No"];
 }`;
 
 (async () => {

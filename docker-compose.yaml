@@ -3,3 +3,18 @@ services:
     extends:
       file: .config/docker-compose-base.yaml
       service: grafana
+
+  dot-mock-server:
+    container_name: 'dot-mock-server'
+    build:
+      context: ./mock-server
+    ports:
+      - 3001:3001/tcp
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3001
+      - NODE_ENV=development
+    volumes:
+      - ./mock-server/uploads:/app/uploads
+      - ./mock-server/server.js:/app/server.js:ro
+    command: npm run dev
