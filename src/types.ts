@@ -15,6 +15,11 @@ export enum RankDirection {
   RIGHT_TO_LEFT = 'RL',
 }
 
+export enum DiagramSourceType {
+  CODE = 'code',
+  URL = 'url',
+}
+
 export enum RuleKind {
   STROKE_COLOR = 'strokeColor',
   STROKE_WIDTH = 'strokeWidth',
@@ -53,7 +58,9 @@ export interface NodeMapping {
 }
 
 export interface SimpleOptions {
+  diagramSourceType: DiagramSourceType;
   dotDiagram: string;
+  dotDiagramUrl: string;
   layoutEngine: LayoutEngine;
   rankDirection: RankDirection;
   edgeMappings: EdgeMapping[];

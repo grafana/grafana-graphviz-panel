@@ -7,11 +7,68 @@ import { applyEdgeStyleMappings, applyNodeStyleMappings, applyDataDrivenColors, 
 import { processDataFieldBindings, processWidthRules } from './data';
 import { renderDotToSvg } from './dot';
 import { applySvgTheming } from './theming';
-import { EdgeMapping, NodeMapping } from './types';
+import { EdgeMapping, NodeMapping, DiagramSourceType } from './types';
 
 export interface RenderError {
   message: string;
   errorInfo?: ValidationErrorInfo;
+}
+
+/**
+ * Hook that fetches DOT diagram content from a URL.
+ * 
+ * @param url - The URL to fetch the DOT diagram from
+ * @param sourceType - The source type (user input or URL)
+ * @returns Object containing the fetched content, loading state, and any error
+ */
+export function useFetchDotFromUrl(url: string | undefined, sourceType: DiagramSourceType): {
+  dotContent: string | null;
+  isLoading: boolean;
+  fetchError: string | null;
+} {
+  const [dotContent, setDotContent] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (sourceType !== DiagramSourceType.URL || !url) {
+      setDotContent(null);
+      setIsLoading(false);
+      setFetchError(null);
+      return;
+    }
+
+    const fetchDotContent = async () => {
+      setIsLoading(true);
+      setFetchError(null);
+      
+      try {
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status} ${response.statusText}`);
+        }
+        
+        const contentType = response.headers.get('content-type');
+        if (contentType && !contentType.includes('text') && !contentType.includes('application/octet-stream')) {
+          throw new Error(`Invalid content type: ${contentType}. Expected text content.`);
+        }
+        
+        const text = await response.text();
+        setDotContent(text);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        setFetchError(`Failed to fetch DOT diagram from URL: ${errorMessage}`);
+        setDotContent(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDotContent();
+  }, [url, sourceType]);
+
+  return { dotContent, isLoading, fetchError };
 }
 
 /**

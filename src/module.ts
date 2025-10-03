@@ -1,5 +1,5 @@
 import { PanelPlugin } from '@grafana/data';
-import { SimpleOptions, RankDirection, LayoutEngine } from './types';
+import { SimpleOptions, RankDirection, LayoutEngine, DiagramSourceType } from './types';
 import { SimplePanel } from './components/SimplePanel';
 import { DotDiagramEditor } from './components/DotDiagramEditor';
 import { EdgeMappingsEditor } from './components/EdgeMappingsEditor';
@@ -9,6 +9,24 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel)
   .useFieldConfig()
   .setPanelOptions((builder) => {
   return builder
+    .addRadio({
+      path: 'diagramSourceType',
+      name: 'Diagram Source',
+      description: 'Choose whether to enter the DOT diagram directly or load it from a URL',
+      defaultValue: DiagramSourceType.CODE,
+      settings: {
+        options: [
+          {
+            value: DiagramSourceType.CODE,
+            label: 'Code',
+          },
+          {
+            value: DiagramSourceType.URL,
+            label: 'URL',
+          },
+        ],
+      },
+    })
     .addCustomEditor({
       id: 'dotDiagram',
       path: 'dotDiagram',
@@ -16,6 +34,14 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel)
       description: 'Enter DOT syntax diagram definition. Supports multi-line input for copy-pasting DOT diagrams.',
       defaultValue: 'digraph {\n  A -> B;\n  B -> A;\n  C -> A;\n}',
       editor: DotDiagramEditor,
+      showIf: (options) => options.diagramSourceType === DiagramSourceType.CODE || !options.diagramSourceType,
+    })
+    .addTextInput({
+      path: 'dotDiagramUrl',
+      name: 'DOT Diagram URL',
+      description: 'Enter the URL to fetch the DOT diagram from. The URL should return a text file containing valid DOT syntax.',
+      defaultValue: '',
+      showIf: (options) => options.diagramSourceType === DiagramSourceType.URL,
     })
     .addSelect({
       path: 'layoutEngine',
