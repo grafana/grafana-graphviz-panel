@@ -7,7 +7,7 @@ import { applyEdgeStyleMappings, applyNodeStyleMappings, applyDataDrivenColors }
 import { processDataFieldBindings } from './data';
 import { renderDotToSvg } from './dot';
 import { applySvgTheming } from './theming';
-import { EdgeStyleMapping, NodeStyleMapping } from './types';
+import { EdgeMapping, NodeMapping } from './types';
 
 export interface RenderError {
   message: string;
@@ -33,8 +33,8 @@ export function useThemedDotSvg(
   dotDiagram: string | undefined,
   layoutEngine: string,
   rankDirection: string,
-  edgeMappings: EdgeStyleMapping[],
-  nodeMappings: NodeStyleMapping[],
+  edgeMappings: EdgeMapping[],
+  nodeMappings: NodeMapping[],
   data: PanelData,
   fieldConfig: FieldConfigSource,
   theme: GrafanaTheme2

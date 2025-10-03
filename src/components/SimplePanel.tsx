@@ -39,8 +39,8 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height, fie
     options.dotDiagram,
     options.layoutEngine,
     options.rankDirection,
-    options.edgeStyleMappings || [],
-    options.nodeStyleMappings || [],
+    options.edgeMappings || [],
+    options.nodeMappings || [],
     data,
     fieldConfig,
     theme

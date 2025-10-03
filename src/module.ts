@@ -2,8 +2,8 @@ import { PanelPlugin } from '@grafana/data';
 import { SimpleOptions, RankDirection, LayoutEngine } from './types';
 import { SimplePanel } from './components/SimplePanel';
 import { DotDiagramEditor } from './components/DotDiagramEditor';
-import { EdgeStyleMappingsEditor } from './components/ElementStyleMappingsEditor';
-import { NodeStyleMappingsEditor } from './components/NodeStyleMappingsEditor';
+import { EdgeMappingsEditor } from './components/EdgeMappingsEditor';
+import { NodeMappingsEditor } from './components/NodeMappingsEditor';
 
 export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel)
   .useFieldConfig()
@@ -75,19 +75,25 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel)
       },
     })
     .addCustomEditor({
-      id: 'edgeStyleMappings',
-      path: 'edgeStyleMappings',
-      name: 'Edge Style Mappings',
-      description: 'Configure custom stroke colors for specific edges',
+      id: 'edgeMappings',
+      path: 'edgeMappings',
+      name: 'Edge Mappings',
+      description: 'Configure rules for edges (color, width, etc.)',
       defaultValue: [],
-      editor: EdgeStyleMappingsEditor,
+      editor: EdgeMappingsEditor,
     })
     .addCustomEditor({
-      id: 'nodeStyleMappings',
-      path: 'nodeStyleMappings',
-      name: 'Node Style Mappings',
-      description: 'Configure custom stroke colors for specific nodes',
+      id: 'nodeMappings',
+      path: 'nodeMappings',
+      name: 'Node Mappings',
+      description: 'Configure rules for nodes (color, width, etc.)',
       defaultValue: [],
-      editor: NodeStyleMappingsEditor,
+      editor: NodeMappingsEditor,
+    })
+    .addBooleanSwitch({
+      path: 'enableNodeTooltips',
+      name: 'Enable Node Tooltips',
+      description: 'Show tooltips when hovering over nodes',
+      defaultValue: false,
     })
 });

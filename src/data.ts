@@ -1,5 +1,5 @@
 import { PanelData, FieldConfigSource, GrafanaTheme2, DataFrame, FieldType } from '@grafana/data';
-import { EdgeStyleMapping, NodeStyleMapping } from './types';
+import { EdgeMapping, NodeMapping, RuleKind } from './types';
 
 export interface DataDrivenColors {
   nodeColors: Map<string, string>;
@@ -7,21 +7,21 @@ export interface DataDrivenColors {
 }
 
 /**
- * Processes data field bindings and applies thresholds to determine colors for nodes and edges.
- * Finds matching rows based on matchField/matchValue, then applies thresholds to colorField value.
+ * Processes data field bindings from rules and applies thresholds to determine colors for nodes and edges.
+ * Extracts stroke color rules from mappings and processes them.
  * 
  * @param data - Panel data from datasource
  * @param fieldConfig - Field configuration including thresholds
- * @param nodeMappings - Node mappings that may include data field bindings
- * @param edgeMappings - Edge mappings that may include data field bindings
+ * @param nodeMappings - Node mappings containing rules
+ * @param edgeMappings - Edge mappings containing rules
  * @param theme - Grafana theme for color processing
  * @returns Maps of node/edge IDs to their data-driven colors
  */
 export function processDataFieldBindings(
   data: PanelData,
   fieldConfig: FieldConfigSource,
-  nodeMappings: NodeStyleMapping[],
-  edgeMappings: EdgeStyleMapping[],
+  nodeMappings: NodeMapping[],
+  edgeMappings: EdgeMapping[],
   theme: GrafanaTheme2
 ): DataDrivenColors {
   const nodeColors = new Map<string, string>();
@@ -32,41 +32,49 @@ export function processDataFieldBindings(
   }
 
   nodeMappings.forEach(mapping => {
-    if (mapping.matchFieldName && mapping.matchValue && mapping.colorFieldName) {
-      const color = findColorForMatchingRow(
-        data.series,
-        mapping.matchFieldName,
-        mapping.matchValue,
-        mapping.colorFieldName,
-        fieldConfig,
-        theme
-      );
-      
-      if (color) {
-        mapping.targetNodeIds.forEach(nodeId => {
-          nodeColors.set(nodeId, color);
-        });
+    const colorRules = mapping.rules.filter(r => r.kind === RuleKind.STROKE_COLOR);
+    
+    colorRules.forEach(rule => {
+      if (rule.matchFieldName && rule.matchValue && rule.colorFieldName) {
+        const color = findColorForMatchingRow(
+          data.series,
+          rule.matchFieldName,
+          rule.matchValue,
+          rule.colorFieldName,
+          fieldConfig,
+          theme
+        );
+        
+        if (color) {
+          mapping.targetNodeIds.forEach((nodeId: string) => {
+            nodeColors.set(nodeId, color);
+          });
+        }
       }
-    }
+    });
   });
 
   edgeMappings.forEach(mapping => {
-    if (mapping.matchFieldName && mapping.matchValue && mapping.colorFieldName) {
-      const color = findColorForMatchingRow(
-        data.series,
-        mapping.matchFieldName,
-        mapping.matchValue,
-        mapping.colorFieldName,
-        fieldConfig,
-        theme
-      );
-      
-      if (color) {
-        mapping.targetEdgeIds.forEach(edgeId => {
-          edgeColors.set(edgeId, color);
-        });
+    const colorRules = mapping.rules.filter(r => r.kind === RuleKind.STROKE_COLOR);
+    
+    colorRules.forEach(rule => {
+      if (rule.matchFieldName && rule.matchValue && rule.colorFieldName) {
+        const color = findColorForMatchingRow(
+          data.series,
+          rule.matchFieldName,
+          rule.matchValue,
+          rule.colorFieldName,
+          fieldConfig,
+          theme
+        );
+        
+        if (color) {
+          mapping.targetEdgeIds.forEach((edgeId: string) => {
+            edgeColors.set(edgeId, color);
+          });
+        }
       }
-    }
+    });
   });
 
   return { nodeColors, edgeColors };

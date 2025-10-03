@@ -15,28 +15,37 @@ export enum RankDirection {
   RIGHT_TO_LEFT = 'RL',
 }
 
-export interface EdgeStyleMapping {
-  id: string;
-  targetEdgeIds: string[];
-  strokeColor: string;
-  matchFieldName?: string;
-  matchValue?: string;
-  colorFieldName?: string;
+export enum RuleKind {
+  STROKE_COLOR = 'strokeColor',
 }
 
-export interface NodeStyleMapping {
-  id: string;
-  targetNodeIds: string[];
-  strokeColor: string;
+export interface StrokeColorRule {
+  kind: RuleKind.STROKE_COLOR;
   matchFieldName?: string;
   matchValue?: string;
   colorFieldName?: string;
+  staticColor?: string;
+}
+
+export type Rule = StrokeColorRule;
+
+export interface EdgeMapping {
+  id: string;
+  targetEdgeIds: string[];
+  rules: Rule[];
+}
+
+export interface NodeMapping {
+  id: string;
+  targetNodeIds: string[];
+  rules: Rule[];
 }
 
 export interface SimpleOptions {
   dotDiagram: string;
   layoutEngine: LayoutEngine;
   rankDirection: RankDirection;
-  edgeStyleMappings: EdgeStyleMapping[];
-  nodeStyleMappings: NodeStyleMapping[];
+  edgeMappings: EdgeMapping[];
+  nodeMappings: NodeMapping[];
+  enableNodeTooltips: boolean;
 }
