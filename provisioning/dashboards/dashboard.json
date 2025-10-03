@@ -20,37 +20,63 @@
   "graphTooltip": 0,
   "id": 1,
   "links": [],
-  "liveNow": false,
   "panels": [
     {
       "datasource": {
         "type": "grafana-testdata-datasource",
         "uid": "trlxrdZVk"
       },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
       "gridPos": {
-        "h": 16,
-        "w": 24,
+        "h": 14,
+        "w": 12,
         "x": 0,
         "y": 0
       },
       "id": 1,
       "options": {
+        "dotDiagram": "digraph Network {\n  Start [shape=ellipse, color=green];\n  Gateway [shape=box];\n  End [shape=doublecircle, color=red];\n  \n  Start -> Gateway;\n  Gateway -> End;\n  End -> Gateway;\n  Start -> Backup [dir=none];\n  \n  subgraph cluster_services {\n    label=\"Microservices\";\n    style=rounded;\n    bgcolor=lightblue;\n    \n    API [shape=hexagon];\n    DB [shape=cylinder];\n    Cache;\n    \n    API -> DB;\n    API -> Cache;\n    Cache -> DB [style=dashed];\n  }\n  \n  Gateway -> API;\n  \n  Monitor [shape=triangle, style=filled];\n}",
+        "edgeMappings": [],
+        "enableNodeTooltips": false,
+        "layoutEngine": "dot",
+        "nodeMappings": [],
+        "rankDirection": "LR",
         "seriesCountSize": "sm",
         "showSeriesCount": false,
         "text": "Default value of text input option"
       },
+      "pluginVersion": "1.0.0",
       "targets": [
         {
           "datasource": {
             "type": "grafana-testdata-datasource",
             "uid": "db84e60d-b92a-4089-82cb-34842fb1754b"
           },
+          "rawFrameContent": "[\n  {\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"Label\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"Value\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"Start_status\", 15],\n      [1609462800000, \"Gateway_status\", 45],\n      [1609466400000, \"End_status\", 85],\n      [1609470000000, \"API_status\", 65],\n      [1609473600000, \"DB_status\", 30],\n      [1609477200000, \"Cache_status\", 50],\n      [1609480800000, \"Monitor_status\", 90],\n      [1609484400000, \"Backup_status\", 20],\n      [1609488000000, \"Start__to__Gateway_traffic_percentage\", 75],\n      [1609491600000, \"Gateway__to__End_traffic_percentage\", 45],\n      [1609495200000, \"End__to__Gateway_traffic_percentage\", 20],\n      [1609498800000, \"Gateway__to__API_traffic_percentage\", 90],\n      [1609502400000, \"API__to__DB_traffic_percentage\", 60],\n      [1609506000000, \"API__to__Cache_traffic_percentage\", 35],\n      [1609509600000, \"Cache__to__DB_traffic_percentage\", 15],\n      [1609513200000, \"Start__to__Gateway_connection_health\", 95],\n      [1609516800000, \"Gateway__to__End_connection_health\", 78],\n      [1609520400000, \"End__to__Gateway_connection_health\", 85],\n      [1609524000000, \"Gateway__to__API_connection_health\", 62],\n      [1609527600000, \"API__to__DB_connection_health\", 88],\n      [1609531200000, \"API__to__Cache_connection_health\", 91],\n      [1609534800000, \"Cache__to__DB_connection_health\", 73]\n    ]\n  }\n]",
           "refId": "A",
-          "scenarioId": "raw_frame",
-          "rawFrameContent": "[\n  {\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"Label\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"Value\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"A\", 10],\n      [1609462800000, \"B\", 20],\n      [1609466400000, \"C\", 15],\n      [1609470000000, \"D\", 25],\n      [1609473600000, \"E\", 30]\n    ]\n  },\n{\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"Label\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"Value\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"A\", 40],\n      [1609462800000, \"B\", 50],\n      [1609466400000, \"C\", 45],\n      [1609470000000, \"D\", 55],\n      [1609473600000, \"E\", 60]\n    ]\n  }\n]"
+          "scenarioId": "raw_frame"
         }
       ],
-      "title": "Directed Graph (digraph) Example",
+      "title": "Digraph (directed graph)",
       "type": "grafana-mesh-panel"
     },
     {
@@ -58,34 +84,59 @@
         "type": "grafana-testdata-datasource",
         "uid": "trlxrdZVk"
       },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
       "gridPos": {
-        "h": 16,
-        "w": 24,
-        "x": 0,
-        "y": 16
+        "h": 14,
+        "w": 12,
+        "x": 12,
+        "y": 0
       },
       "id": 2,
       "options": {
-        "dotDiagram": "graph Network {\n  A -- B;\n  A -- C;\n  B -- C;\n  B -- D;\n  C -- D;\n  D -- E;\n  E -- F;\n  F -- A;\n  \n  subgraph cluster_group {\n    label=\"Connected Group\";\n    style=rounded;\n    \n    G -- H;\n    H -- I;\n    I -- G;\n  }\n  \n  D -- G;\n}",
-        "layoutEngine": "neato"
+        "dotDiagram": "graph Network {\n  A -- B;\n  A -- C;\n  B -- C;\n  B -- D;\n  C -- D;\n  D -- E;\n  E -- F;\n  F -- A;\n  \n  G -- H;\n  H -- I;\n  I -- G;\n  \n  D -- G;\n}",
+        "edgeMappings": [],
+        "enableNodeTooltips": false,
+        "layoutEngine": "neato",
+        "nodeMappings": [],
+        "rankDirection": "LR"
       },
+      "pluginVersion": "1.0.0",
       "targets": [
         {
           "datasource": {
             "type": "grafana-testdata-datasource",
             "uid": "db84e60d-b92a-4089-82cb-34842fb1754b"
           },
+          "rawFrameContent": "[\n  {\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"Label\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"Value\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"A\", 10],\n      [1609462800000, \"B\", 20],\n      [1609466400000, \"C\", 15],\n      [1609470000000, \"D\", 25],\n      [1609473600000, \"E\", 30]\n    ]\n  }\n]",
           "refId": "A",
-          "scenarioId": "raw_frame",
-          "rawFrameContent": "[\n  {\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"Label\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"Value\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"A\", 10],\n      [1609462800000, \"B\", 20],\n      [1609466400000, \"C\", 15],\n      [1609470000000, \"D\", 25],\n      [1609473600000, \"E\", 30]\n    ]\n  }\n]"
+          "scenarioId": "raw_frame"
         }
       ],
-      "title": "Undirected Graph (graph) Example",
+      "title": "Graph (undirected graph)",
       "type": "grafana-mesh-panel"
     }
   ],
+  "preload": false,
   "refresh": "",
-  "schemaVersion": 39,
+  "schemaVersion": 42,
   "tags": [],
   "templating": {
     "list": []
@@ -98,6 +149,5 @@
   "timezone": "",
   "title": "Provisioned mesh dashboard",
   "uid": "a538aeff-5a8a-42a5-901c-938d896fdd6f",
-  "version": 1,
-  "weekStart": ""
+  "version": 7
 }
