@@ -39,21 +39,27 @@ export function processDataFieldBindings(
     const colorRules = mapping.rules.filter(r => r.kind === RuleKind.STROKE_COLOR);
     
     colorRules.forEach(rule => {
-      if (rule.matchFieldName && rule.matchValue && rule.colorFieldName) {
-        const color = findColorForMatchingRow(
-          data.series,
-          rule.matchFieldName,
-          rule.matchValue,
-          rule.colorFieldName,
-          fieldConfig,
-          theme
-        );
-        
-        if (color) {
-          mapping.targetNodeIds.forEach((nodeId: string) => {
-            nodeColors.set(nodeId, color);
-          });
-        }
+      if (rule.matchFieldName && rule.colorFieldName) {
+        mapping.targetNodeIds.forEach((nodeId: string) => {
+          const matchValue = rule.matchPattern 
+            ? rule.matchPattern.replace(/\$\{id\}/g, nodeId)
+            : rule.matchValue;
+          
+          if (matchValue && rule.matchFieldName && rule.colorFieldName) {
+            const color = findColorForMatchingRow(
+              data.series,
+              rule.matchFieldName,
+              matchValue,
+              rule.colorFieldName,
+              fieldConfig,
+              theme
+            );
+            
+            if (color) {
+              nodeColors.set(nodeId, color);
+            }
+          }
+        });
       }
     });
   });
@@ -62,21 +68,27 @@ export function processDataFieldBindings(
     const colorRules = mapping.rules.filter(r => r.kind === RuleKind.STROKE_COLOR);
     
     colorRules.forEach(rule => {
-      if (rule.matchFieldName && rule.matchValue && rule.colorFieldName) {
-        const color = findColorForMatchingRow(
-          data.series,
-          rule.matchFieldName,
-          rule.matchValue,
-          rule.colorFieldName,
-          fieldConfig,
-          theme
-        );
-        
-        if (color) {
-          mapping.targetEdgeIds.forEach((edgeId: string) => {
-            edgeColors.set(edgeId, color);
-          });
-        }
+      if (rule.matchFieldName && rule.colorFieldName) {
+        mapping.targetEdgeIds.forEach((edgeId: string) => {
+          const matchValue = rule.matchPattern
+            ? rule.matchPattern.replace(/\$\{id\}/g, edgeId)
+            : rule.matchValue;
+          
+          if (matchValue && rule.matchFieldName && rule.colorFieldName) {
+            const color = findColorForMatchingRow(
+              data.series,
+              rule.matchFieldName,
+              matchValue,
+              rule.colorFieldName,
+              fieldConfig,
+              theme
+            );
+            
+            if (color) {
+              edgeColors.set(edgeId, color);
+            }
+          }
+        });
       }
     });
   });
@@ -105,19 +117,25 @@ export function processWidthRules(
     const widthRules = mapping.rules.filter(r => r.kind === RuleKind.STROKE_WIDTH);
     
     widthRules.forEach(rule => {
-      if (rule.matchFieldName && rule.matchValue && rule.widthFieldName) {
-        const width = findWidthForMatchingRow(
-          data.series,
-          rule.matchFieldName,
-          rule.matchValue,
-          rule.widthFieldName
-        );
-        
-        if (width !== undefined) {
-          mapping.targetEdgeIds.forEach((edgeId: string) => {
-            edgeWidths.set(edgeId, width);
-          });
-        }
+      if (rule.matchFieldName && rule.widthFieldName) {
+        mapping.targetEdgeIds.forEach((edgeId: string) => {
+          const matchValue = rule.matchPattern
+            ? rule.matchPattern.replace(/\$\{id\}/g, edgeId)
+            : rule.matchValue;
+          
+          if (matchValue && rule.matchFieldName && rule.widthFieldName) {
+            const width = findWidthForMatchingRow(
+              data.series,
+              rule.matchFieldName,
+              matchValue,
+              rule.widthFieldName
+            );
+            
+            if (width !== undefined) {
+              edgeWidths.set(edgeId, width);
+            }
+          }
+        });
       } else if (rule.staticWidth !== undefined) {
         mapping.targetEdgeIds.forEach((edgeId: string) => {
           edgeWidths.set(edgeId, rule.staticWidth!);

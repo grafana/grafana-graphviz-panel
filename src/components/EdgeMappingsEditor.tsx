@@ -105,15 +105,27 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
           </div>
 
           <Field label="Select Edges">
-            <MultiSelect
-              value={mapping.targetEdgeIds}
-              options={availableEdgeIds.map(id => ({ label: id, value: id }))}
-              onChange={(selections) => {
-                const selectedIds = selections.map(s => s.value!);
-                updateMapping(mapping.id, { targetEdgeIds: selectedIds });
-              }}
-              placeholder="Select edges..."
-            />
+            <div style={{ display: 'flex', gap: '4px', alignItems: 'flex-start' }}>
+              <div style={{ flex: 1 }}>
+                <MultiSelect
+                  value={mapping.targetEdgeIds}
+                  options={availableEdgeIds.map(id => ({ label: id, value: id }))}
+                  onChange={(selections) => {
+                    const selectedIds = selections.map(s => s.value!);
+                    updateMapping(mapping.id, { targetEdgeIds: selectedIds });
+                  }}
+                  placeholder="Select edges..."
+                />
+              </div>
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={() => updateMapping(mapping.id, { targetEdgeIds: availableEdgeIds })}
+                tooltip="Select all edges"
+              >
+                All
+              </Button>
+            </div>
           </Field>
 
           {mapping.rules.map((rule, ruleIndex) => (
@@ -132,6 +144,7 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
                       onChange={(selection) => updateRule(mapping.id, ruleIndex, {
                         matchFieldName: selection.value,
                         matchValue: undefined,
+                        matchPattern: undefined,
                         colorFieldName: undefined,
                       })}
                       placeholder="Select match field..."
@@ -141,12 +154,20 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
 
                   {rule.matchFieldName && (
                     <>
-                      <Field label="Match Value">
-                        <Select
-                          value={rule.matchValue}
-                          options={extractFieldValues(context.data, rule.matchFieldName)}
-                          onChange={(selection) => updateRule(mapping.id, ruleIndex, { matchValue: selection.value })}
-                          placeholder="Select value..."
+                      <Field label="Match Value" description='Use "${id}" to match edge ID, or enter specific value'>
+                        <input
+                          type="text"
+                          value={rule.matchPattern || rule.matchValue || ''}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value.includes('${id}')) {
+                              updateRule(mapping.id, ruleIndex, { matchPattern: value, matchValue: undefined });
+                            } else {
+                              updateRule(mapping.id, ruleIndex, { matchValue: value, matchPattern: undefined });
+                            }
+                          }}
+                          placeholder='Enter "${id}" or specific value...'
+                          style={{ width: '100%', padding: '6px', fontFamily: 'monospace' }}
                         />
                       </Field>
 
@@ -189,6 +210,7 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
                       onChange={(selection) => updateRule(mapping.id, ruleIndex, {
                         matchFieldName: selection.value,
                         matchValue: undefined,
+                        matchPattern: undefined,
                         widthFieldName: undefined,
                       })}
                       placeholder="Select match field..."
@@ -198,12 +220,20 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
 
                   {rule.matchFieldName && (
                     <>
-                      <Field label="Match Value">
-                        <Select
-                          value={rule.matchValue}
-                          options={extractFieldValues(context.data, rule.matchFieldName)}
-                          onChange={(selection) => updateRule(mapping.id, ruleIndex, { matchValue: selection.value })}
-                          placeholder="Select value..."
+                      <Field label="Match Value" description='Use "${id}" to match edge ID, or enter specific value'>
+                        <input
+                          type="text"
+                          value={rule.matchPattern || rule.matchValue || ''}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value.includes('${id}')) {
+                              updateRule(mapping.id, ruleIndex, { matchPattern: value, matchValue: undefined });
+                            } else {
+                              updateRule(mapping.id, ruleIndex, { matchValue: value, matchPattern: undefined });
+                            }
+                          }}
+                          placeholder='Enter "${id}" or specific value...'
+                          style={{ width: '100%', padding: '6px', fontFamily: 'monospace' }}
                         />
                       </Field>
 
@@ -331,27 +361,4 @@ function extractNumericFields(data: any): Array<SelectableValue<string>> {
   }));
 }
 
-function extractFieldValues(data: any, fieldName: string): Array<SelectableValue<string>> {
-  if (!data || data.length === 0 || !fieldName) {
-    return [];
-  }
-
-  const values = new Set<string>();
-  
-  data.forEach((frame: any) => {
-    const field = frame.fields?.find((f: any) => f.name === fieldName);
-    if (field && field.values) {
-      field.values.forEach((value: any) => {
-        if (value != null) {
-          values.add(String(value));
-        }
-      });
-    }
-  });
-
-  return Array.from(values).sort().map(value => ({
-    label: value,
-    value: value,
-  }));
-}
 

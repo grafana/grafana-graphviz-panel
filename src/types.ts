@@ -24,6 +24,7 @@ export interface StrokeColorRule {
   kind: RuleKind.STROKE_COLOR;
   matchFieldName?: string;
   matchValue?: string;
+  matchPattern?: string;
   colorFieldName?: string;
   staticColor?: string;
 }
@@ -32,6 +33,7 @@ export interface StrokeWidthRule {
   kind: RuleKind.STROKE_WIDTH;
   matchFieldName?: string;
   matchValue?: string;
+  matchPattern?: string;
   widthFieldName?: string;
   staticWidth?: number;
 }
