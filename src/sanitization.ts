@@ -28,11 +28,16 @@ function removeColorAttributes(graph: Graph): void {
     'pencolor',
   ];
 
+  const styleAttributes = [
+    'style',
+  ];
+
   graph.nodes().forEach(nodeId => {
     const nodeData = graph.node(nodeId);
     if (nodeData) {
       const sanitized = { ...nodeData };
       colorAttributes.forEach(attr => delete sanitized[attr]);
+      styleAttributes.forEach(attr => delete sanitized[attr]);
       graph.setNode(nodeId, sanitized);
     }
   });
@@ -42,6 +47,7 @@ function removeColorAttributes(graph: Graph): void {
     if (edgeData) {
       const sanitized = { ...edgeData };
       colorAttributes.forEach(attr => delete sanitized[attr]);
+      styleAttributes.forEach(attr => delete sanitized[attr]);
       graph.setEdge(edgeObj.v, edgeObj.w, sanitized);
     }
   });
