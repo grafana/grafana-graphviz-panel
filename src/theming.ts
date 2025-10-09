@@ -70,6 +70,30 @@ export function applySvgTheming(svgElement: SVGSVGElement, theme: GrafanaTheme2)
   svg.selectAll('text')
     .attr('fill', theme.colors.text.primary)
     .attr('font-family', theme.typography.fontFamily);
+  
+  svg.selectAll('g.cluster polygon')
+    .each(function() {
+      const element = d3.select(this);
+      if (isDefaultColor(element.attr('stroke'))) {
+        element.attr('stroke', edgeColor);
+      }
+      element.attr('fill', 'none')
+        .attr('stroke-dasharray', '3,3')
+        .attr('stroke-width', '1.5')
+        .attr('stroke-opacity', '0.3');
+    });
+  
+  svg.selectAll('g.cluster rect')
+    .each(function() {
+      const element = d3.select(this);
+      if (isDefaultColor(element.attr('stroke'))) {
+        element.attr('stroke', edgeColor);
+      }
+      element.attr('fill', 'none')
+        .attr('stroke-dasharray', '3,3')
+        .attr('stroke-width', '1.5')
+        .attr('stroke-opacity', '0.3');
+    });
 }
 
 /**

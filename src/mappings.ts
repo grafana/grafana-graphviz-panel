@@ -1,4 +1,5 @@
 import * as graphlibDot from 'graphlib-dot';
+import { Graph } from 'graphlib';
 import { EdgeMapping, NodeMapping, RuleKind } from './types';
 import { DataDrivenColors, DataDrivenWidths } from './data';
 
@@ -47,32 +48,87 @@ export function applyEdgeStyleMappings(dotString: string, edgeMappings: EdgeMapp
  * @returns DOT string with node mappings applied
  */
 export function applyNodeStyleMappings(dotString: string, nodeMappings: NodeMapping[]): string {
-  if (!nodeMappings || nodeMappings.length === 0) {
-    return dotString;
-  }
+  return applyStyleMappings(dotString, nodeMappings);
+}
 
+/**
+ * Applies all style mappings to a DOT string.
+ * Handles DOT marshalling/unmarshalling and coordinates between different mapping types.
+ */
+function applyStyleMappings(dotString: string, nodeMappings: NodeMapping[]): string {
   const graph = graphlibDot.read(dotString);
 
-  nodeMappings.forEach(mapping => {
-    const colorRules = mapping.rules.filter(r => r.kind === RuleKind.STROKE_COLOR);
-    
-    colorRules.forEach(rule => {
-      if (rule.staticColor) {
-        mapping.targetNodeIds.forEach((nodeId: string) => {
-          if (graph.hasNode(nodeId)) {
-            const nodeData = graph.node(nodeId);
-            graph.setNode(nodeId, {
-              ...nodeData,
-              color: rule.staticColor,
-            });
-          }
-        });
-      }
-    });
-  });
+  applyClusterStyleMappings(graph);
+  applyUserNodeMappings(graph, nodeMappings);
 
   return graphlibDot.write(graph);
 }
+
+/**
+ * Applies user-defined node mappings to the graph.
+ */
+function applyUserNodeMappings(graph: Graph, nodeMappings: NodeMapping[]): void {
+  if (nodeMappings && nodeMappings.length > 0) {
+    nodeMappings.forEach(mapping => {
+      const colorRules = mapping.rules.filter(r => r.kind === RuleKind.STROKE_COLOR);
+      
+      colorRules.forEach(rule => {
+        if (rule.staticColor) {
+          mapping.targetNodeIds.forEach((nodeId: string) => {
+            if (graph.hasNode(nodeId)) {
+              const nodeData = graph.node(nodeId);
+              graph.setNode(nodeId, {
+                ...nodeData,
+                color: rule.staticColor,
+              });
+            }
+          });
+        }
+      });
+    });
+  }
+}
+
+
+/**
+ * Applies cluster style mappings to all nodes for better readability and padding.
+ * Sets reasonable font size, node dimensions, and margins to prevent text overflow
+ * and improve visual appearance.
+ */
+function applyClusterStyleMappings(graph: Graph): void {
+  graph.nodes().forEach((nodeId: string) => {
+    if (nodeId.startsWith('cluster_')) {
+      return;
+    }
+    
+    const nodeData = graph.node(nodeId);
+    if (nodeData) {
+      const updatedData = { ...nodeData };
+      
+      if (!updatedData.fontsize) {
+        updatedData.fontsize = '15';
+      }
+      
+      if (!updatedData.width) {
+        updatedData.width = '1.6';
+      }
+      if (!updatedData.height) {
+        updatedData.height = '0.8';
+      }
+      
+      if (!updatedData.margin) {
+        updatedData.margin = '0.015,0.005';
+      }
+      
+      if (!updatedData.fontname) {
+        updatedData.fontname = 'Arial';
+      }
+      
+      graph.setNode(nodeId, updatedData);
+    }
+  });
+}
+
 
 /**
  * Applies data-driven colors from field bindings to nodes and edges.
@@ -140,4 +196,3 @@ export function applyDataDrivenWidths(dotString: string, dataDrivenWidths: DataD
 
   return graphlibDot.write(graph);
 }
-
