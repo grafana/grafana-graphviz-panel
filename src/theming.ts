@@ -45,13 +45,29 @@ export function applySvgTheming(svgElement: SVGSVGElement, theme: GrafanaTheme2)
       }
     });
   
-  svg.selectAll('path')
+  svg.selectAll('g.edge path')
     .each(function() {
       const element = d3.select(this);
       if (isDefaultColor(element.attr('stroke'))) {
         element.attr('stroke', edgeColor);
       }
       element.attr('fill', 'none');
+    });
+  
+  svg.selectAll('g.node path')
+    .each(function() {
+      const pathElement = d3.select(this);
+      const currentStroke = pathElement.attr('stroke');
+      const currentFill = pathElement.attr('fill');
+      
+      if (isDefaultColor(currentStroke)) {
+        pathElement.attr('stroke', edgeColor);
+      }
+      
+      const shouldThemeFill = currentFill && currentFill !== 'none' && isDefaultColor(currentFill);
+      if (shouldThemeFill) {
+        pathElement.attr('fill', theme.colors.background.secondary);
+      }
     });
   
   svg.selectAll('g.edge polygon')
@@ -111,5 +127,3 @@ function isDefaultColor(color: string | null): boolean {
   const defaultColors = ['black', 'none', 'white', '#000000', '#ffffff'];
   return defaultColors.includes(color.toLowerCase());
 }
-
-

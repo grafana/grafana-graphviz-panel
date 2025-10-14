@@ -1,7 +1,8 @@
 import { useEffect, RefObject, useState } from 'react';
 import { GrafanaTheme2, PanelData, FieldConfigSource } from '@grafana/data';
+import * as d3 from 'd3-selection';
 import { validateDotSyntax, ValidationErrorInfo } from './validation';
-import { sanitizeDotColors } from './sanitization';
+import { sanitizeDotColors, normalizeNodePathStyling } from './sanitization';
 import { deriveEdgeIds } from './enhancements';
 import { applyEdgeStyleMappings, applyNodeStyleMappings, applyDataDrivenColors, applyDataDrivenWidths } from './mappings';
 import { processDataFieldBindings, processWidthRules } from './data';
@@ -136,6 +137,8 @@ export function useThemedDotSvg(
 
         const svgElement = svgRef.current.querySelector('svg');
         if (svgElement) {
+          const d3Svg = d3.select(svgElement);
+          normalizeNodePathStyling(d3Svg);
           applySvgTheming(svgElement, theme);
         }
         

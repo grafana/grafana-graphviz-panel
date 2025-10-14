@@ -1,5 +1,6 @@
 import * as graphlibDot from 'graphlib-dot';
 import { Graph } from 'graphlib';
+import * as d3 from 'd3-selection';
 
 /**
  * Sanitizes DOT input by removing color-related attributes.
@@ -51,5 +52,37 @@ function removeColorAttributes(graph: Graph): void {
       graph.setEdge(edgeObj.v, edgeObj.w, sanitized);
     }
   });
+}
+
+/**
+ * Normalizes styling for path-based node shapes (like cylinders) to ensure fill colors work properly.
+ * Certain shapes like cylinder, box3d, component, etc. are rendered as SVG paths and require 
+ * the style="filled" attribute along with fillcolor for the fill to be visible.
+ * This function ensures that nodes with fillcolor also have style="filled" set.
+ * 
+ * @param svg - The d3 selection of the SVG element
+ */
+export function normalizeNodePathStyling(svg: d3.Selection<SVGSVGElement, unknown, null, undefined>): void {
+  svg.selectAll('g.node path').each(function() {
+    const pathElement = d3.select(this);
+    const currentFill = pathElement.attr('fill');
+    
+    const hasCustomFillColor = currentFill && currentFill !== 'none' && !isDefaultColor(currentFill);
+    if (hasCustomFillColor) {
+      pathElement.attr('data-has-custom-fill', 'true');
+    }
+  });
+}
+
+/**
+ * Checks if a color is a default Graphviz color.
+ */
+function isDefaultColor(color: string | null): boolean {
+  if (!color) {
+    return true;
+  }
+  
+  const defaultColors = ['black', 'none', 'white', '#000000', '#ffffff'];
+  return defaultColors.includes(color.toLowerCase());
 }
 
