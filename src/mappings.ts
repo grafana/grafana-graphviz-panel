@@ -70,9 +70,10 @@ function applyStyleMappings(dotString: string, nodeMappings: NodeMapping[]): str
 function applyUserNodeMappings(graph: Graph, nodeMappings: NodeMapping[]): void {
   if (nodeMappings && nodeMappings.length > 0) {
     nodeMappings.forEach(mapping => {
-      const colorRules = mapping.rules.filter(r => r.kind === RuleKind.STROKE_COLOR);
+      const borderColorRules = mapping.rules.filter(r => r.kind === RuleKind.STROKE_COLOR);
+      const fillColorRules = mapping.rules.filter(r => r.kind === RuleKind.FILL_COLOR);
       
-      colorRules.forEach(rule => {
+      borderColorRules.forEach(rule => {
         if (rule.staticColor) {
           mapping.targetNodeIds.forEach((nodeId: string) => {
             if (graph.hasNode(nodeId)) {
@@ -80,6 +81,21 @@ function applyUserNodeMappings(graph: Graph, nodeMappings: NodeMapping[]): void 
               graph.setNode(nodeId, {
                 ...nodeData,
                 color: rule.staticColor,
+              });
+            }
+          });
+        }
+      });
+
+      fillColorRules.forEach(rule => {
+        if (rule.staticColor) {
+          mapping.targetNodeIds.forEach((nodeId: string) => {
+            if (graph.hasNode(nodeId)) {
+              const nodeData = graph.node(nodeId);
+              graph.setNode(nodeId, {
+                ...nodeData,
+                fillcolor: rule.staticColor,
+                style: 'filled',
               });
             }
           });
@@ -141,12 +157,23 @@ function applyClusterStyleMappings(graph: Graph): void {
 export function applyDataDrivenColors(dotString: string, dataDrivenColors: DataDrivenColors): string {
   const graph = graphlibDot.read(dotString);
 
-  dataDrivenColors.nodeColors.forEach((color, nodeId) => {
+  dataDrivenColors.nodeBorderColors.forEach((color, nodeId) => {
     if (graph.hasNode(nodeId)) {
       const nodeData = graph.node(nodeId);
       graph.setNode(nodeId, {
         ...nodeData,
         color,
+      });
+    }
+  });
+
+  dataDrivenColors.nodeFillColors.forEach((color, nodeId) => {
+    if (graph.hasNode(nodeId)) {
+      const nodeData = graph.node(nodeId);
+      graph.setNode(nodeId, {
+        ...nodeData,
+        fillcolor: color,
+        style: 'filled',
       });
     }
   });

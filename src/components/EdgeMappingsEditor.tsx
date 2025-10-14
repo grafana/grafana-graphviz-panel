@@ -131,7 +131,7 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
           {mapping.rules.map((rule, ruleIndex) => (
             <div key={ruleIndex} className={ruleContainerStyle}>
               <div className={headerStyle}>
-                <strong>{rule.kind === RuleKind.STROKE_COLOR ? 'Color Rule' : 'Width Rule'}</strong>
+                <strong>{rule.kind === RuleKind.STROKE_COLOR ? 'Border Color Rule' : 'Width Rule'}</strong>
                 <IconButton name="trash-alt" onClick={() => removeRule(mapping.id, ruleIndex)} tooltip="Remove rule" size="sm" />
               </div>
 
@@ -276,7 +276,7 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
 
           <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
             <Button icon="plus" onClick={() => addColorRule(mapping.id)} variant="secondary" size="sm">
-              Add Color Rule
+              Add Border Color Rule
             </Button>
             <Button icon="plus" onClick={() => addWidthRule(mapping.id)} variant="secondary" size="sm">
               Add Width Rule

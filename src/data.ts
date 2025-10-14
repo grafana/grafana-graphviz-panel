@@ -2,7 +2,8 @@ import { PanelData, FieldConfigSource, GrafanaTheme2, DataFrame, FieldType } fro
 import { EdgeMapping, NodeMapping, RuleKind } from './types';
 
 export interface DataDrivenColors {
-  nodeColors: Map<string, string>;
+  nodeBorderColors: Map<string, string>;
+  nodeFillColors: Map<string, string>;
   edgeColors: Map<string, string>;
 }
 
@@ -28,17 +29,19 @@ export function processDataFieldBindings(
   edgeMappings: EdgeMapping[],
   theme: GrafanaTheme2
 ): DataDrivenColors {
-  const nodeColors = new Map<string, string>();
+  const nodeBorderColors = new Map<string, string>();
+  const nodeFillColors = new Map<string, string>();
   const edgeColors = new Map<string, string>();
 
   if (!data.series || data.series.length === 0) {
-    return { nodeColors, edgeColors };
+    return { nodeBorderColors, nodeFillColors, edgeColors };
   }
 
   nodeMappings.forEach(mapping => {
-    const colorRules = mapping.rules.filter(r => r.kind === RuleKind.STROKE_COLOR);
+    const borderColorRules = mapping.rules.filter(r => r.kind === RuleKind.STROKE_COLOR);
+    const fillColorRules = mapping.rules.filter(r => r.kind === RuleKind.FILL_COLOR);
     
-    colorRules.forEach(rule => {
+    borderColorRules.forEach(rule => {
       if (rule.matchFieldName && rule.colorFieldName) {
         mapping.targetNodeIds.forEach((nodeId: string) => {
           const matchValue = rule.matchPattern 
@@ -56,7 +59,32 @@ export function processDataFieldBindings(
             );
             
             if (color) {
-              nodeColors.set(nodeId, color);
+              nodeBorderColors.set(nodeId, color);
+            }
+          }
+        });
+      }
+    });
+
+    fillColorRules.forEach(rule => {
+      if (rule.matchFieldName && rule.colorFieldName) {
+        mapping.targetNodeIds.forEach((nodeId: string) => {
+          const matchValue = rule.matchPattern 
+            ? rule.matchPattern.replace(/\$\{id\}/g, nodeId)
+            : rule.matchValue;
+          
+          if (matchValue && rule.matchFieldName && rule.colorFieldName) {
+            const color = findColorForMatchingRow(
+              data.series,
+              rule.matchFieldName,
+              matchValue,
+              rule.colorFieldName,
+              fieldConfig,
+              theme
+            );
+            
+            if (color) {
+              nodeFillColors.set(nodeId, color);
             }
           }
         });
@@ -93,7 +121,7 @@ export function processDataFieldBindings(
     });
   });
 
-  return { nodeColors, edgeColors };
+  return { nodeBorderColors, nodeFillColors, edgeColors };
 }
 
 /**

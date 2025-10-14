@@ -1,7 +1,7 @@
 import React from 'react';
 import { StandardEditorProps, SelectableValue } from '@grafana/data';
 import { Button, Field, MultiSelect, ColorPicker, IconButton, Select } from '@grafana/ui';
-import { NodeMapping, StrokeColorRule, Rule, RuleKind } from '../types';
+import { NodeMapping, StrokeColorRule, FillColorRule, Rule, RuleKind } from '../types';
 import { css } from '@emotion/css';
 
 interface Props extends StandardEditorProps<NodeMapping[]> {}
@@ -30,12 +30,23 @@ export const NodeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
     );
   };
 
-  const addColorRule = (mappingId: string) => {
+  const addBorderColorRule = (mappingId: string) => {
     const mapping = mappings.find(m => m.id === mappingId);
     if (mapping) {
       const newRule: StrokeColorRule = {
         kind: RuleKind.STROKE_COLOR,
         staticColor: '#FF0000',
+      };
+      updateMapping(mappingId, { rules: [...mapping.rules, newRule] });
+    }
+  };
+
+  const addFillColorRule = (mappingId: string) => {
+    const mapping = mappings.find(m => m.id === mappingId);
+    if (mapping) {
+      const newRule: FillColorRule = {
+        kind: RuleKind.FILL_COLOR,
+        staticColor: '#00FF00',
       };
       updateMapping(mappingId, { rules: [...mapping.rules, newRule] });
     }
@@ -120,11 +131,14 @@ export const NodeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
           {mapping.rules.map((rule, ruleIndex) => (
             <div key={ruleIndex} className={ruleContainerStyle}>
               <div className={headerStyle}>
-                <strong>Color Rule</strong>
+                <strong>
+                  {rule.kind === RuleKind.STROKE_COLOR && 'Border Color Rule'}
+                  {rule.kind === RuleKind.FILL_COLOR && 'Fill Color Rule'}
+                </strong>
                 <IconButton name="trash-alt" onClick={() => removeRule(mapping.id, ruleIndex)} tooltip="Remove rule" size="sm" />
               </div>
 
-              {rule.kind === RuleKind.STROKE_COLOR && (
+              {(rule.kind === RuleKind.STROKE_COLOR || rule.kind === RuleKind.FILL_COLOR) && (
                 <>
                   <Field label="Match Field (Optional)">
                     <Select
@@ -191,9 +205,14 @@ export const NodeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
             </div>
           ))}
 
-          <Button icon="plus" onClick={() => addColorRule(mapping.id)} variant="secondary" size="sm">
-            Add Color Rule
-          </Button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <Button icon="plus" onClick={() => addBorderColorRule(mapping.id)} variant="secondary" size="sm">
+              Add Border Color Rule
+            </Button>
+            <Button icon="plus" onClick={() => addFillColorRule(mapping.id)} variant="secondary" size="sm">
+              Add Fill Color Rule
+            </Button>
+          </div>
         </div>
       ))}
 

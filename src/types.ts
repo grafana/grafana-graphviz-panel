@@ -22,11 +22,21 @@ export enum DiagramSourceType {
 
 export enum RuleKind {
   STROKE_COLOR = 'strokeColor',
+  FILL_COLOR = 'fillColor',
   STROKE_WIDTH = 'strokeWidth',
 }
 
 export interface StrokeColorRule {
   kind: RuleKind.STROKE_COLOR;
+  matchFieldName?: string;
+  matchValue?: string;
+  matchPattern?: string;
+  colorFieldName?: string;
+  staticColor?: string;
+}
+
+export interface FillColorRule {
+  kind: RuleKind.FILL_COLOR;
   matchFieldName?: string;
   matchValue?: string;
   matchPattern?: string;
@@ -43,7 +53,7 @@ export interface StrokeWidthRule {
   staticWidth?: number;
 }
 
-export type Rule = StrokeColorRule | StrokeWidthRule;
+export type Rule = StrokeColorRule | FillColorRule | StrokeWidthRule;
 
 export interface EdgeMapping {
   id: string;
