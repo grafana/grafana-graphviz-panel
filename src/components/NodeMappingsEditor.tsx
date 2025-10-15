@@ -189,6 +189,19 @@ export const NodeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
                           return null;
                         })()
                       )}
+
+                      <Field label="Threshold Set" description="Optional: Use a named threshold set instead of field config thresholds">
+                        <Select
+                          value={rule.thresholdId}
+                          options={[
+                            { label: 'Use panel default thresholds', value: undefined },
+                            ...(context.options?.namedThresholds || []).map(t => ({ label: t.name, value: t.id }))
+                          ]}
+                          onChange={(selection) => updateRule(mapping.id, ruleIndex, { thresholdId: selection.value })}
+                          placeholder="Field config thresholds"
+                          isClearable
+                        />
+                      </Field>
                     </>
                   )}
 

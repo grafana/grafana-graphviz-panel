@@ -1,5 +1,5 @@
 import { PanelData, FieldConfigSource, GrafanaTheme2, DataFrame, FieldType } from '@grafana/data';
-import { EdgeMapping, NodeMapping, RuleKind } from './types';
+import { EdgeMapping, NodeMapping, RuleKind, NamedThreshold } from './types';
 
 export interface DataDrivenColors {
   nodeBorderColors: Map<string, string>;
@@ -27,6 +27,7 @@ export function processDataFieldBindings(
   fieldConfig: FieldConfigSource,
   nodeMappings: NodeMapping[],
   edgeMappings: EdgeMapping[],
+  namedThresholds: NamedThreshold[],
   theme: GrafanaTheme2
 ): DataDrivenColors {
   const nodeBorderColors = new Map<string, string>();
@@ -55,6 +56,8 @@ export function processDataFieldBindings(
               matchValue,
               rule.colorFieldName,
               fieldConfig,
+              namedThresholds,
+              rule.thresholdId,
               theme
             );
             
@@ -80,6 +83,8 @@ export function processDataFieldBindings(
               matchValue,
               rule.colorFieldName,
               fieldConfig,
+              namedThresholds,
+              rule.thresholdId,
               theme
             );
             
@@ -109,6 +114,8 @@ export function processDataFieldBindings(
               matchValue,
               rule.colorFieldName,
               fieldConfig,
+              namedThresholds,
+              rule.thresholdId,
               theme
             );
             
@@ -216,6 +223,8 @@ function findColorForMatchingRow(
   matchValue: string,
   colorFieldName: string,
   fieldConfig: FieldConfigSource,
+  namedThresholds: NamedThreshold[],
+  thresholdId: string | undefined,
   theme: GrafanaTheme2
 ): string | undefined {
   for (const frame of series) {
@@ -231,6 +240,13 @@ function findColorForMatchingRow(
         const numericValue = colorField.values[i];
         
         if (numericValue != null && colorField.type === FieldType.number) {
+          if (thresholdId) {
+            const threshold = namedThresholds.find(t => t.id === thresholdId);
+            if (threshold) {
+              return applyThresholdToValue(numericValue, threshold);
+            }
+          }
+          
           const display = colorField.display ? colorField.display(numericValue) : { color: undefined };
           if (display.color) {
             return display.color;
@@ -241,5 +257,17 @@ function findColorForMatchingRow(
   }
 
   return undefined;
+}
+
+function applyThresholdToValue(value: number, threshold: NamedThreshold): string | undefined {
+  const sortedSteps = [...threshold.steps].sort((a, b) => b.value - a.value);
+  
+  for (const step of sortedSteps) {
+    if (value >= step.value) {
+      return step.color;
+    }
+  }
+  
+  return sortedSteps[sortedSteps.length - 1]?.color;
 }
 

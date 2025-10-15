@@ -2,6 +2,7 @@ import { PanelPlugin } from '@grafana/data';
 import { SimpleOptions, RankDirection, LayoutEngine, DiagramSourceType } from './types';
 import { SimplePanel } from './components/SimplePanel';
 import { DotDiagramEditor } from './components/DotDiagramEditor';
+import { NamedThresholdsEditor } from './components/NamedThresholdsEditor';
 import { EdgeMappingsEditor } from './components/EdgeMappingsEditor';
 import { NodeMappingsEditor } from './components/NodeMappingsEditor';
 
@@ -99,6 +100,15 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel)
           },
         ],
       },
+    })
+    .addCustomEditor({
+      id: 'namedThresholds',
+      path: 'namedThresholds',
+      name: 'Threshold Sets',
+      description: 'Define named threshold sets that can be referenced in node and edge color rules',
+      defaultValue: [],
+      editor: NamedThresholdsEditor,
+      category: ['Data Mappings'],
     })
     .addCustomEditor({
       id: 'edgeMappings',

@@ -26,12 +26,24 @@ export enum RuleKind {
   STROKE_WIDTH = 'strokeWidth',
 }
 
+export interface ThresholdStep {
+  color: string;
+  value: number;
+}
+
+export interface NamedThreshold {
+  id: string;
+  name: string;
+  steps: ThresholdStep[];
+}
+
 export interface StrokeColorRule {
   kind: RuleKind.STROKE_COLOR;
   matchFieldName?: string;
   matchValue?: string;
   matchPattern?: string;
   colorFieldName?: string;
+  thresholdId?: string;
   staticColor?: string;
 }
 
@@ -41,6 +53,7 @@ export interface FillColorRule {
   matchValue?: string;
   matchPattern?: string;
   colorFieldName?: string;
+  thresholdId?: string;
   staticColor?: string;
 }
 
@@ -73,6 +86,7 @@ export interface SimpleOptions {
   dotDiagramUrl: string;
   layoutEngine: LayoutEngine;
   rankDirection: RankDirection;
+  namedThresholds: NamedThreshold[];
   edgeMappings: EdgeMapping[];
   nodeMappings: NodeMapping[];
   enableNodeTooltips: boolean;

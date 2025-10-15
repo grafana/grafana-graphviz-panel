@@ -8,7 +8,7 @@ import { applyEdgeStyleMappings, applyNodeStyleMappings, applyDataDrivenColors, 
 import { processDataFieldBindings, processWidthRules } from './data';
 import { renderDotToSvg } from './dot';
 import { applySvgTheming } from './theming';
-import { EdgeMapping, NodeMapping, DiagramSourceType } from './types';
+import { EdgeMapping, NodeMapping, NamedThreshold, DiagramSourceType } from './types';
 
 export interface RenderError {
   message: string;
@@ -93,6 +93,7 @@ export function useThemedDotSvg(
   rankDirection: string,
   edgeMappings: EdgeMapping[],
   nodeMappings: NodeMapping[],
+  namedThresholds: NamedThreshold[],
   data: PanelData,
   fieldConfig: FieldConfigSource,
   theme: GrafanaTheme2
@@ -121,7 +122,7 @@ export function useThemedDotSvg(
         const dotWithEdgeStyles = applyEdgeStyleMappings(dotWithEdgeIds, edgeMappings);
         const dotWithNodeStyles = applyNodeStyleMappings(dotWithEdgeStyles, nodeMappings);
         
-        const dataDrivenColors = processDataFieldBindings(data, fieldConfig, nodeMappings, edgeMappings, theme);
+        const dataDrivenColors = processDataFieldBindings(data, fieldConfig, nodeMappings, edgeMappings, namedThresholds, theme);
         const dotWithDataColors = applyDataDrivenColors(dotWithNodeStyles, dataDrivenColors);
         
         const dataDrivenWidths = processWidthRules(data, edgeMappings);
