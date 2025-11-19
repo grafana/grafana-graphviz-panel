@@ -6,9 +6,7 @@ import { NamedThresholdsEditor } from './components/NamedThresholdsEditor';
 import { EdgeMappingsEditor } from './components/EdgeMappingsEditor';
 import { NodeMappingsEditor } from './components/NodeMappingsEditor';
 
-export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel)
-  .useFieldConfig()
-  .setPanelOptions((builder) => {
+export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig().setPanelOptions((builder) => {
   return builder
     .addRadio({
       path: 'diagramSourceType',
@@ -40,7 +38,8 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel)
     .addTextInput({
       path: 'dotDiagramUrl',
       name: 'DOT Diagram URL',
-      description: 'Enter the URL to fetch the DOT diagram from. The URL should return a text file containing valid DOT syntax.',
+      description:
+        'Enter the URL to fetch the DOT diagram from. The URL should return a text file containing valid DOT syntax.',
       defaultValue: '',
       showIf: (options) => options.diagramSourceType === DiagramSourceType.URL,
     })
@@ -125,11 +124,5 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel)
       description: 'Configure rules for nodes (color, width, etc.)',
       defaultValue: [],
       editor: NodeMappingsEditor,
-    })
-    .addBooleanSwitch({
-      path: 'enableNodeTooltips',
-      name: 'Enable Node Tooltips',
-      description: 'Show tooltips when hovering over nodes',
-      defaultValue: false,
-    })
+    });
 });

@@ -92,5 +92,4 @@ export interface SimpleOptions {
   namedThresholds: NamedThreshold[];
   edgeMappings: EdgeMapping[];
   nodeMappings: NodeMapping[];
-  enableNodeTooltips: boolean;
 }

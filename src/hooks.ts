@@ -104,7 +104,8 @@ export function useThemedDotSvg(
   namedThresholds: NamedThreshold[],
   data: PanelData,
   fieldConfig: FieldConfigSource,
-  theme: GrafanaTheme2
+  theme: GrafanaTheme2,
+  isEditMode: boolean
 ): RenderError | null {
   const [renderError, setRenderError] = useState<RenderError | null>(null);
   useEffect(() => {
@@ -155,12 +156,11 @@ export function useThemedDotSvg(
         if (svgElement) {
           const d3Svg = d3.select(svgElement);
           normalizeNodePathStyling(d3Svg);
-          applySvgTheming(svgElement, theme);
+          applySvgTheming(svgElement, theme, isEditMode);
         }
 
         setRenderError(null);
       } catch (error) {
-        // TODO: Emit error event telemetry in this case
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         setRenderError({
           message: `Unable to render diagram: ${errorMessage}`,
@@ -180,6 +180,7 @@ export function useThemedDotSvg(
     fieldConfig,
     theme,
     svgRef,
+    isEditMode,
   ]);
 
   return renderError;

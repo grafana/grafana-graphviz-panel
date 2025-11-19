@@ -29,10 +29,13 @@ const getStyles = () => {
   };
 };
 
-export const SimplePanel: React.FC<Props> = ({ options, data, width, height, fieldConfig, id }) => {
+export const SimplePanel: React.FC<Props> = ({ options, data, width, height, fieldConfig, id, eventBus }) => {
   const styles = useStyles2(getStyles);
   const theme = useTheme2();
   const svgRef = useRef<HTMLDivElement>(null);
+  const isEditMode =
+    typeof window !== 'undefined' &&
+    (window.location.search.includes('editPanel=') || window.location.search.includes('viewPanel='));
 
   const { dotContent, isLoading, fetchError } = useFetchDotFromUrl(
     options.dotDiagramUrl,
@@ -52,7 +55,8 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height, fie
     options.namedThresholds || [],
     data,
     fieldConfig,
-    theme
+    theme,
+    isEditMode
   );
 
   if (data.series.length === 0) {
@@ -99,15 +103,14 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height, fie
       <div
         ref={svgRef}
         className={styles.svg}
-        style={{ 
-          width, 
-          height, 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center' 
+        style={{
+          width,
+          height,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
         }}
       />
-
     </div>
   );
 };
