@@ -5,7 +5,7 @@ import { DataDrivenColors, DataDrivenWidths } from './data';
 
 /**
  * Applies edge mappings (static color rules) to the graph.
- * 
+ *
  * @param dotString - The DOT notation string to process
  * @param edgeMappings - Array of edge mappings to apply
  * @returns DOT string with edge mappings applied
@@ -17,10 +17,10 @@ export function applyEdgeStyleMappings(dotString: string, edgeMappings: EdgeMapp
 
   const graph = graphlibDot.read(dotString);
 
-  edgeMappings.forEach(mapping => {
-    const colorRules = mapping.rules.filter(r => r.kind === RuleKind.STROKE_COLOR);
-    
-    colorRules.forEach(rule => {
+  edgeMappings.forEach((mapping) => {
+    const colorRules = mapping.rules.filter((r) => r.kind === RuleKind.STROKE_COLOR);
+
+    colorRules.forEach((rule) => {
       if (rule.staticColor) {
         graph.edges().forEach((edgeObj) => {
           const edgeData = graph.edge(edgeObj);
@@ -42,7 +42,7 @@ export function applyEdgeStyleMappings(dotString: string, edgeMappings: EdgeMapp
 
 /**
  * Applies node mappings (static color rules) to the graph.
- * 
+ *
  * @param dotString - The DOT notation string to process
  * @param nodeMappings - Array of node mappings to apply
  * @returns DOT string with node mappings applied
@@ -69,11 +69,11 @@ function applyStyleMappings(dotString: string, nodeMappings: NodeMapping[]): str
  */
 function applyUserNodeMappings(graph: Graph, nodeMappings: NodeMapping[]): void {
   if (nodeMappings && nodeMappings.length > 0) {
-    nodeMappings.forEach(mapping => {
-      const borderColorRules = mapping.rules.filter(r => r.kind === RuleKind.STROKE_COLOR);
-      const fillColorRules = mapping.rules.filter(r => r.kind === RuleKind.FILL_COLOR);
-      
-      borderColorRules.forEach(rule => {
+    nodeMappings.forEach((mapping) => {
+      const borderColorRules = mapping.rules.filter((r) => r.kind === RuleKind.STROKE_COLOR);
+      const fillColorRules = mapping.rules.filter((r) => r.kind === RuleKind.FILL_COLOR);
+
+      borderColorRules.forEach((rule) => {
         if (rule.staticColor) {
           mapping.targetNodeIds.forEach((nodeId: string) => {
             if (graph.hasNode(nodeId)) {
@@ -87,7 +87,7 @@ function applyUserNodeMappings(graph: Graph, nodeMappings: NodeMapping[]): void 
         }
       });
 
-      fillColorRules.forEach(rule => {
+      fillColorRules.forEach((rule) => {
         if (rule.staticColor) {
           mapping.targetNodeIds.forEach((nodeId: string) => {
             if (graph.hasNode(nodeId)) {
@@ -105,7 +105,6 @@ function applyUserNodeMappings(graph: Graph, nodeMappings: NodeMapping[]): void 
   }
 }
 
-
 /**
  * Applies cluster style mappings to all nodes for better readability and padding.
  * Sets reasonable font size, node dimensions, and margins to prevent text overflow
@@ -116,40 +115,39 @@ function applyClusterStyleMappings(graph: Graph): void {
     if (nodeId.startsWith('cluster_')) {
       return;
     }
-    
+
     const nodeData = graph.node(nodeId);
     if (nodeData) {
       const updatedData = { ...nodeData };
-      
+
       if (!updatedData.fontsize) {
         updatedData.fontsize = '15';
       }
-      
+
       if (!updatedData.width) {
         updatedData.width = '1.6';
       }
       if (!updatedData.height) {
         updatedData.height = '0.8';
       }
-      
+
       if (!updatedData.margin) {
         updatedData.margin = '0.015,0.005';
       }
-      
+
       if (!updatedData.fontname) {
         updatedData.fontname = 'Arial';
       }
-      
+
       graph.setNode(nodeId, updatedData);
     }
   });
 }
 
-
 /**
  * Applies data-driven colors from field bindings to nodes and edges.
  * Data-driven colors override static colors.
- * 
+ *
  * @param dotString - The DOT notation string to process
  * @param dataDrivenColors - Colors calculated from data fields and thresholds
  * @returns DOT string with data-driven colors applied
@@ -181,7 +179,7 @@ export function applyDataDrivenColors(dotString: string, dataDrivenColors: DataD
   graph.edges().forEach((edgeObj) => {
     const edgeData = graph.edge(edgeObj);
     const edgeId = edgeData?.id || `${edgeObj.v}__to__${edgeObj.w}`;
-    
+
     const color = dataDrivenColors.edgeColors.get(edgeId);
     if (color) {
       graph.setEdge(edgeObj.v, edgeObj.w, {
@@ -196,7 +194,7 @@ export function applyDataDrivenColors(dotString: string, dataDrivenColors: DataD
 
 /**
  * Applies data-driven widths from width rules to edges.
- * 
+ *
  * @param dotString - The DOT notation string to process
  * @param dataDrivenWidths - Widths calculated from data fields
  * @returns DOT string with widths applied
@@ -207,12 +205,12 @@ export function applyDataDrivenWidths(dotString: string, dataDrivenWidths: DataD
   graph.edges().forEach((edgeObj) => {
     const edgeData = graph.edge(edgeObj);
     const edgeId = edgeData?.id || `${edgeObj.v}__to__${edgeObj.w}`;
-    
+
     const width = dataDrivenWidths.edgeWidths.get(edgeId);
     if (width !== undefined) {
       const clampedWidth = Math.min(Math.max(width, 0.1), 5);
       const arrowSize = Math.min(clampedWidth / 1.0, 1.5);
-      
+
       graph.setEdge(edgeObj.v, edgeObj.w, {
         ...edgeData,
         penwidth: clampedWidth,

@@ -54,11 +54,94 @@
       },
       "id": 1,
       "options": {
-        "dotDiagram": "digraph Network {\n  Start [shape=ellipse, color=green];\n  Gateway [shape=box];\n  End [shape=doublecircle, color=red];\n  \n  Start -> Gateway;\n  Gateway -> End;\n  End -> Gateway;\n  Start -> Backup [dir=none];\n  \n  subgraph cluster_services {\n    label=\"Microservices\";\n    style=rounded;\n    bgcolor=lightblue;\n    \n    API [shape=hexagon];\n    DB [shape=cylinder];\n    Cache;\n    \n    API -> DB;\n    API -> Cache;\n    Cache -> DB [style=dashed];\n  }\n  \n  Gateway -> API;\n  \n  Monitor [shape=triangle, style=filled];\n}",
-        "edgeMappings": [],
+        "dotDiagram": "digraph Network {\n  Start [shape=ellipse];\n  Gateway [shape=box];\n  End [shape=doublecircle];\n  \n  Start -> Gateway;\n  Gateway -> End;\n  End -> Gateway;\n  Start -> Backup [dir=none];\n  \n  subgraph cluster_services {\n    label=\"Microservices\";\n    style=rounded;\n    bgcolor=lightblue;\n    \n    API [shape=hexagon];\n    DB [shape=cylinder];\n    Cache;\n    \n    API -> DB;\n    API -> Cache;\n    Cache -> DB [style=dashed];\n  }\n  \n  Gateway -> API;\n  \n  Monitor [shape=triangle, style=filled];\n}",
+        "edgeMappings": [
+          {
+            "id": "edge-mapping-1",
+            "targetEdgeIds": [
+              "Start__to__Gateway",
+              "Gateway__to__End",
+              "End__to__Gateway",
+              "Gateway__to__API",
+              "API__to__DB",
+              "API__to__Cache",
+              "Cache__to__DB",
+              "Start__to__Backup"
+            ],
+            "rules": [
+              {
+                "kind": "strokeColor",
+                "matchFieldName": "edge",
+                "matchPattern": "${id}",
+                "colorFieldName": "traffic_percentage",
+                "thresholdId": "traffic-threshold"
+              }
+            ]
+          }
+        ],
         "enableNodeTooltips": false,
         "layoutEngine": "dot",
-        "nodeMappings": [],
+        "namedThresholds": [
+          {
+            "id": "traffic-threshold",
+            "name": "Traffic Levels",
+            "steps": [
+              {
+                "color": "#73BF69",
+                "value": 0
+              },
+              {
+                "color": "#FADE2A",
+                "value": 30
+              },
+              {
+                "color": "#FF9830",
+                "value": 60
+              },
+              {
+                "color": "#F2495C",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "id": "node-health",
+            "name": "Node Health",
+            "steps": [
+              {
+                "color": "#F2495C",
+                "value": 0
+              },
+              {
+                "color": "#FF9830",
+                "value": 25
+              },
+              {
+                "color": "#FADE2A",
+                "value": 50
+              },
+              {
+                "color": "#73BF69",
+                "value": 75
+              }
+            ]
+          }
+        ],
+        "nodeMappings": [
+          {
+            "id": "node-mapping-1",
+            "targetNodeIds": ["Start", "Gateway", "End", "API", "DB", "Cache", "Monitor", "Backup"],
+            "rules": [
+              {
+                "kind": "fillColor",
+                "matchFieldName": "node",
+                "matchPattern": "${id}",
+                "colorFieldName": "health",
+                "thresholdId": "node-health"
+              }
+            ]
+          }
+        ],
         "rankDirection": "LR",
         "seriesCountSize": "sm",
         "showSeriesCount": false,
@@ -71,12 +154,140 @@
             "type": "grafana-testdata-datasource",
             "uid": "db84e60d-b92a-4089-82cb-34842fb1754b"
           },
-          "rawFrameContent": "[\n  {\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"Label\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"Value\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"Start_status\", 15],\n      [1609462800000, \"Gateway_status\", 45],\n      [1609466400000, \"End_status\", 85],\n      [1609470000000, \"API_status\", 65],\n      [1609473600000, \"DB_status\", 30],\n      [1609477200000, \"Cache_status\", 50],\n      [1609480800000, \"Monitor_status\", 90],\n      [1609484400000, \"Backup_status\", 20],\n      [1609488000000, \"Start__to__Gateway_traffic_percentage\", 75],\n      [1609491600000, \"Gateway__to__End_traffic_percentage\", 45],\n      [1609495200000, \"End__to__Gateway_traffic_percentage\", 20],\n      [1609498800000, \"Gateway__to__API_traffic_percentage\", 90],\n      [1609502400000, \"API__to__DB_traffic_percentage\", 60],\n      [1609506000000, \"API__to__Cache_traffic_percentage\", 35],\n      [1609509600000, \"Cache__to__DB_traffic_percentage\", 15],\n      [1609513200000, \"Start__to__Gateway_connection_health\", 95],\n      [1609516800000, \"Gateway__to__End_connection_health\", 78],\n      [1609520400000, \"End__to__Gateway_connection_health\", 85],\n      [1609524000000, \"Gateway__to__API_connection_health\", 62],\n      [1609527600000, \"API__to__DB_connection_health\", 88],\n      [1609531200000, \"API__to__Cache_connection_health\", 91],\n      [1609534800000, \"Cache__to__DB_connection_health\", 73]\n    ]\n  }\n]",
+          "rawFrameContent": "[\n  {\n    \"name\": \"Edge Metrics\",\n    \"fields\": [\n      {\n        \"name\": \"Time\",\n        \"type\": \"time\",\n        \"values\": [1609459200000, 1609462800000, 1609466400000, 1609470000000, 1609473600000]\n      },\n      {\n        \"name\": \"traffic_percentage\",\n        \"type\": \"number\",\n        \"labels\": { \"edge\": \"Start__to__Gateway\" },\n        \"values\": [75, 78, 72, 76, 74]\n      },\n      {\n        \"name\": \"latency_ms\",\n        \"type\": \"number\",\n        \"labels\": { \"edge\": \"Start__to__Gateway\" },\n        \"values\": [12, 15, 13, 11, 14]\n      },\n      {\n        \"name\": \"traffic_percentage\",\n        \"type\": \"number\",\n        \"labels\": { \"edge\": \"Gateway__to__End\" },\n        \"values\": [45, 48, 42, 46, 44]\n      },\n      {\n        \"name\": \"latency_ms\",\n        \"type\": \"number\",\n        \"labels\": { \"edge\": \"Gateway__to__End\" },\n        \"values\": [8, 9, 7, 10, 8]\n      },\n      {\n        \"name\": \"traffic_percentage\",\n        \"type\": \"number\",\n        \"labels\": { \"edge\": \"End__to__Gateway\" },\n        \"values\": [20, 22, 18, 21, 19]\n      },\n      {\n        \"name\": \"latency_ms\",\n        \"type\": \"number\",\n        \"labels\": { \"edge\": \"End__to__Gateway\" },\n        \"values\": [5, 6, 4, 7, 5]\n      },\n      {\n        \"name\": \"traffic_percentage\",\n        \"type\": \"number\",\n        \"labels\": { \"edge\": \"Gateway__to__API\" },\n        \"values\": [90, 92, 88, 91, 89]\n      },\n      {\n        \"name\": \"latency_ms\",\n        \"type\": \"number\",\n        \"labels\": { \"edge\": \"Gateway__to__API\" },\n        \"values\": [25, 28, 23, 26, 24]\n      },\n      {\n        \"name\": \"traffic_percentage\",\n        \"type\": \"number\",\n        \"labels\": { \"edge\": \"API__to__DB\" },\n        \"values\": [60, 62, 58, 61, 59]\n      },\n      {\n        \"name\": \"latency_ms\",\n        \"type\": \"number\",\n        \"labels\": { \"edge\": \"API__to__DB\" },\n        \"values\": [18, 20, 17, 19, 18]\n      },\n      {\n        \"name\": \"traffic_percentage\",\n        \"type\": \"number\",\n        \"labels\": { \"edge\": \"API__to__Cache\" },\n        \"values\": [35, 38, 32, 36, 34]\n      },\n      {\n        \"name\": \"latency_ms\",\n        \"type\": \"number\",\n        \"labels\": { \"edge\": \"API__to__Cache\" },\n        \"values\": [3, 4, 2, 5, 3]\n      },\n      {\n        \"name\": \"traffic_percentage\",\n        \"type\": \"number\",\n        \"labels\": { \"edge\": \"Cache__to__DB\" },\n        \"values\": [15, 18, 12, 16, 14]\n      },\n      {\n        \"name\": \"latency_ms\",\n        \"type\": \"number\",\n        \"labels\": { \"edge\": \"Cache__to__DB\" },\n        \"values\": [6, 7, 5, 8, 6]\n      },\n      {\n        \"name\": \"traffic_percentage\",\n        \"type\": \"number\",\n        \"labels\": { \"edge\": \"Start__to__Backup\" },\n        \"values\": [55, 58, 52, 56, 54]\n      },\n      {\n        \"name\": \"latency_ms\",\n        \"type\": \"number\",\n        \"labels\": { \"edge\": \"Start__to__Backup\" },\n        \"values\": [10, 11, 9, 12, 10]\n      }\n    ]\n  },\n  {\n    \"name\": \"Node Metrics\",\n    \"fields\": [\n      {\n        \"name\": \"Time\",\n        \"type\": \"time\",\n        \"values\": [1609459200000, 1609462800000, 1609466400000, 1609470000000, 1609473600000]\n      },\n      {\n        \"name\": \"health\",\n        \"type\": \"number\",\n        \"labels\": { \"node\": \"Start\" },\n        \"values\": [15, 18, 12, 16, 14]\n      },\n      {\n        \"name\": \"cpu_percent\",\n        \"type\": \"number\",\n        \"labels\": { \"node\": \"Start\" },\n        \"values\": [45, 48, 42, 46, 44]\n      },\n      {\n        \"name\": \"health\",\n        \"type\": \"number\",\n        \"labels\": { \"node\": \"Gateway\" },\n        \"values\": [45, 48, 42, 46, 44]\n      },\n      {\n        \"name\": \"cpu_percent\",\n        \"type\": \"number\",\n        \"labels\": { \"node\": \"Gateway\" },\n        \"values\": [55, 58, 52, 56, 54]\n      },\n      {\n        \"name\": \"health\",\n        \"type\": \"number\",\n        \"labels\": { \"node\": \"End\" },\n        \"values\": [85, 88, 82, 86, 84]\n      },\n      {\n        \"name\": \"cpu_percent\",\n        \"type\": \"number\",\n        \"labels\": { \"node\": \"End\" },\n        \"values\": [25, 28, 22, 26, 24]\n      },\n      {\n        \"name\": \"health\",\n        \"type\": \"number\",\n        \"labels\": { \"node\": \"API\" },\n        \"values\": [65, 68, 62, 66, 64]\n      },\n      {\n        \"name\": \"cpu_percent\",\n        \"type\": \"number\",\n        \"labels\": { \"node\": \"API\" },\n        \"values\": [70, 72, 68, 71, 69]\n      },\n      {\n        \"name\": \"health\",\n        \"type\": \"number\",\n        \"labels\": { \"node\": \"DB\" },\n        \"values\": [30, 32, 28, 31, 29]\n      },\n      {\n        \"name\": \"cpu_percent\",\n        \"type\": \"number\",\n        \"labels\": { \"node\": \"DB\" },\n        \"values\": [80, 82, 78, 81, 79]\n      },\n      {\n        \"name\": \"health\",\n        \"type\": \"number\",\n        \"labels\": { \"node\": \"Cache\" },\n        \"values\": [50, 52, 48, 51, 49]\n      },\n      {\n        \"name\": \"cpu_percent\",\n        \"type\": \"number\",\n        \"labels\": { \"node\": \"Cache\" },\n        \"values\": [35, 38, 32, 36, 34]\n      },\n      {\n        \"name\": \"health\",\n        \"type\": \"number\",\n        \"labels\": { \"node\": \"Monitor\" },\n        \"values\": [90, 92, 88, 91, 89]\n      },\n      {\n        \"name\": \"cpu_percent\",\n        \"type\": \"number\",\n        \"labels\": { \"node\": \"Monitor\" },\n        \"values\": [15, 18, 12, 16, 14]\n      },\n      {\n        \"name\": \"health\",\n        \"type\": \"number\",\n        \"labels\": { \"node\": \"Backup\" },\n        \"values\": [20, 22, 18, 21, 19]\n      },\n      {\n        \"name\": \"cpu_percent\",\n        \"type\": \"number\",\n        \"labels\": { \"node\": \"Backup\" },\n        \"values\": [40, 42, 38, 41, 39]\n      }\n    ]\n  }\n]",
           "refId": "A",
           "scenarioId": "raw_frame"
         }
       ],
-      "title": "Digraph (directed graph)",
+      "title": "TIMESERIES Data (labels on fields)",
+      "type": "grafana-mesh-panel"
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
+      "id": 2,
+      "options": {
+        "dotDiagram": "digraph Simple {\n  Start [shape=ellipse];\n  Gateway [shape=box];\n  End [shape=doublecircle];\n  \n  Start -> Gateway;\n  Gateway -> End;\n}",
+        "edgeMappings": [
+          {
+            "id": "edge-mapping-wide",
+            "targetEdgeIds": ["Start__to__Gateway", "Gateway__to__End"],
+            "rules": [
+              {
+                "kind": "strokeColor",
+                "matchFieldName": "edge_id",
+                "matchPattern": "${id}",
+                "colorFieldName": "traffic",
+                "thresholdId": "traffic-threshold"
+              }
+            ]
+          }
+        ],
+        "enableNodeTooltips": false,
+        "layoutEngine": "dot",
+        "namedThresholds": [
+          {
+            "id": "traffic-threshold",
+            "name": "Traffic Levels",
+            "steps": [
+              {
+                "color": "#73BF69",
+                "value": 0
+              },
+              {
+                "color": "#FADE2A",
+                "value": 30
+              },
+              {
+                "color": "#FF9830",
+                "value": 60
+              },
+              {
+                "color": "#F2495C",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "id": "node-health",
+            "name": "Node Health",
+            "steps": [
+              {
+                "color": "#F2495C",
+                "value": 0
+              },
+              {
+                "color": "#FF9830",
+                "value": 25
+              },
+              {
+                "color": "#FADE2A",
+                "value": 50
+              },
+              {
+                "color": "#73BF69",
+                "value": 75
+              }
+            ]
+          }
+        ],
+        "nodeMappings": [
+          {
+            "id": "node-mapping-wide",
+            "targetNodeIds": ["Start", "Gateway", "End"],
+            "rules": [
+              {
+                "kind": "fillColor",
+                "matchFieldName": "node_id",
+                "matchPattern": "${id}",
+                "colorFieldName": "health",
+                "thresholdId": "node-health"
+              }
+            ]
+          }
+        ],
+        "rankDirection": "LR"
+      },
+      "pluginVersion": "1.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "db84e60d-b92a-4089-82cb-34842fb1754b"
+          },
+          "rawFrameContent": "[\n  {\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"node_id\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"health\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"Start\", 25],\n      [1609462800000, \"Gateway\", 55],\n      [1609466400000, \"End\", 85]\n    ]\n  },\n  {\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"edge_id\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"traffic\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"Start__to__Gateway\", 70],\n      [1609462800000, \"Gateway__to__End\", 40]\n    ]\n  }\n]",
+          "refId": "A",
+          "scenarioId": "raw_frame"
+        }
+      ],
+      "title": "WIDE Data (table rows)",
       "type": "grafana-mesh-panel"
     },
     {
@@ -107,15 +318,89 @@
         "h": 14,
         "w": 12,
         "x": 12,
-        "y": 0
+        "y": 14
       },
-      "id": 2,
+      "id": 3,
       "options": {
-        "dotDiagram": "graph Network {\n  A -- B;\n  A -- C;\n  B -- C;\n  B -- D;\n  C -- D;\n  D -- E;\n  E -- F;\n  F -- A;\n  \n  G -- H;\n  H -- I;\n  I -- G;\n  \n  D -- G;\n}",
-        "edgeMappings": [],
+        "dotDiagram": "digraph Mixed {\n  A [shape=ellipse];\n  B [shape=box];\n  C [shape=diamond];\n  D [shape=hexagon];\n  \n  A -> B;\n  B -> C;\n  C -> D;\n  D -> A;\n}",
+        "edgeMappings": [
+          {
+            "id": "edge-mapping-mixed",
+            "targetEdgeIds": ["A__to__B", "B__to__C", "C__to__D", "D__to__A"],
+            "rules": [
+              {
+                "kind": "strokeColor",
+                "matchFieldName": "edge",
+                "matchPattern": "${id}",
+                "colorFieldName": "traffic_percentage",
+                "thresholdId": "traffic-threshold"
+              }
+            ]
+          }
+        ],
         "enableNodeTooltips": false,
-        "layoutEngine": "neato",
-        "nodeMappings": [],
+        "layoutEngine": "dot",
+        "namedThresholds": [
+          {
+            "id": "traffic-threshold",
+            "name": "Traffic Levels",
+            "steps": [
+              {
+                "color": "#73BF69",
+                "value": 0
+              },
+              {
+                "color": "#FADE2A",
+                "value": 30
+              },
+              {
+                "color": "#FF9830",
+                "value": 60
+              },
+              {
+                "color": "#F2495C",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "id": "node-health",
+            "name": "Node Health",
+            "steps": [
+              {
+                "color": "#F2495C",
+                "value": 0
+              },
+              {
+                "color": "#FF9830",
+                "value": 25
+              },
+              {
+                "color": "#FADE2A",
+                "value": 50
+              },
+              {
+                "color": "#73BF69",
+                "value": 75
+              }
+            ]
+          }
+        ],
+        "nodeMappings": [
+          {
+            "id": "node-mapping-mixed",
+            "targetNodeIds": ["A", "B", "C", "D"],
+            "rules": [
+              {
+                "kind": "fillColor",
+                "matchFieldName": "node_id",
+                "matchPattern": "${id}",
+                "colorFieldName": "health",
+                "thresholdId": "node-health"
+              }
+            ]
+          }
+        ],
         "rankDirection": "LR"
       },
       "pluginVersion": "1.0.0",
@@ -125,12 +410,12 @@
             "type": "grafana-testdata-datasource",
             "uid": "db84e60d-b92a-4089-82cb-34842fb1754b"
           },
-          "rawFrameContent": "[\n  {\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"Label\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"Value\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"A\", 10],\n      [1609462800000, \"B\", 20],\n      [1609466400000, \"C\", 15],\n      [1609470000000, \"D\", 25],\n      [1609473600000, \"E\", 30]\n    ]\n  }\n]",
+          "rawFrameContent": "[\n  {\n    \"name\": \"Edge Metrics (Time Series)\",\n    \"fields\": [\n      {\n        \"name\": \"Time\",\n        \"type\": \"time\",\n        \"values\": [1609459200000, 1609462800000, 1609466400000]\n      },\n      {\n        \"name\": \"traffic_percentage\",\n        \"type\": \"number\",\n        \"labels\": { \"edge\": \"A__to__B\" },\n        \"values\": [75, 78, 72]\n      },\n      {\n        \"name\": \"traffic_percentage\",\n        \"type\": \"number\",\n        \"labels\": { \"edge\": \"B__to__C\" },\n        \"values\": [45, 48, 42]\n      },\n      {\n        \"name\": \"traffic_percentage\",\n        \"type\": \"number\",\n        \"labels\": { \"edge\": \"C__to__D\" },\n        \"values\": [90, 92, 88]\n      },\n      {\n        \"name\": \"traffic_percentage\",\n        \"type\": \"number\",\n        \"labels\": { \"edge\": \"D__to__A\" },\n        \"values\": [20, 22, 18]\n      }\n    ]\n  },\n  {\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"node_id\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"health\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"A\", 20],\n      [1609462800000, \"B\", 50],\n      [1609466400000, \"C\", 80],\n      [1609470000000, \"D\", 35]\n    ]\n  }\n]",
           "refId": "A",
           "scenarioId": "raw_frame"
         }
       ],
-      "title": "Graph (undirected graph)",
+      "title": "MIXED Data (timeseries + wide)",
       "type": "grafana-mesh-panel"
     }
   ],

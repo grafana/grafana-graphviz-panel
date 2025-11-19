@@ -19,19 +19,15 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
   };
 
   const removeMapping = (id: string) => {
-    onChange(mappings.filter(mapping => mapping.id !== id));
+    onChange(mappings.filter((mapping) => mapping.id !== id));
   };
 
   const updateMapping = (id: string, updates: Partial<EdgeMapping>) => {
-    onChange(
-      mappings.map(mapping =>
-        mapping.id === id ? { ...mapping, ...updates } : mapping
-      )
-    );
+    onChange(mappings.map((mapping) => (mapping.id === id ? { ...mapping, ...updates } : mapping)));
   };
 
   const addColorRule = (mappingId: string) => {
-    const mapping = mappings.find(m => m.id === mappingId);
+    const mapping = mappings.find((m) => m.id === mappingId);
     if (mapping) {
       const newRule: StrokeColorRule = {
         kind: RuleKind.STROKE_COLOR,
@@ -42,7 +38,7 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
   };
 
   const addWidthRule = (mappingId: string) => {
-    const mapping = mappings.find(m => m.id === mappingId);
+    const mapping = mappings.find((m) => m.id === mappingId);
     if (mapping) {
       const newRule: StrokeWidthRule = {
         kind: RuleKind.STROKE_WIDTH,
@@ -53,17 +49,15 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
   };
 
   const updateRule = (mappingId: string, ruleIndex: number, updates: Partial<Rule>) => {
-    const mapping = mappings.find(m => m.id === mappingId);
+    const mapping = mappings.find((m) => m.id === mappingId);
     if (mapping) {
-      const updatedRules = mapping.rules.map((rule, idx) =>
-        idx === ruleIndex ? { ...rule, ...updates } : rule
-      );
+      const updatedRules = mapping.rules.map((rule, idx) => (idx === ruleIndex ? { ...rule, ...updates } : rule));
       updateMapping(mappingId, { rules: updatedRules });
     }
   };
 
   const removeRule = (mappingId: string, ruleIndex: number) => {
-    const mapping = mappings.find(m => m.id === mappingId);
+    const mapping = mappings.find((m) => m.id === mappingId);
     if (mapping) {
       const updatedRules = mapping.rules.filter((_, idx) => idx !== ruleIndex);
       updateMapping(mappingId, { rules: updatedRules });
@@ -109,9 +103,9 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
               <div style={{ flex: 1 }}>
                 <MultiSelect
                   value={mapping.targetEdgeIds}
-                  options={availableEdgeIds.map(id => ({ label: id, value: id }))}
+                  options={availableEdgeIds.map((id) => ({ label: id, value: id }))}
                   onChange={(selections) => {
-                    const selectedIds = selections.map(s => s.value!);
+                    const selectedIds = selections.map((s) => s.value!);
                     updateMapping(mapping.id, { targetEdgeIds: selectedIds });
                   }}
                   placeholder="Select edges..."
@@ -132,7 +126,12 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
             <div key={ruleIndex} className={ruleContainerStyle}>
               <div className={headerStyle}>
                 <strong>{rule.kind === RuleKind.STROKE_COLOR ? 'Border Color Rule' : 'Width Rule'}</strong>
-                <IconButton name="trash-alt" onClick={() => removeRule(mapping.id, ruleIndex)} tooltip="Remove rule" size="sm" />
+                <IconButton
+                  name="trash-alt"
+                  onClick={() => removeRule(mapping.id, ruleIndex)}
+                  tooltip="Remove rule"
+                  size="sm"
+                />
               </div>
 
               {rule.kind === RuleKind.STROKE_COLOR && (
@@ -141,12 +140,14 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
                     <Select
                       value={rule.matchFieldName}
                       options={[{ label: 'None (static color)', value: undefined }, ...stringFields]}
-                      onChange={(selection) => updateRule(mapping.id, ruleIndex, {
-                        matchFieldName: selection.value,
-                        matchValue: undefined,
-                        matchPattern: undefined,
-                        colorFieldName: undefined,
-                      })}
+                      onChange={(selection) =>
+                        updateRule(mapping.id, ruleIndex, {
+                          matchFieldName: selection.value,
+                          matchValue: undefined,
+                          matchPattern: undefined,
+                          colorFieldName: undefined,
+                        })
+                      }
                       placeholder="Select match field..."
                       isClearable
                     />
@@ -176,24 +177,32 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
                           <Select
                             value={rule.colorFieldName}
                             options={numericFields}
-                            onChange={(selection) => updateRule(mapping.id, ruleIndex, { colorFieldName: selection.value })}
+                            onChange={(selection) =>
+                              updateRule(mapping.id, ruleIndex, { colorFieldName: selection.value })
+                            }
                             placeholder="Select color field..."
                           />
                         </Field>
                       )}
-                      {numericFields.length === 1 && !rule.colorFieldName && (
+                      {numericFields.length === 1 &&
+                        !rule.colorFieldName &&
                         (() => {
                           updateRule(mapping.id, ruleIndex, { colorFieldName: numericFields[0].value });
                           return null;
-                        })()
-                      )}
+                        })()}
 
-                      <Field label="Threshold Set" description="Optional: Use a named threshold set instead of field config thresholds">
+                      <Field
+                        label="Threshold Set"
+                        description="Optional: Use a named threshold set instead of field config thresholds"
+                      >
                         <Select
                           value={rule.thresholdId}
                           options={[
                             { label: 'Use panel default thresholds', value: undefined },
-                            ...(context.options?.namedThresholds || []).map(t => ({ label: t.name, value: t.id }))
+                            ...(context.options?.namedThresholds || []).map((t: any) => ({
+                              label: t.name,
+                              value: t.id,
+                            })),
                           ]}
                           onChange={(selection) => updateRule(mapping.id, ruleIndex, { thresholdId: selection.value })}
                           placeholder="Field config thresholds"
@@ -220,12 +229,14 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
                     <Select
                       value={rule.matchFieldName}
                       options={[{ label: 'None (static width)', value: undefined }, ...stringFields]}
-                      onChange={(selection) => updateRule(mapping.id, ruleIndex, {
-                        matchFieldName: selection.value,
-                        matchValue: undefined,
-                        matchPattern: undefined,
-                        widthFieldName: undefined,
-                      })}
+                      onChange={(selection) =>
+                        updateRule(mapping.id, ruleIndex, {
+                          matchFieldName: selection.value,
+                          matchValue: undefined,
+                          matchPattern: undefined,
+                          widthFieldName: undefined,
+                        })
+                      }
                       placeholder="Select match field..."
                       isClearable
                     />
@@ -255,17 +266,19 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
                           <Select
                             value={rule.widthFieldName}
                             options={numericFields}
-                            onChange={(selection) => updateRule(mapping.id, ruleIndex, { widthFieldName: selection.value })}
+                            onChange={(selection) =>
+                              updateRule(mapping.id, ruleIndex, { widthFieldName: selection.value })
+                            }
                             placeholder="Select width field..."
                           />
                         </Field>
                       )}
-                      {numericFields.length === 1 && !rule.widthFieldName && (
+                      {numericFields.length === 1 &&
+                        !rule.widthFieldName &&
                         (() => {
                           updateRule(mapping.id, ruleIndex, { widthFieldName: numericFields[0].value });
                           return null;
-                        })()
-                      )}
+                        })()}
                     </>
                   )}
 
@@ -274,7 +287,9 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
                       <input
                         type="number"
                         value={rule.staticWidth || 1}
-                        onChange={(e) => updateRule(mapping.id, ruleIndex, { staticWidth: parseFloat(e.target.value) || 1 })}
+                        onChange={(e) =>
+                          updateRule(mapping.id, ruleIndex, { staticWidth: parseFloat(e.target.value) || 1 })
+                        }
                         min={0.1}
                         max={5}
                         step={0.5}
@@ -338,16 +353,22 @@ function extractStringFields(data: any): Array<SelectableValue<string>> {
   }
 
   const stringFields = new Set<string>();
-  
+
   data.forEach((frame: any) => {
     frame.fields?.forEach((field: any) => {
       if (field.name && field.type === 'string') {
         stringFields.add(field.name);
       }
+
+      if (field.labels) {
+        Object.keys(field.labels).forEach((labelName: string) => {
+          stringFields.add(labelName);
+        });
+      }
     });
   });
 
-  return Array.from(stringFields).map(name => ({
+  return Array.from(stringFields).map((name) => ({
     label: name,
     value: name,
   }));
@@ -359,19 +380,21 @@ function extractNumericFields(data: any): Array<SelectableValue<string>> {
   }
 
   const numericFields = new Set<string>();
-  
+
   data.forEach((frame: any) => {
     frame.fields?.forEach((field: any) => {
       if (field.name && field.type === 'number') {
         numericFields.add(field.name);
       }
+
+      if (field.labels) {
+        numericFields.add(`__${field.name}`);
+      }
     });
   });
 
-  return Array.from(numericFields).map(name => ({
+  return Array.from(numericFields).map((name) => ({
     label: name,
     value: name,
   }));
 }
-
-

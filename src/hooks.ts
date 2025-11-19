@@ -4,7 +4,12 @@ import * as d3 from 'd3-selection';
 import { validateDotSyntax, ValidationErrorInfo } from './validation';
 import { sanitizeDotColors, normalizeNodePathStyling } from './sanitization';
 import { deriveEdgeIds } from './enhancements';
-import { applyEdgeStyleMappings, applyNodeStyleMappings, applyDataDrivenColors, applyDataDrivenWidths } from './mappings';
+import {
+  applyEdgeStyleMappings,
+  applyNodeStyleMappings,
+  applyDataDrivenColors,
+  applyDataDrivenWidths,
+} from './mappings';
 import { processDataFieldBindings, processWidthRules } from './data';
 import { renderDotToSvg } from './dot';
 import { applySvgTheming } from './theming';
@@ -17,12 +22,15 @@ export interface RenderError {
 
 /**
  * Hook that fetches DOT diagram content from a URL.
- * 
+ *
  * @param url - The URL to fetch the DOT diagram from
  * @param sourceType - The source type (user input or URL)
  * @returns Object containing the fetched content, loading state, and any error
  */
-export function useFetchDotFromUrl(url: string | undefined, sourceType: DiagramSourceType): {
+export function useFetchDotFromUrl(
+  url: string | undefined,
+  sourceType: DiagramSourceType
+): {
   dotContent: string | null;
   isLoading: boolean;
   fetchError: string | null;
@@ -42,19 +50,19 @@ export function useFetchDotFromUrl(url: string | undefined, sourceType: DiagramS
     const fetchDotContent = async () => {
       setIsLoading(true);
       setFetchError(null);
-      
+
       try {
         const response = await fetch(url);
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status} ${response.statusText}`);
         }
-        
+
         const contentType = response.headers.get('content-type');
         if (contentType && !contentType.includes('text') && !contentType.includes('application/octet-stream')) {
           throw new Error(`Invalid content type: ${contentType}. Expected text content.`);
         }
-        
+
         const text = await response.text();
         setDotContent(text);
       } catch (error) {
@@ -75,7 +83,7 @@ export function useFetchDotFromUrl(url: string | undefined, sourceType: DiagramS
 /**
  * Hook that orchestrates the DOT diagram rendering pipeline.
  * Handles validation, enhancements, rendering DOT to SVG, and applying Grafana theme styling.
- * 
+ *
  * @param svgRef - React ref to the container element where SVG will be rendered
  * @param dotDiagram - The DOT notation string to render
  * @param rankDirection - The direction of the graph layout (TB, BT, LR, RL)
@@ -108,7 +116,7 @@ export function useThemedDotSvg(
     const renderPipeline = async () => {
       try {
         const validationResult = await validateDotSyntax(dotDiagram);
-        
+
         if (!validationResult.isValid) {
           setRenderError({
             message: validationResult.error || 'Unknown error',
@@ -121,13 +129,20 @@ export function useThemedDotSvg(
         const dotWithEdgeIds = deriveEdgeIds(sanitizedDot);
         const dotWithEdgeStyles = applyEdgeStyleMappings(dotWithEdgeIds, edgeMappings);
         const dotWithNodeStyles = applyNodeStyleMappings(dotWithEdgeStyles, nodeMappings);
-        
-        const dataDrivenColors = processDataFieldBindings(data, fieldConfig, nodeMappings, edgeMappings, namedThresholds, theme);
+
+        const dataDrivenColors = processDataFieldBindings(
+          data,
+          fieldConfig,
+          nodeMappings,
+          edgeMappings,
+          namedThresholds,
+          theme
+        );
         const dotWithDataColors = applyDataDrivenColors(dotWithNodeStyles, dataDrivenColors);
-        
+
         const dataDrivenWidths = processWidthRules(data, edgeMappings);
         const dotWithDataWidths = applyDataDrivenWidths(dotWithDataColors, dataDrivenWidths);
-        
+
         const svg = await renderDotToSvg(dotWithDataWidths, layoutEngine, rankDirection);
 
         if (!svgRef.current) {
@@ -142,7 +157,7 @@ export function useThemedDotSvg(
           normalizeNodePathStyling(d3Svg);
           applySvgTheming(svgElement, theme);
         }
-        
+
         setRenderError(null);
       } catch (error) {
         // TODO: Emit error event telemetry in this case
@@ -154,8 +169,18 @@ export function useThemedDotSvg(
     };
 
     renderPipeline();
-  }, [dotDiagram, layoutEngine, rankDirection, edgeMappings, nodeMappings, data, fieldConfig, theme, svgRef]);
+  }, [
+    dotDiagram,
+    layoutEngine,
+    rankDirection,
+    edgeMappings,
+    nodeMappings,
+    namedThresholds,
+    data,
+    fieldConfig,
+    theme,
+    svgRef,
+  ]);
 
   return renderError;
 }
-

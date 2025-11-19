@@ -26,6 +26,12 @@ export enum RuleKind {
   STROKE_WIDTH = 'strokeWidth',
 }
 
+export enum DataFormatStrategy {
+  WIDE = 'wide',
+  TIMESERIES = 'timeseries',
+  MIXED = 'mixed',
+}
+
 export interface ThresholdStep {
   color: string;
   value: number;
