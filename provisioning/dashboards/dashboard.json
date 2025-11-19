@@ -68,18 +68,17 @@
               "Cache__to__DB",
               "Start__to__Backup"
             ],
+            "matchFieldName": "edge",
+            "matchPattern": "${id}",
             "rules": [
               {
                 "kind": "strokeColor",
-                "matchFieldName": "edge",
-                "matchPattern": "${id}",
                 "colorFieldName": "traffic_percentage",
                 "thresholdId": "traffic-threshold"
               }
             ]
           }
         ],
-        "enableNodeTooltips": false,
         "layoutEngine": "dot",
         "namedThresholds": [
           {
@@ -131,11 +130,11 @@
           {
             "id": "node-mapping-1",
             "targetNodeIds": ["Start", "Gateway", "End", "API", "DB", "Cache", "Monitor", "Backup"],
+            "matchFieldName": "node",
+            "matchPattern": "${id}",
             "rules": [
               {
                 "kind": "fillColor",
-                "matchFieldName": "node",
-                "matchPattern": "${id}",
                 "colorFieldName": "health",
                 "thresholdId": "node-health"
               }
@@ -199,18 +198,17 @@
           {
             "id": "edge-mapping-wide",
             "targetEdgeIds": ["Start__to__Gateway", "Gateway__to__End"],
+            "matchFieldName": "edge_id",
+            "matchPattern": "${id}",
             "rules": [
               {
                 "kind": "strokeColor",
-                "matchFieldName": "edge_id",
-                "matchPattern": "${id}",
                 "colorFieldName": "traffic",
                 "thresholdId": "traffic-threshold"
               }
             ]
           }
         ],
-        "enableNodeTooltips": false,
         "layoutEngine": "dot",
         "namedThresholds": [
           {
@@ -262,11 +260,11 @@
           {
             "id": "node-mapping-wide",
             "targetNodeIds": ["Start", "Gateway", "End"],
+            "matchFieldName": "node_id",
+            "matchPattern": "${id}",
             "rules": [
               {
                 "kind": "fillColor",
-                "matchFieldName": "node_id",
-                "matchPattern": "${id}",
                 "colorFieldName": "health",
                 "thresholdId": "node-health"
               }
@@ -327,18 +325,17 @@
           {
             "id": "edge-mapping-mixed",
             "targetEdgeIds": ["A__to__B", "B__to__C", "C__to__D", "D__to__A"],
+            "matchFieldName": "edge",
+            "matchPattern": "${id}",
             "rules": [
               {
                 "kind": "strokeColor",
-                "matchFieldName": "edge",
-                "matchPattern": "${id}",
                 "colorFieldName": "traffic_percentage",
                 "thresholdId": "traffic-threshold"
               }
             ]
           }
         ],
-        "enableNodeTooltips": false,
         "layoutEngine": "dot",
         "namedThresholds": [
           {
@@ -390,11 +387,11 @@
           {
             "id": "node-mapping-mixed",
             "targetNodeIds": ["A", "B", "C", "D"],
+            "matchFieldName": "node_id",
+            "matchPattern": "${id}",
             "rules": [
               {
                 "kind": "fillColor",
-                "matchFieldName": "node_id",
-                "matchPattern": "${id}",
                 "colorFieldName": "health",
                 "thresholdId": "node-health"
               }

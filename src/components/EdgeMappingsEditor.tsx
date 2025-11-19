@@ -122,6 +122,47 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
             </div>
           </Field>
 
+          <Field label="Match Field (Optional)">
+            <Select
+              value={mapping.matchFieldName}
+              options={[{ label: 'None (static styling)', value: undefined }, ...stringFields]}
+              onChange={(selection) =>
+                updateMapping(mapping.id, {
+                  matchFieldName: selection.value,
+                  matchValue: undefined,
+                  matchPattern: undefined,
+                  rules: mapping.rules.map((rule) => ({
+                    ...rule,
+                    colorFieldName: undefined,
+                    widthFieldName: undefined,
+                    thresholdId: undefined,
+                  })),
+                })
+              }
+              placeholder="Select match field..."
+              isClearable
+            />
+          </Field>
+
+          {mapping.matchFieldName && (
+            <Field label="Match Value" description='Use "${id}" to match edge ID, or enter specific value'>
+              <input
+                type="text"
+                value={mapping.matchPattern || mapping.matchValue || ''}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value.includes('${id}')) {
+                    updateMapping(mapping.id, { matchPattern: value, matchValue: undefined });
+                  } else {
+                    updateMapping(mapping.id, { matchValue: value, matchPattern: undefined });
+                  }
+                }}
+                placeholder='Enter "${id}" or specific value...'
+                style={{ width: '100%', padding: '6px', fontFamily: 'monospace' }}
+              />
+            </Field>
+          )}
+
           {mapping.rules.map((rule, ruleIndex) => (
             <div key={ruleIndex} className={ruleContainerStyle}>
               <div className={headerStyle}>
@@ -136,42 +177,8 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
 
               {rule.kind === RuleKind.STROKE_COLOR && (
                 <>
-                  <Field label="Match Field (Optional)">
-                    <Select
-                      value={rule.matchFieldName}
-                      options={[{ label: 'None (static color)', value: undefined }, ...stringFields]}
-                      onChange={(selection) =>
-                        updateRule(mapping.id, ruleIndex, {
-                          matchFieldName: selection.value,
-                          matchValue: undefined,
-                          matchPattern: undefined,
-                          colorFieldName: undefined,
-                        })
-                      }
-                      placeholder="Select match field..."
-                      isClearable
-                    />
-                  </Field>
-
-                  {rule.matchFieldName && (
+                  {mapping.matchFieldName ? (
                     <>
-                      <Field label="Match Value" description='Use "${id}" to match edge ID, or enter specific value'>
-                        <input
-                          type="text"
-                          value={rule.matchPattern || rule.matchValue || ''}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (value.includes('${id}')) {
-                              updateRule(mapping.id, ruleIndex, { matchPattern: value, matchValue: undefined });
-                            } else {
-                              updateRule(mapping.id, ruleIndex, { matchValue: value, matchPattern: undefined });
-                            }
-                          }}
-                          placeholder='Enter "${id}" or specific value...'
-                          style={{ width: '100%', padding: '6px', fontFamily: 'monospace' }}
-                        />
-                      </Field>
-
                       {numericFields.length > 1 && (
                         <Field label="Color Field">
                           <Select
@@ -210,9 +217,7 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
                         />
                       </Field>
                     </>
-                  )}
-
-                  {!rule.matchFieldName && (
+                  ) : (
                     <Field label="Static Color">
                       <ColorPicker
                         color={rule.staticColor || '#FF0000'}
@@ -225,42 +230,8 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
 
               {rule.kind === RuleKind.STROKE_WIDTH && (
                 <>
-                  <Field label="Match Field (Optional)">
-                    <Select
-                      value={rule.matchFieldName}
-                      options={[{ label: 'None (static width)', value: undefined }, ...stringFields]}
-                      onChange={(selection) =>
-                        updateRule(mapping.id, ruleIndex, {
-                          matchFieldName: selection.value,
-                          matchValue: undefined,
-                          matchPattern: undefined,
-                          widthFieldName: undefined,
-                        })
-                      }
-                      placeholder="Select match field..."
-                      isClearable
-                    />
-                  </Field>
-
-                  {rule.matchFieldName && (
+                  {mapping.matchFieldName ? (
                     <>
-                      <Field label="Match Value" description='Use "${id}" to match edge ID, or enter specific value'>
-                        <input
-                          type="text"
-                          value={rule.matchPattern || rule.matchValue || ''}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (value.includes('${id}')) {
-                              updateRule(mapping.id, ruleIndex, { matchPattern: value, matchValue: undefined });
-                            } else {
-                              updateRule(mapping.id, ruleIndex, { matchValue: value, matchPattern: undefined });
-                            }
-                          }}
-                          placeholder='Enter "${id}" or specific value...'
-                          style={{ width: '100%', padding: '6px', fontFamily: 'monospace' }}
-                        />
-                      </Field>
-
                       {numericFields.length > 1 && (
                         <Field label="Width Field">
                           <Select
@@ -280,9 +251,7 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
                           return null;
                         })()}
                     </>
-                  )}
-
-                  {!rule.matchFieldName && (
+                  ) : (
                     <Field label="Static Width (px)">
                       <input
                         type="number"

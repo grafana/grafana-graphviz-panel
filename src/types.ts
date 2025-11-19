@@ -45,9 +45,6 @@ export interface NamedThreshold {
 
 export interface StrokeColorRule {
   kind: RuleKind.STROKE_COLOR;
-  matchFieldName?: string;
-  matchValue?: string;
-  matchPattern?: string;
   colorFieldName?: string;
   thresholdId?: string;
   staticColor?: string;
@@ -55,9 +52,6 @@ export interface StrokeColorRule {
 
 export interface FillColorRule {
   kind: RuleKind.FILL_COLOR;
-  matchFieldName?: string;
-  matchValue?: string;
-  matchPattern?: string;
   colorFieldName?: string;
   thresholdId?: string;
   staticColor?: string;
@@ -65,9 +59,6 @@ export interface FillColorRule {
 
 export interface StrokeWidthRule {
   kind: RuleKind.STROKE_WIDTH;
-  matchFieldName?: string;
-  matchValue?: string;
-  matchPattern?: string;
   widthFieldName?: string;
   staticWidth?: number;
 }
@@ -77,12 +68,18 @@ export type Rule = StrokeColorRule | FillColorRule | StrokeWidthRule;
 export interface EdgeMapping {
   id: string;
   targetEdgeIds: string[];
+  matchFieldName?: string;
+  matchValue?: string;
+  matchPattern?: string;
   rules: Rule[];
 }
 
 export interface NodeMapping {
   id: string;
   targetNodeIds: string[];
+  matchFieldName?: string;
+  matchValue?: string;
+  matchPattern?: string;
   rules: Rule[];
 }
 

@@ -64,14 +64,16 @@ export function processDataFieldBindings(
     const fillColorRules = mapping.rules.filter((r) => r.kind === RuleKind.FILL_COLOR);
 
     borderColorRules.forEach((rule) => {
-      if (rule.matchFieldName && rule.colorFieldName) {
+      if (mapping.matchFieldName && rule.colorFieldName) {
         mapping.targetNodeIds.forEach((nodeId: string) => {
-          const matchValue = rule.matchPattern ? rule.matchPattern.replace(/\$\{id\}/g, nodeId) : rule.matchValue;
+          const matchValue = mapping.matchPattern
+            ? mapping.matchPattern.replace(/\$\{id\}/g, nodeId)
+            : mapping.matchValue;
 
-          if (matchValue && rule.matchFieldName && rule.colorFieldName) {
+          if (matchValue && mapping.matchFieldName && rule.colorFieldName) {
             const color = extractColorValue(
               data.series,
-              rule.matchFieldName,
+              mapping.matchFieldName,
               matchValue,
               rule.colorFieldName,
               fieldConfig,
@@ -89,14 +91,16 @@ export function processDataFieldBindings(
     });
 
     fillColorRules.forEach((rule) => {
-      if (rule.matchFieldName && rule.colorFieldName) {
+      if (mapping.matchFieldName && rule.colorFieldName) {
         mapping.targetNodeIds.forEach((nodeId: string) => {
-          const matchValue = rule.matchPattern ? rule.matchPattern.replace(/\$\{id\}/g, nodeId) : rule.matchValue;
+          const matchValue = mapping.matchPattern
+            ? mapping.matchPattern.replace(/\$\{id\}/g, nodeId)
+            : mapping.matchValue;
 
-          if (matchValue && rule.matchFieldName && rule.colorFieldName) {
+          if (matchValue && mapping.matchFieldName && rule.colorFieldName) {
             const color = extractColorValue(
               data.series,
-              rule.matchFieldName,
+              mapping.matchFieldName,
               matchValue,
               rule.colorFieldName,
               fieldConfig,
@@ -118,14 +122,16 @@ export function processDataFieldBindings(
     const colorRules = mapping.rules.filter((r) => r.kind === RuleKind.STROKE_COLOR);
 
     colorRules.forEach((rule) => {
-      if (rule.matchFieldName && rule.colorFieldName) {
+      if (mapping.matchFieldName && rule.colorFieldName) {
         mapping.targetEdgeIds.forEach((edgeId: string) => {
-          const matchValue = rule.matchPattern ? rule.matchPattern.replace(/\$\{id\}/g, edgeId) : rule.matchValue;
+          const matchValue = mapping.matchPattern
+            ? mapping.matchPattern.replace(/\$\{id\}/g, edgeId)
+            : mapping.matchValue;
 
-          if (matchValue && rule.matchFieldName && rule.colorFieldName) {
+          if (matchValue && mapping.matchFieldName && rule.colorFieldName) {
             const color = extractColorValue(
               data.series,
-              rule.matchFieldName,
+              mapping.matchFieldName,
               matchValue,
               rule.colorFieldName,
               fieldConfig,
@@ -160,12 +166,14 @@ export function processWidthRules(data: PanelData, edgeMappings: EdgeMapping[]):
     const widthRules = mapping.rules.filter((r) => r.kind === RuleKind.STROKE_WIDTH);
 
     widthRules.forEach((rule) => {
-      if (rule.matchFieldName && rule.widthFieldName) {
+      if (mapping.matchFieldName && rule.widthFieldName) {
         mapping.targetEdgeIds.forEach((edgeId: string) => {
-          const matchValue = rule.matchPattern ? rule.matchPattern.replace(/\$\{id\}/g, edgeId) : rule.matchValue;
+          const matchValue = mapping.matchPattern
+            ? mapping.matchPattern.replace(/\$\{id\}/g, edgeId)
+            : mapping.matchValue;
 
-          if (matchValue && rule.matchFieldName && rule.widthFieldName) {
-            const width = extractWidthValue(data.series, rule.matchFieldName, matchValue, rule.widthFieldName);
+          if (matchValue && mapping.matchFieldName && rule.widthFieldName) {
+            const width = extractWidthValue(data.series, mapping.matchFieldName, matchValue, rule.widthFieldName);
 
             if (width !== undefined) {
               edgeWidths.set(edgeId, width);
