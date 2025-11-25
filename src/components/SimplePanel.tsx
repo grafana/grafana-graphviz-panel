@@ -1,11 +1,12 @@
-import React, { useRef } from 'react';
+import React, { useRef, useCallback } from 'react';
 import { PanelProps } from '@grafana/data';
-import { SimpleOptions, DiagramSourceType } from 'types';
+import { SimpleOptions, DiagramSourceType, InputMode } from 'types';
 import { css, cx } from '@emotion/css';
 import { useStyles2, useTheme2 } from '@grafana/ui';
 import { PanelDataErrorView } from '@grafana/runtime';
 import { useThemedDotSvg, useFetchDotFromUrl } from '../hooks';
 import { ErrorDisplay } from './ErrorDisplay';
+import { BuilderModeOverlay } from './BuilderModeOverlay';
 
 interface Props extends PanelProps<SimpleOptions> {}
 
@@ -29,7 +30,16 @@ const getStyles = () => {
   };
 };
 
-export const SimplePanel: React.FC<Props> = ({ options, data, width, height, fieldConfig, id, eventBus }) => {
+export const SimplePanel: React.FC<Props> = ({
+  options,
+  data,
+  width,
+  height,
+  fieldConfig,
+  id,
+  eventBus,
+  onOptionsChange,
+}) => {
   const styles = useStyles2(getStyles);
   const theme = useTheme2();
   const svgRef = useRef<HTMLDivElement>(null);
@@ -39,7 +49,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height, fie
 
   const { dotContent, isLoading, fetchError } = useFetchDotFromUrl(
     options.dotDiagramUrl,
-    options.diagramSourceType || DiagramSourceType.CODE
+    options.diagramSourceType || DiagramSourceType.INLINE
   );
 
   const effectiveDotDiagram =
@@ -58,6 +68,26 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height, fie
     theme,
     isEditMode
   );
+
+  const handleDotChange = useCallback(
+    (newDotDiagram: string) => {
+      onOptionsChange({
+        ...options,
+        dotDiagram: newDotDiagram,
+      });
+    },
+    [options, onOptionsChange]
+  );
+
+  const handleClearTriggers = useCallback(() => {
+    onOptionsChange({
+      ...options,
+      builderModeActions: {
+        addNodeTrigger: undefined,
+        addEdgeTrigger: undefined,
+      },
+    });
+  }, [options, onOptionsChange]);
 
   if (data.series.length === 0) {
     return <PanelDataErrorView fieldConfig={fieldConfig} panelId={id} data={data} needsStringField />;
@@ -90,6 +120,9 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height, fie
     return <ErrorDisplay errorMessage={renderError.message} errorInfo={renderError.errorInfo} />;
   }
 
+  const isBuilderMode =
+    options.diagramSourceType === DiagramSourceType.INLINE && options.inputMode === InputMode.BUILDER && isEditMode;
+
   return (
     <div
       className={cx(
@@ -111,6 +144,16 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height, fie
           alignItems: 'center',
         }}
       />
+      {isBuilderMode && (
+        <BuilderModeOverlay
+          svgRef={svgRef}
+          dotDiagram={options.dotDiagram}
+          onChange={handleDotChange}
+          onClearTriggers={handleClearTriggers}
+          addNodeTrigger={options.builderModeActions?.addNodeTrigger}
+          addEdgeTrigger={options.builderModeActions?.addEdgeTrigger}
+        />
+      )}
     </div>
   );
 };

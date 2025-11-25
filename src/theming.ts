@@ -109,8 +109,9 @@ export function applySvgTheming(svgElement: SVGSVGElement, theme: GrafanaTheme2,
   if (isEditMode) {
     svg.selectAll('g.node').each(function () {
       const nodeGroup = d3.select(this);
+      const existingTitle = nodeGroup.select('title');
+      const nodeId = existingTitle.text() || 'Unknown';
       nodeGroup.selectAll('title').remove();
-      const nodeId = nodeGroup.select('text').text() || 'Unknown';
       nodeGroup.append('title').text(`Node ID: ${nodeId}`);
     });
 

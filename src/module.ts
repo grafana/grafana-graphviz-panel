@@ -1,7 +1,8 @@
 import { PanelPlugin } from '@grafana/data';
-import { SimpleOptions, RankDirection, LayoutEngine, DiagramSourceType } from './types';
+import { SimpleOptions, RankDirection, LayoutEngine, DiagramSourceType, InputMode } from './types';
 import { SimplePanel } from './components/SimplePanel';
 import { DotDiagramEditor } from './components/DotDiagramEditor';
+import { BuilderModeEditor } from './components/BuilderModeEditor';
 import { NamedThresholdsEditor } from './components/NamedThresholdsEditor';
 import { EdgeMappingsEditor } from './components/EdgeMappingsEditor';
 import { NodeMappingsEditor } from './components/NodeMappingsEditor';
@@ -12,16 +13,35 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
       path: 'diagramSourceType',
       name: 'Diagram Source',
       description: 'Choose whether to enter the DOT diagram directly or load it from a URL',
-      defaultValue: DiagramSourceType.CODE,
+      defaultValue: DiagramSourceType.INLINE,
       settings: {
         options: [
           {
-            value: DiagramSourceType.CODE,
-            label: 'Code',
+            value: DiagramSourceType.INLINE,
+            label: 'Inline',
           },
           {
             value: DiagramSourceType.URL,
             label: 'URL',
+          },
+        ],
+      },
+    })
+    .addRadio({
+      path: 'inputMode',
+      name: 'Input Mode',
+      description: 'Choose how to create the diagram',
+      defaultValue: InputMode.CODE,
+      showIf: (options) => options.diagramSourceType === DiagramSourceType.INLINE,
+      settings: {
+        options: [
+          {
+            value: InputMode.CODE,
+            label: 'Code',
+          },
+          {
+            value: InputMode.BUILDER,
+            label: 'Builder',
           },
         ],
       },
@@ -33,7 +53,20 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
       description: 'Enter DOT syntax diagram definition. Supports multi-line input for copy-pasting DOT diagrams.',
       defaultValue: 'digraph {\n  A -> B;\n  B -> A;\n  C -> A;\n}',
       editor: DotDiagramEditor,
-      showIf: (options) => options.diagramSourceType === DiagramSourceType.CODE || !options.diagramSourceType,
+      showIf: (options) =>
+        (options.diagramSourceType === DiagramSourceType.INLINE || !options.diagramSourceType) &&
+        (options.inputMode === InputMode.CODE || !options.inputMode),
+    })
+    .addCustomEditor({
+      id: 'builderModeActions',
+      path: 'builderModeActions',
+      name: 'Builder Actions',
+      description: 'Add nodes and edges to the diagram',
+      defaultValue: {},
+      editor: BuilderModeEditor,
+      showIf: (options) =>
+        (options.diagramSourceType === DiagramSourceType.INLINE || !options.diagramSourceType) &&
+        options.inputMode === InputMode.BUILDER,
     })
     .addTextInput({
       path: 'dotDiagramUrl',

@@ -1,6 +1,6 @@
 import React from 'react';
 import { StandardEditorProps, SelectableValue } from '@grafana/data';
-import { Button, Field, MultiSelect, ColorPicker, IconButton, Select } from '@grafana/ui';
+import { Button, Field, MultiSelect, ColorPicker, IconButton, Combobox } from '@grafana/ui';
 import { EdgeMapping, StrokeColorRule, StrokeWidthRule, Rule, RuleKind } from '../types';
 import { css } from '@emotion/css';
 
@@ -123,12 +123,12 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
           </Field>
 
           <Field label="Match Field (Optional)">
-            <Select
+            <Combobox
               value={mapping.matchFieldName}
-              options={[{ label: 'None (static styling)', value: undefined }, ...stringFields]}
-              onChange={(selection) =>
+              options={stringFields as any}
+              onChange={(selection: any) =>
                 updateMapping(mapping.id, {
-                  matchFieldName: selection.value,
+                  matchFieldName: selection?.value as string | undefined,
                   matchValue: undefined,
                   matchPattern: undefined,
                   rules: mapping.rules.map((rule) => ({
@@ -181,11 +181,11 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
                     <>
                       {numericFields.length > 1 && (
                         <Field label="Color Field">
-                          <Select
+                          <Combobox
                             value={rule.colorFieldName}
-                            options={numericFields}
-                            onChange={(selection) =>
-                              updateRule(mapping.id, ruleIndex, { colorFieldName: selection.value })
+                            options={numericFields as any}
+                            onChange={(selection: any) =>
+                              updateRule(mapping.id, ruleIndex, { colorFieldName: selection?.value })
                             }
                             placeholder="Select color field..."
                           />
@@ -202,16 +202,19 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
                         label="Threshold Set"
                         description="Optional: Use a named threshold set instead of field config thresholds"
                       >
-                        <Select
+                        <Combobox
                           value={rule.thresholdId}
-                          options={[
-                            { label: 'Use panel default thresholds', value: undefined },
-                            ...(context.options?.namedThresholds || []).map((t: any) => ({
-                              label: t.name,
-                              value: t.id,
-                            })),
-                          ]}
-                          onChange={(selection) => updateRule(mapping.id, ruleIndex, { thresholdId: selection.value })}
+                          options={
+                            [
+                              ...(context.options?.namedThresholds || []).map((t: any) => ({
+                                label: t.name,
+                                value: t.id,
+                              })),
+                            ] as any
+                          }
+                          onChange={(selection: any) =>
+                            updateRule(mapping.id, ruleIndex, { thresholdId: selection?.value })
+                          }
                           placeholder="Field config thresholds"
                           isClearable
                         />
@@ -234,11 +237,11 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
                     <>
                       {numericFields.length > 1 && (
                         <Field label="Width Field">
-                          <Select
+                          <Combobox
                             value={rule.widthFieldName}
-                            options={numericFields}
-                            onChange={(selection) =>
-                              updateRule(mapping.id, ruleIndex, { widthFieldName: selection.value })
+                            options={numericFields as any}
+                            onChange={(selection: any) =>
+                              updateRule(mapping.id, ruleIndex, { widthFieldName: selection?.value })
                             }
                             placeholder="Select width field..."
                           />

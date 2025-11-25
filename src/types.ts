@@ -16,8 +16,13 @@ export enum RankDirection {
 }
 
 export enum DiagramSourceType {
-  CODE = 'code',
+  INLINE = 'inline',
   URL = 'url',
+}
+
+export enum InputMode {
+  CODE = 'code',
+  BUILDER = 'builder',
 }
 
 export enum RuleKind {
@@ -83,8 +88,14 @@ export interface NodeMapping {
   rules: Rule[];
 }
 
+export interface BuilderModeActions {
+  addNodeTrigger?: number;
+  addEdgeTrigger?: number;
+}
+
 export interface SimpleOptions {
   diagramSourceType: DiagramSourceType;
+  inputMode?: InputMode;
   dotDiagram: string;
   dotDiagramUrl: string;
   layoutEngine: LayoutEngine;
@@ -92,4 +103,5 @@ export interface SimpleOptions {
   namedThresholds: NamedThreshold[];
   edgeMappings: EdgeMapping[];
   nodeMappings: NodeMapping[];
+  builderModeActions?: BuilderModeActions;
 }
