@@ -2,7 +2,7 @@ import { useEffect, RefObject, useState } from 'react';
 import { GrafanaTheme2, PanelData, FieldConfigSource } from '@grafana/data';
 import * as d3 from 'd3-selection';
 import { validateDotSyntax, ValidationErrorInfo } from './validation';
-import { sanitizeDotColors, normalizeNodePathStyling } from './sanitization';
+import { applyGraphDefaults, normalizeNodePathStyling } from './sanitization';
 import { deriveEdgeIds } from './enhancements';
 import {
   applyEdgeStyleMappings,
@@ -126,8 +126,8 @@ export function useThemedDotSvg(
           return;
         }
 
-        const sanitizedDot = sanitizeDotColors(dotDiagram);
-        const dotWithEdgeIds = deriveEdgeIds(sanitizedDot);
+        const defaultedDot = applyGraphDefaults(dotDiagram, theme);
+        const dotWithEdgeIds = deriveEdgeIds(defaultedDot);
         const dotWithEdgeStyles = applyEdgeStyleMappings(dotWithEdgeIds, edgeMappings);
         const dotWithNodeStyles = applyNodeStyleMappings(dotWithEdgeStyles, nodeMappings);
 
