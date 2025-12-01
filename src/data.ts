@@ -552,3 +552,164 @@ export function findMatchedRow(
       return findMatchedRowFromWide(series, matchFieldName, matchValue);
   }
 }
+
+export interface MatchDetectionResult {
+  matchFieldName: string;
+  matchPercentage: number;
+  matchedIds: string[];
+  unmatchedIds: string[];
+}
+
+interface FieldMatchCandidate {
+  fieldName: string;
+  matchedIds: string[];
+  unmatchedIds: string[];
+  matchPercentage: number;
+}
+
+function findMatchingIdsInWide(
+  series: DataFrame[],
+  fieldName: string,
+  targetIds: string[]
+): { matchedIds: string[]; unmatchedIds: string[] } {
+  const foundIds = new Set<string>();
+
+  for (const frame of series) {
+    const field = frame.fields.find((f) => f.name === fieldName);
+    if (!field) {
+      continue;
+    }
+
+    const view = new DataFrameView(frame);
+    for (let i = 0; i < view.length; i++) {
+      const row = view.get(i);
+      const fieldValue = String(row[fieldName]);
+
+      if (targetIds.includes(fieldValue)) {
+        foundIds.add(fieldValue);
+      }
+    }
+  }
+
+  const matchedIds = targetIds.filter((id) => foundIds.has(id));
+  const unmatchedIds = targetIds.filter((id) => !foundIds.has(id));
+
+  return { matchedIds, unmatchedIds };
+}
+
+function findMatchingIdsInTimeSeries(
+  series: DataFrame[],
+  labelName: string,
+  targetIds: string[]
+): { matchedIds: string[]; unmatchedIds: string[] } {
+  const foundIds = new Set<string>();
+
+  for (const frame of series) {
+    for (const field of frame.fields) {
+      if (field.labels && field.labels[labelName]) {
+        const labelValue = field.labels[labelName];
+        if (targetIds.includes(labelValue)) {
+          foundIds.add(labelValue);
+        }
+      }
+    }
+  }
+
+  const matchedIds = targetIds.filter((id) => foundIds.has(id));
+  const unmatchedIds = targetIds.filter((id) => !foundIds.has(id));
+
+  return { matchedIds, unmatchedIds };
+}
+
+function extractAllStringFieldNames(series: DataFrame[]): string[] {
+  const fieldNames = new Set<string>();
+
+  series.forEach((frame) => {
+    frame.fields?.forEach((field) => {
+      if (field.name && field.type === 'string') {
+        fieldNames.add(field.name);
+      }
+
+      if (field.labels) {
+        Object.keys(field.labels).forEach((labelName) => {
+          fieldNames.add(labelName);
+        });
+      }
+    });
+  });
+
+  return Array.from(fieldNames).sort();
+}
+
+function evaluateFieldMatchQuality(
+  series: DataFrame[],
+  fieldName: string,
+  targetIds: string[],
+  strategy: DataFormatStrategy
+): FieldMatchCandidate {
+  let matchedIds: string[] = [];
+  let unmatchedIds: string[] = [];
+
+  if (strategy === DataFormatStrategy.TIMESERIES) {
+    const result = findMatchingIdsInTimeSeries(series, fieldName, targetIds);
+    matchedIds = result.matchedIds;
+    unmatchedIds = result.unmatchedIds;
+  } else if (strategy === DataFormatStrategy.WIDE) {
+    const result = findMatchingIdsInWide(series, fieldName, targetIds);
+    matchedIds = result.matchedIds;
+    unmatchedIds = result.unmatchedIds;
+  } else if (strategy === DataFormatStrategy.MIXED) {
+    const timeSeriesResult = findMatchingIdsInTimeSeries(series, fieldName, targetIds);
+    const wideResult = findMatchingIdsInWide(series, fieldName, targetIds);
+
+    const combinedMatched = new Set([...timeSeriesResult.matchedIds, ...wideResult.matchedIds]);
+    matchedIds = Array.from(combinedMatched);
+    unmatchedIds = targetIds.filter((id) => !combinedMatched.has(id));
+  }
+
+  const matchPercentage = targetIds.length > 0 ? (matchedIds.length / targetIds.length) * 100 : 0;
+
+  return {
+    fieldName,
+    matchedIds,
+    unmatchedIds,
+    matchPercentage,
+  };
+}
+
+export function autodetectMatchField(series: DataFrame[], targetIds: string[]): MatchDetectionResult | undefined {
+  if (!series || series.length === 0 || !targetIds || targetIds.length === 0) {
+    return undefined;
+  }
+
+  const strategy = detectDataFormatStrategy(series);
+  const availableFieldNames = extractAllStringFieldNames(series);
+
+  if (availableFieldNames.length === 0) {
+    return undefined;
+  }
+
+  const candidates: FieldMatchCandidate[] = availableFieldNames.map((fieldName) =>
+    evaluateFieldMatchQuality(series, fieldName, targetIds, strategy)
+  );
+
+  const sortedCandidates = candidates.sort((a, b) => {
+    if (b.matchPercentage !== a.matchPercentage) {
+      return b.matchPercentage - a.matchPercentage;
+    }
+    return a.fieldName.localeCompare(b.fieldName);
+  });
+
+  const bestMatch = sortedCandidates[0];
+
+  if (bestMatch && bestMatch.matchPercentage > 0) {
+    return {
+      matchFieldName: bestMatch.fieldName,
+      matchPercentage: bestMatch.matchPercentage,
+      matchedIds: bestMatch.matchedIds,
+      unmatchedIds: bestMatch.unmatchedIds,
+    };
+  }
+
+  return undefined;
+}

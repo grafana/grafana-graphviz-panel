@@ -11,9 +11,10 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
   return builder
     .addRadio({
       path: 'diagramSourceType',
-      name: 'Diagram Source',
+      name: 'Diagram source',
       description: 'Choose whether to enter the DOT diagram directly or load it from a URL',
       defaultValue: DiagramSourceType.INLINE,
+      category: ['Diagram'],
       settings: {
         options: [
           {
@@ -29,9 +30,10 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
     })
     .addRadio({
       path: 'inputMode',
-      name: 'Input Mode',
+      name: 'Input mode',
       description: 'Choose how to create the diagram',
       defaultValue: InputMode.CODE,
+      category: ['Diagram'],
       showIf: (options) => options.diagramSourceType === DiagramSourceType.INLINE,
       settings: {
         options: [
@@ -53,6 +55,7 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
       description: 'Enter DOT syntax diagram definition. Supports multi-line input for copy-pasting DOT diagrams.',
       defaultValue: 'digraph {\n  A -> B;\n  B -> A;\n  C -> A;\n}',
       editor: DotDiagramEditor,
+      category: ['Diagram'],
       showIf: (options) =>
         (options.diagramSourceType === DiagramSourceType.INLINE || !options.diagramSourceType) &&
         (options.inputMode === InputMode.CODE || !options.inputMode),
@@ -60,20 +63,22 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
     .addCustomEditor({
       id: 'builderModeActions',
       path: 'builderModeActions',
-      name: 'Builder Actions',
+      name: 'Builder actions',
       description: 'Add nodes and edges to the diagram',
       defaultValue: {},
       editor: BuilderModeEditor,
+      category: ['Diagram'],
       showIf: (options) =>
         (options.diagramSourceType === DiagramSourceType.INLINE || !options.diagramSourceType) &&
         options.inputMode === InputMode.BUILDER,
     })
     .addTextInput({
       path: 'dotDiagramUrl',
-      name: 'DOT Diagram URL',
+      name: 'DOT diagram URL',
       description:
         'Enter the URL to fetch the DOT diagram from. The URL should return a text file containing valid DOT syntax.',
       defaultValue: '',
+      category: ['Diagram'],
       showIf: (options) => options.diagramSourceType === DiagramSourceType.URL,
     })
     .addSelect({
@@ -81,6 +86,7 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
       name: 'Layout engine',
       description: 'Graphviz layout algorithm to use for rendering',
       defaultValue: LayoutEngine.HIERARCHICAL,
+      category: ['Diagram'],
       settings: {
         options: [
           {
@@ -111,6 +117,7 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
       name: 'Layout direction',
       description: 'Controls the direction of the diagram layout (hierarchical engine only)',
       defaultValue: RankDirection.LEFT_TO_RIGHT,
+      category: ['Diagram'],
       showIf: (options) => options.layoutEngine === LayoutEngine.HIERARCHICAL,
       settings: {
         options: [
@@ -134,30 +141,30 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
       },
     })
     .addCustomEditor({
-      id: 'namedThresholds',
-      path: 'namedThresholds',
-      name: 'Threshold Sets',
-      description: 'Define named threshold sets that can be referenced in node and edge color overrides',
-      defaultValue: [],
-      editor: NamedThresholdsEditor,
-      category: ['Thresholds'],
-    })
-    .addCustomEditor({
       id: 'edgeOverrides',
       path: 'edgeOverrides',
-      name: 'Edge Overrides',
-      description: 'Configure data-driven overrides for edges (stroke color, width, label)',
+      name: 'Edge override rules',
+      description: 'Link edges to data rows to dynamically set their appearance and labels based on real-time metrics',
       defaultValue: [],
       editor: EdgeOverridesEditor,
-      category: ['Edge Overrides'],
+      category: ['Edge overrides'],
     })
     .addCustomEditor({
       id: 'nodeOverrides',
       path: 'nodeOverrides',
-      name: 'Node Overrides',
-      description: 'Configure data-driven overrides for nodes (stroke color, fill color, label)',
+      name: 'Node override rules',
+      description: 'Link nodes to data rows to dynamically set their appearance and labels based on real-time metrics',
       defaultValue: [],
       editor: NodeOverridesEditor,
-      category: ['Node Overrides'],
+      category: ['Node overrides'],
+    })
+    .addCustomEditor({
+      id: 'namedThresholds',
+      path: 'namedThresholds',
+      name: 'Threshold sets',
+      description: 'Define named threshold sets that can be referenced in node and edge color overrides',
+      defaultValue: [],
+      editor: NamedThresholdsEditor,
+      category: ['Thresholds'],
     });
 });
