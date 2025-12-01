@@ -32,7 +32,7 @@ function applyThemeDefaults(graph: Graph, theme: GrafanaTheme2): void {
     fontname: theme.typography.fontFamily,
     fontsize: theme.typography.fontSize.toString(),
     fontcolor: theme.colors.text.primary,
-    color: theme.colors.border.medium,
+    color: theme.colors.primary.main,
     fillcolor: theme.colors.background.elevated,
     style: 'rounded,filled',
     shape: 'box',
