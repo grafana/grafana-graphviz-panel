@@ -31,20 +31,20 @@ function applyThemeDefaults(graph: Graph, theme: GrafanaTheme2): void {
   const nodeDefaults: Record<string, string> = {
     fontname: theme.typography.fontFamily,
     fontsize: theme.typography.fontSize.toString(),
-    fontcolor: theme.colors.text.primary,
-    color: theme.colors.primary.main,
-    fillcolor: theme.colors.background.elevated,
+    fontcolor: theme.colors.primary.contrastText,
+    color: theme.colors.primary.border,
+    fillcolor: theme.colors.primary.main,
     style: 'rounded,filled',
     shape: 'box',
-    penwidth: '1.0',
+    penwidth: '2.0',
     margin: '0.2',
   };
 
   const edgeDefaults: Record<string, string> = {
     fontname: theme.typography.fontFamily,
-    fontsize: '10',
-    fontcolor: theme.colors.text.secondary,
-    color: theme.colors.border.medium,
+    fontsize: theme.typography.fontSize.toString(),
+    fontcolor: theme.colors.primary.contrastText,
+    color: theme.colors.primary.border,
     penwidth: '1.5',
   };
 
