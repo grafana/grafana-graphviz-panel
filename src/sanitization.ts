@@ -1,55 +1,89 @@
 import * as graphlibDot from 'graphlib-dot';
 import { Graph } from 'graphlib';
 import * as d3 from 'd3-selection';
+import { GrafanaTheme2 } from '@grafana/data';
 
 /**
- * Sanitizes DOT input by removing color-related attributes.
- * This ensures all colors come from either theme or style mappings, not from user DOT input.
+ * Applies default styling to the DOT graph based on the Grafana theme.
+ * This ensures a modern, sleek look by default, while allowing user overrides.
  * 
- * @param dotString - The DOT notation string to sanitize
- * @returns DOT string with color attributes removed
+ * @param dotString - The DOT notation string
+ * @param theme - The Grafana theme to use for defaults
+ * @returns The modified DOT string
  */
-export function sanitizeDotColors(dotString: string): string {
-  const graph = graphlibDot.read(dotString);
-  
-  removeColorAttributes(graph);
-  
-  return graphlibDot.write(graph);
+export function applyGraphDefaults(dotString: string, theme: GrafanaTheme2): string {
+  try {
+    const graph = graphlibDot.read(dotString);
+    applyThemeDefaults(graph, theme);
+    return graphlibDot.write(graph);
+  } catch (error) {
+    console.error('Failed to parse/write DOT for defaulting:', error);
+    // Return original string if we fail, so we don't break rendering completely
+    return dotString;
+  }
 }
 
 /**
- * Removes color-related attributes from all nodes and edges in the graph.
+ * Applies default attributes to nodes and edges if they are not already defined.
+ * Iterates over all nodes/edges (including implicit ones from edges) and applies defaults.
  */
-function removeColorAttributes(graph: Graph): void {
-  const colorAttributes = [
-    'color',
-    'fillcolor',
-    'fontcolor',
-    'bgcolor',
-    'pencolor',
-  ];
+function applyThemeDefaults(graph: Graph, theme: GrafanaTheme2): void {
+  const nodeDefaults: Record<string, string> = {
+    fontname: theme.typography.fontFamily,
+    fontsize: theme.typography.fontSize.toString(),
+    fontcolor: theme.colors.text.primary,
+    color: theme.colors.border.medium,
+    fillcolor: theme.colors.background.elevated,
+    style: 'rounded,filled',
+    shape: 'box',
+    penwidth: '1.0',
+    margin: '0.2',
+  };
 
-  const styleAttributes = [
-    'style',
-  ];
+  const edgeDefaults: Record<string, string> = {
+    fontname: theme.typography.fontFamily,
+    fontsize: '10',
+    fontcolor: theme.colors.text.secondary,
+    color: theme.colors.border.medium,
+    penwidth: '1.5',
+  };
 
+  // Iterate over all nodes. graphlib-dot automatically creates nodes for any identifier found in edges.
   graph.nodes().forEach(nodeId => {
-    const nodeData = graph.node(nodeId);
-    if (nodeData) {
-      const sanitized = { ...nodeData };
-      colorAttributes.forEach(attr => delete sanitized[attr]);
-      styleAttributes.forEach(attr => delete sanitized[attr]);
-      graph.setNode(nodeId, sanitized);
+    const nodeData = graph.node(nodeId) || {};
+    // Clone to avoid mutation issues
+    const newNodeData = { ...nodeData };
+    
+    let changed = false;
+    Object.entries(nodeDefaults).forEach(([key, value]) => {
+      // Only set if strictly undefined. If user set "", we respect it.
+      // If user defined a global default (e.g. node [shape=circle]), graphlib-dot
+      // might have already applied it to this node during read(), so this check respects that too.
+      if (newNodeData[key] === undefined) {
+        newNodeData[key] = value;
+        changed = true;
+      }
+    });
+
+    if (changed) {
+      graph.setNode(nodeId, newNodeData);
     }
   });
 
   graph.edges().forEach(edgeObj => {
-    const edgeData = graph.edge(edgeObj);
-    if (edgeData) {
-      const sanitized = { ...edgeData };
-      colorAttributes.forEach(attr => delete sanitized[attr]);
-      styleAttributes.forEach(attr => delete sanitized[attr]);
-      graph.setEdge(edgeObj.v, edgeObj.w, sanitized);
+    const edgeData = graph.edge(edgeObj) || {};
+    const newEdgeData = { ...edgeData };
+
+    let changed = false;
+    Object.entries(edgeDefaults).forEach(([key, value]) => {
+      if (newEdgeData[key] === undefined) {
+        newEdgeData[key] = value;
+        changed = true;
+      }
+    });
+
+    if (changed) {
+      graph.setEdge(edgeObj.v, edgeObj.w, newEdgeData);
     }
   });
 }
@@ -85,4 +119,3 @@ function isDefaultColor(color: string | null): boolean {
   const defaultColors = ['black', 'none', 'white', '#000000', '#ffffff'];
   return defaultColors.includes(color.toLowerCase());
 }
-

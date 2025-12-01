@@ -92,10 +92,14 @@ function applyUserNodeMappings(graph: Graph, nodeMappings: NodeMapping[]): void 
           mapping.targetNodeIds.forEach((nodeId: string) => {
             if (graph.hasNode(nodeId)) {
               const nodeData = graph.node(nodeId);
+              // Preserve existing style (e.g. 'rounded') when adding 'filled'
+              const existingStyle = nodeData.style || '';
+              const newStyle = existingStyle.includes('filled') ? existingStyle : `${existingStyle ? existingStyle + ',' : ''}filled`;
+              
               graph.setNode(nodeId, {
                 ...nodeData,
                 fillcolor: rule.staticColor,
-                style: 'filled',
+                style: newStyle,
               });
             }
           });
@@ -168,10 +172,14 @@ export function applyDataDrivenColors(dotString: string, dataDrivenColors: DataD
   dataDrivenColors.nodeFillColors.forEach((color, nodeId) => {
     if (graph.hasNode(nodeId)) {
       const nodeData = graph.node(nodeId);
+      // Preserve existing style (e.g. 'rounded') when adding 'filled'
+      const existingStyle = nodeData.style || '';
+      const newStyle = existingStyle.includes('filled') ? existingStyle : `${existingStyle ? existingStyle + ',' : ''}filled`;
+
       graph.setNode(nodeId, {
         ...nodeData,
         fillcolor: color,
-        style: 'filled',
+        style: newStyle,
       });
     }
   });
