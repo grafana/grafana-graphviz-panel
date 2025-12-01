@@ -1,5 +1,67 @@
-import { Monaco, CodeEditorSuggestionItem, CodeEditorSuggestionItemKind } from '@grafana/ui';
+import { Monaco, MonacoEditor, CodeEditorSuggestionItem, CodeEditorSuggestionItemKind } from '@grafana/ui';
 import { findMatchedRow } from '../data';
+
+export const SINGLE_LINE_MONACO_OPTIONS = {
+  lineNumbers: 'off' as const,
+  folding: false,
+  lineDecorationsWidth: 0,
+  lineNumbersMinChars: 0,
+  glyphMargin: false,
+  scrollBeyondLastLine: false,
+  scrollbar: {
+    vertical: 'hidden' as const,
+    horizontal: 'auto' as const,
+  },
+  overviewRulerLanes: 0,
+  hideCursorInOverviewRuler: true,
+  overviewRulerBorder: false,
+  wordWrap: 'off' as const,
+  renderLineHighlight: 'none' as const,
+  quickSuggestions: true,
+  suggestOnTriggerCharacters: true,
+  acceptSuggestionOnEnter: 'off' as const,
+  suggest: {
+    showInlineDetails: false,
+    showIcons: true,
+  },
+};
+
+export function registerSingleLineKeyCommands(editor: MonacoEditor, monaco: Monaco): void {
+  editor.addCommand(monaco.KeyCode.Enter, () => {
+    editor.trigger('keyboard', 'hideSuggestWidget', {});
+  });
+
+  editor.addCommand(monaco.KeyCode.Tab, () => {
+    editor.trigger('keyboard', 'acceptSelectedSuggestion', {});
+  });
+}
+
+export function registerMatchValueCompletion(monaco: Monaco, entityType: 'node' | 'edge'): void {
+  monaco.languages.registerCompletionItemProvider('plaintext', {
+    provideCompletionItems: (model, position) => {
+      const word = model.getWordUntilPosition(position);
+      const range = {
+        startLineNumber: position.lineNumber,
+        endLineNumber: position.lineNumber,
+        startColumn: word.startColumn,
+        endColumn: word.endColumn,
+      };
+
+      return {
+        suggestions: [
+          {
+            label: '${id}',
+            kind: monaco.languages.CompletionItemKind.Variable,
+            insertText: '${id}',
+            detail: `Match using the ${entityType} ID`,
+            documentation: `Use this to match rows in your data where a field matches the ${entityType} ID`,
+            range: range,
+          },
+        ],
+      };
+    },
+  });
+}
 
 interface OverrideWithMatch {
   matchFieldName?: string;

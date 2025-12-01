@@ -16,7 +16,12 @@ import {
 } from '@grafana/ui';
 import { NodeOverride, StrokeColorRule, FillColorRule, Rule, RuleKind } from '../types';
 import { css } from '@emotion/css';
-import { registerNodeLabelCompletion } from '../utils/monacoConfig';
+import {
+  registerNodeLabelCompletion,
+  SINGLE_LINE_MONACO_OPTIONS,
+  registerSingleLineKeyCommands,
+  registerMatchValueCompletion,
+} from '../utils/monacoConfig';
 
 interface Props extends StandardEditorProps<NodeOverride[]> {}
 
@@ -155,7 +160,7 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
                 updateMapping(mapping.id, {
                   matchFieldName: selection?.value as string | undefined,
                   matchValue: undefined,
-                  matchPattern: undefined,
+                  matchPattern: selection?.value ? '${id}' : undefined,
                   rules: mapping.rules.map((rule) => ({
                     ...rule,
                     colorFieldName: undefined,
@@ -170,19 +175,25 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
 
           {mapping.matchFieldName && (
             <Field label="Match Value" description='Use "${id}" to match node ID, or select specific value'>
-              <input
-                type="text"
+              <CodeEditor
                 value={mapping.matchPattern || mapping.matchValue || ''}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value.includes('${id}')) {
-                    updateMapping(mapping.id, { matchPattern: value, matchValue: undefined });
+                language="plaintext"
+                height={30}
+                showLineNumbers={false}
+                showMiniMap={false}
+                monacoOptions={SINGLE_LINE_MONACO_OPTIONS}
+                onChange={(value) => {
+                  const cleanValue = value.replace(/\n/g, '');
+                  if (cleanValue.includes('${id}')) {
+                    updateMapping(mapping.id, { matchPattern: cleanValue, matchValue: undefined });
                   } else {
-                    updateMapping(mapping.id, { matchValue: value, matchPattern: undefined });
+                    updateMapping(mapping.id, { matchValue: cleanValue, matchPattern: undefined });
                   }
                 }}
-                placeholder='Enter "${id}" or specific value...'
-                style={{ width: '100%', padding: '6px', fontFamily: 'monospace' }}
+                onEditorDidMount={(editor: MonacoEditor, monaco: Monaco) => {
+                  registerMatchValueCompletion(monaco, 'node');
+                  registerSingleLineKeyCommands(editor, monaco);
+                }}
               />
             </Field>
           )}
