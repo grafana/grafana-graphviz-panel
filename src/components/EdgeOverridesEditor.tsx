@@ -1,16 +1,16 @@
 import React from 'react';
 import { StandardEditorProps, SelectableValue } from '@grafana/data';
-import { Button, Field, MultiSelect, ColorPicker, IconButton, Combobox } from '@grafana/ui';
-import { EdgeMapping, StrokeColorRule, StrokeWidthRule, Rule, RuleKind } from '../types';
+import { Button, Field, MultiSelect, ColorPicker, IconButton, Combobox, Dropdown, Menu, Box } from '@grafana/ui';
+import { EdgeOverride, StrokeColorRule, StrokeWidthRule, Rule, RuleKind } from '../types';
 import { css } from '@emotion/css';
 
-interface Props extends StandardEditorProps<EdgeMapping[]> {}
+interface Props extends StandardEditorProps<EdgeOverride[]> {}
 
-export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }) => {
+export const EdgeOverridesEditor: React.FC<Props> = ({ value, onChange, context }) => {
   const mappings = value || [];
 
   const addMapping = () => {
-    const newMapping: EdgeMapping = {
+    const newMapping: EdgeOverride = {
       id: `edge-mapping-${Date.now()}`,
       targetEdgeIds: [],
       rules: [],
@@ -22,7 +22,7 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
     onChange(mappings.filter((mapping) => mapping.id !== id));
   };
 
-  const updateMapping = (id: string, updates: Partial<EdgeMapping>) => {
+  const updateMapping = (id: string, updates: Partial<EdgeOverride>) => {
     onChange(mappings.map((mapping) => (mapping.id === id ? { ...mapping, ...updates } : mapping)));
   };
 
@@ -43,6 +43,17 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
       const newRule: StrokeWidthRule = {
         kind: RuleKind.STROKE_WIDTH,
         staticWidth: 1,
+      };
+      updateMapping(mappingId, { rules: [...mapping.rules, newRule] });
+    }
+  };
+
+  const addLabelRule = (mappingId: string) => {
+    const mapping = mappings.find((m) => m.id === mappingId);
+    if (mapping) {
+      const newRule = {
+        kind: RuleKind.LABEL,
+        labelTemplate: '${field}',
       };
       updateMapping(mappingId, { rules: [...mapping.rules, newRule] });
     }
@@ -94,8 +105,8 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
       {mappings.map((mapping, index) => (
         <div key={mapping.id} className={mappingContainerStyle}>
           <div className={headerStyle}>
-            <strong>Edge Mapping {index + 1}</strong>
-            <IconButton name="trash-alt" onClick={() => removeMapping(mapping.id)} tooltip="Remove mapping" />
+            <strong>Edge Override {index + 1}</strong>
+            <IconButton name="trash-alt" onClick={() => removeMapping(mapping.id)} tooltip="Remove override" />
           </div>
 
           <Field label="Select Edges">
@@ -166,11 +177,15 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
           {mapping.rules.map((rule, ruleIndex) => (
             <div key={ruleIndex} className={ruleContainerStyle}>
               <div className={headerStyle}>
-                <strong>{rule.kind === RuleKind.STROKE_COLOR ? 'Border Color Rule' : 'Width Rule'}</strong>
+                <strong>
+                  {rule.kind === RuleKind.STROKE_COLOR && 'Stroke Color Override'}
+                  {rule.kind === RuleKind.STROKE_WIDTH && 'Stroke Width Override'}
+                  {rule.kind === RuleKind.LABEL && 'Label Override'}
+                </strong>
                 <IconButton
                   name="trash-alt"
                   onClick={() => removeRule(mapping.id, ruleIndex)}
-                  tooltip="Remove rule"
+                  tooltip="Remove override"
                   size="sm"
                 />
               </div>
@@ -271,22 +286,44 @@ export const EdgeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
                   )}
                 </>
               )}
+
+              {rule.kind === RuleKind.LABEL && (
+                <Field
+                  label="Label Template"
+                  description='Use ${fieldName} to insert field values. Example: "Traffic: ${bandwidth} Mbps"'
+                >
+                  <input
+                    type="text"
+                    value={rule.labelTemplate || ''}
+                    onChange={(e) => updateRule(mapping.id, ruleIndex, { labelTemplate: e.target.value })}
+                    placeholder='Example: "${source} -> ${target}: ${value}"'
+                    style={{ width: '100%', padding: '6px', fontFamily: 'monospace' }}
+                  />
+                </Field>
+              )}
             </div>
           ))}
 
-          <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-            <Button icon="plus" onClick={() => addColorRule(mapping.id)} variant="secondary" size="sm">
-              Add Border Color Rule
-            </Button>
-            <Button icon="plus" onClick={() => addWidthRule(mapping.id)} variant="secondary" size="sm">
-              Add Width Rule
-            </Button>
-          </div>
+          <Box marginTop={1.5}>
+            <Dropdown
+              overlay={
+                <Menu>
+                  <Menu.Item label="Stroke Color" icon="circle" onClick={() => addColorRule(mapping.id)} />
+                  <Menu.Item label="Stroke Width" icon="arrows-h" onClick={() => addWidthRule(mapping.id)} />
+                  <Menu.Item label="Label" icon="font" onClick={() => addLabelRule(mapping.id)} />
+                </Menu>
+              }
+            >
+              <Button icon="plus" variant="secondary" size="sm">
+                Add Edge Override
+              </Button>
+            </Dropdown>
+          </Box>
         </div>
       ))}
 
       <Button icon="plus" onClick={addMapping} variant="secondary">
-        Add Edge Mapping
+        Add Edge Override
       </Button>
     </div>
   );

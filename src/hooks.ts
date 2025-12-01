@@ -5,15 +5,17 @@ import { validateDotSyntax, ValidationErrorInfo } from './validation';
 import { applyGraphDefaults, normalizeNodePathStyling } from './sanitization';
 import { deriveEdgeIds } from './enhancements';
 import {
-  applyEdgeStyleMappings,
-  applyNodeStyleMappings,
+  applyEdgeStyleOverrides,
+  applyNodeStyleOverrides,
   applyDataDrivenColors,
   applyDataDrivenWidths,
-} from './mappings';
+  applyDataDrivenNodeLabels,
+  applyDataDrivenEdgeLabels,
+} from './overrides';
 import { processDataFieldBindings, processWidthRules } from './data';
 import { renderDotToSvg } from './dot';
 import { applySvgTheming } from './theming';
-import { EdgeMapping, NodeMapping, NamedThreshold, DiagramSourceType } from './types';
+import { EdgeOverride, NodeOverride, NamedThreshold, DiagramSourceType } from './types';
 
 export interface RenderError {
   message: string;
@@ -87,8 +89,8 @@ export function useFetchDotFromUrl(
  * @param svgRef - React ref to the container element where SVG will be rendered
  * @param dotDiagram - The DOT notation string to render
  * @param rankDirection - The direction of the graph layout (TB, BT, LR, RL)
- * @param edgeMappings - Array of edge style mappings to apply
- * @param nodeMappings - Array of node style mappings to apply
+ * @param edgeOverrides - Array of edge style mappings to apply
+ * @param nodeOverrides - Array of node style mappings to apply
  * @param data - Panel data from datasource
  * @param fieldConfig - Field configuration including thresholds
  * @param theme - The Grafana theme object for styling
@@ -99,8 +101,8 @@ export function useThemedDotSvg(
   dotDiagram: string | undefined,
   layoutEngine: string,
   rankDirection: string,
-  edgeMappings: EdgeMapping[],
-  nodeMappings: NodeMapping[],
+  edgeOverrides: EdgeOverride[],
+  nodeOverrides: NodeOverride[],
   namedThresholds: NamedThreshold[],
   data: PanelData,
   fieldConfig: FieldConfigSource,
@@ -128,23 +130,26 @@ export function useThemedDotSvg(
 
         const defaultedDot = applyGraphDefaults(dotDiagram, theme);
         const dotWithEdgeIds = deriveEdgeIds(defaultedDot);
-        const dotWithEdgeStyles = applyEdgeStyleMappings(dotWithEdgeIds, edgeMappings);
-        const dotWithNodeStyles = applyNodeStyleMappings(dotWithEdgeStyles, nodeMappings);
+        const dotWithEdgeStyles = applyEdgeStyleOverrides(dotWithEdgeIds, edgeOverrides);
+        const dotWithNodeStyles = applyNodeStyleOverrides(dotWithEdgeStyles, nodeOverrides);
 
         const dataDrivenColors = processDataFieldBindings(
           data,
           fieldConfig,
-          nodeMappings,
-          edgeMappings,
+          nodeOverrides,
+          edgeOverrides,
           namedThresholds,
           theme
         );
         const dotWithDataColors = applyDataDrivenColors(dotWithNodeStyles, dataDrivenColors);
 
-        const dataDrivenWidths = processWidthRules(data, edgeMappings);
+        const dataDrivenWidths = processWidthRules(data, edgeOverrides);
         const dotWithDataWidths = applyDataDrivenWidths(dotWithDataColors, dataDrivenWidths);
 
-        const svg = await renderDotToSvg(dotWithDataWidths, layoutEngine, rankDirection);
+        const dotWithNodeLabels = applyDataDrivenNodeLabels(dotWithDataWidths, nodeOverrides, data);
+        const dotWithAllLabels = applyDataDrivenEdgeLabels(dotWithNodeLabels, edgeOverrides, data);
+
+        const svg = await renderDotToSvg(dotWithAllLabels, layoutEngine, rankDirection);
 
         if (!svgRef.current) {
           return;
@@ -173,8 +178,8 @@ export function useThemedDotSvg(
     dotDiagram,
     layoutEngine,
     rankDirection,
-    edgeMappings,
-    nodeMappings,
+    edgeOverrides,
+    nodeOverrides,
     namedThresholds,
     data,
     fieldConfig,

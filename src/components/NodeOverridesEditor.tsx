@@ -1,16 +1,16 @@
 import React from 'react';
 import { StandardEditorProps, SelectableValue } from '@grafana/data';
-import { Button, Field, MultiSelect, ColorPicker, IconButton, Combobox } from '@grafana/ui';
-import { NodeMapping, StrokeColorRule, FillColorRule, Rule, RuleKind } from '../types';
+import { Button, Field, MultiSelect, ColorPicker, IconButton, Combobox, Dropdown, Menu, Box } from '@grafana/ui';
+import { NodeOverride, StrokeColorRule, FillColorRule, Rule, RuleKind } from '../types';
 import { css } from '@emotion/css';
 
-interface Props extends StandardEditorProps<NodeMapping[]> {}
+interface Props extends StandardEditorProps<NodeOverride[]> {}
 
-export const NodeMappingsEditor: React.FC<Props> = ({ value, onChange, context }) => {
+export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context }) => {
   const mappings = value || [];
 
   const addMapping = () => {
-    const newMapping: NodeMapping = {
+    const newMapping: NodeOverride = {
       id: `node-mapping-${Date.now()}`,
       targetNodeIds: [],
       rules: [],
@@ -22,7 +22,7 @@ export const NodeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
     onChange(mappings.filter((mapping) => mapping.id !== id));
   };
 
-  const updateMapping = (id: string, updates: Partial<NodeMapping>) => {
+  const updateMapping = (id: string, updates: Partial<NodeOverride>) => {
     onChange(mappings.map((mapping) => (mapping.id === id ? { ...mapping, ...updates } : mapping)));
   };
 
@@ -43,6 +43,17 @@ export const NodeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
       const newRule: FillColorRule = {
         kind: RuleKind.FILL_COLOR,
         staticColor: '#00FF00',
+      };
+      updateMapping(mappingId, { rules: [...mapping.rules, newRule] });
+    }
+  };
+
+  const addLabelRule = (mappingId: string) => {
+    const mapping = mappings.find((m) => m.id === mappingId);
+    if (mapping) {
+      const newRule = {
+        kind: RuleKind.LABEL,
+        labelTemplate: '${field}',
       };
       updateMapping(mappingId, { rules: [...mapping.rules, newRule] });
     }
@@ -94,8 +105,8 @@ export const NodeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
       {mappings.map((mapping, index) => (
         <div key={mapping.id} className={mappingContainerStyle}>
           <div className={headerStyle}>
-            <strong>Node Mapping {index + 1}</strong>
-            <IconButton name="trash-alt" onClick={() => removeMapping(mapping.id)} tooltip="Remove mapping" />
+            <strong>Node Override {index + 1}</strong>
+            <IconButton name="trash-alt" onClick={() => removeMapping(mapping.id)} tooltip="Remove override" />
           </div>
 
           <Field label="Select Nodes">
@@ -166,13 +177,14 @@ export const NodeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
             <div key={ruleIndex} className={ruleContainerStyle}>
               <div className={headerStyle}>
                 <strong>
-                  {rule.kind === RuleKind.STROKE_COLOR && 'Border Color Rule'}
-                  {rule.kind === RuleKind.FILL_COLOR && 'Fill Color Rule'}
+                  {rule.kind === RuleKind.STROKE_COLOR && 'Stroke Color Override'}
+                  {rule.kind === RuleKind.FILL_COLOR && 'Fill Color Override'}
+                  {rule.kind === RuleKind.LABEL && 'Label Override'}
                 </strong>
                 <IconButton
                   name="trash-alt"
                   onClick={() => removeRule(mapping.id, ruleIndex)}
-                  tooltip="Remove rule"
+                  tooltip="Remove override"
                   size="sm"
                 />
               </div>
@@ -232,22 +244,44 @@ export const NodeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
                   )}
                 </>
               )}
+
+              {rule.kind === RuleKind.LABEL && (
+                <Field
+                  label="Label Template"
+                  description='Use ${fieldName} to insert field values. Example: "Server ${hostname} - CPU: ${cpu}%"'
+                >
+                  <input
+                    type="text"
+                    value={rule.labelTemplate || ''}
+                    onChange={(e) => updateRule(mapping.id, ruleIndex, { labelTemplate: e.target.value })}
+                    placeholder='Example: "${hostname} - ${status}"'
+                    style={{ width: '100%', padding: '6px', fontFamily: 'monospace' }}
+                  />
+                </Field>
+              )}
             </div>
           ))}
 
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <Button icon="plus" onClick={() => addBorderColorRule(mapping.id)} variant="secondary" size="sm">
-              Add Border Color Rule
-            </Button>
-            <Button icon="plus" onClick={() => addFillColorRule(mapping.id)} variant="secondary" size="sm">
-              Add Fill Color Rule
-            </Button>
-          </div>
+          <Box marginTop={1.5}>
+            <Dropdown
+              overlay={
+                <Menu>
+                  <Menu.Item label="Stroke Color" icon="circle" onClick={() => addBorderColorRule(mapping.id)} />
+                  <Menu.Item label="Fill Color" icon="circle-mono" onClick={() => addFillColorRule(mapping.id)} />
+                  <Menu.Item label="Label" icon="font" onClick={() => addLabelRule(mapping.id)} />
+                </Menu>
+              }
+            >
+              <Button icon="plus" variant="secondary" size="sm">
+                Add Node Override
+              </Button>
+            </Dropdown>
+          </Box>
         </div>
       ))}
 
       <Button icon="plus" onClick={addMapping} variant="secondary">
-        Add Node Mapping
+        Add Node Override
       </Button>
     </div>
   );

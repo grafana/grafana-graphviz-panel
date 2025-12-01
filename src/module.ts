@@ -4,8 +4,8 @@ import { SimplePanel } from './components/SimplePanel';
 import { DotDiagramEditor } from './components/DotDiagramEditor';
 import { BuilderModeEditor } from './components/BuilderModeEditor';
 import { NamedThresholdsEditor } from './components/NamedThresholdsEditor';
-import { EdgeMappingsEditor } from './components/EdgeMappingsEditor';
-import { NodeMappingsEditor } from './components/NodeMappingsEditor';
+import { EdgeOverridesEditor } from './components/EdgeOverridesEditor';
+import { NodeOverridesEditor } from './components/NodeOverridesEditor';
 
 export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig().setPanelOptions((builder) => {
   return builder
@@ -137,25 +137,27 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
       id: 'namedThresholds',
       path: 'namedThresholds',
       name: 'Threshold Sets',
-      description: 'Define named threshold sets that can be referenced in node and edge color rules',
+      description: 'Define named threshold sets that can be referenced in node and edge color overrides',
       defaultValue: [],
       editor: NamedThresholdsEditor,
-      category: ['Data Mappings'],
+      category: ['Thresholds'],
     })
     .addCustomEditor({
-      id: 'edgeMappings',
-      path: 'edgeMappings',
-      name: 'Edge Mappings',
-      description: 'Configure rules for edges (color, width, etc.)',
+      id: 'edgeOverrides',
+      path: 'edgeOverrides',
+      name: 'Edge Overrides',
+      description: 'Configure data-driven overrides for edges (stroke color, width, label)',
       defaultValue: [],
-      editor: EdgeMappingsEditor,
+      editor: EdgeOverridesEditor,
+      category: ['Edge Overrides'],
     })
     .addCustomEditor({
-      id: 'nodeMappings',
-      path: 'nodeMappings',
-      name: 'Node Mappings',
-      description: 'Configure rules for nodes (color, width, etc.)',
+      id: 'nodeOverrides',
+      path: 'nodeOverrides',
+      name: 'Node Overrides',
+      description: 'Configure data-driven overrides for nodes (stroke color, fill color, label)',
       defaultValue: [],
-      editor: NodeMappingsEditor,
+      editor: NodeOverridesEditor,
+      category: ['Node Overrides'],
     });
 });
