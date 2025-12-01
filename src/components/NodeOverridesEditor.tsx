@@ -1,8 +1,22 @@
 import React from 'react';
 import { StandardEditorProps, SelectableValue } from '@grafana/data';
-import { Button, Field, MultiSelect, ColorPicker, IconButton, Combobox, Dropdown, Menu, Box } from '@grafana/ui';
+import {
+  Button,
+  Field,
+  MultiSelect,
+  ColorPicker,
+  IconButton,
+  Combobox,
+  Dropdown,
+  Menu,
+  Box,
+  CodeEditor,
+  Monaco,
+  MonacoEditor,
+} from '@grafana/ui';
 import { NodeOverride, StrokeColorRule, FillColorRule, Rule, RuleKind } from '../types';
 import { css } from '@emotion/css';
+import { registerNodeLabelCompletion } from '../utils/monacoConfig';
 
 interface Props extends StandardEditorProps<NodeOverride[]> {}
 
@@ -248,14 +262,22 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
               {rule.kind === RuleKind.LABEL && (
                 <Field
                   label="Label Template"
-                  description='Use ${fieldName} to insert field values. Example: "Server ${hostname} - CPU: ${cpu}%"'
+                  description="Use ${fieldName} to insert field values. Press Ctrl+Space to see available fields."
                 >
-                  <input
-                    type="text"
+                  <CodeEditor
                     value={rule.labelTemplate || ''}
-                    onChange={(e) => updateRule(mapping.id, ruleIndex, { labelTemplate: e.target.value })}
-                    placeholder='Example: "${hostname} - ${status}"'
-                    style={{ width: '100%', padding: '6px', fontFamily: 'monospace' }}
+                    language="plaintext"
+                    height="60px"
+                    showLineNumbers={false}
+                    showMiniMap={false}
+                    monacoOptions={{
+                      quickSuggestions: true,
+                      suggestOnTriggerCharacters: true,
+                    }}
+                    onChange={(value) => updateRule(mapping.id, ruleIndex, { labelTemplate: value })}
+                    onEditorDidMount={(editor: MonacoEditor, monaco: Monaco) => {
+                      registerNodeLabelCompletion(monaco, context.data, mapping);
+                    }}
                   />
                 </Field>
               )}

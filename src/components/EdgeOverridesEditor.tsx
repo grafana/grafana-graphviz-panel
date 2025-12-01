@@ -1,8 +1,22 @@
 import React from 'react';
 import { StandardEditorProps, SelectableValue } from '@grafana/data';
-import { Button, Field, MultiSelect, ColorPicker, IconButton, Combobox, Dropdown, Menu, Box } from '@grafana/ui';
+import {
+  Button,
+  Field,
+  MultiSelect,
+  ColorPicker,
+  IconButton,
+  Combobox,
+  Dropdown,
+  Menu,
+  Box,
+  CodeEditor,
+  Monaco,
+  MonacoEditor,
+} from '@grafana/ui';
 import { EdgeOverride, StrokeColorRule, StrokeWidthRule, Rule, RuleKind } from '../types';
 import { css } from '@emotion/css';
+import { registerEdgeLabelCompletion } from '../utils/monacoConfig';
 
 interface Props extends StandardEditorProps<EdgeOverride[]> {}
 
@@ -290,14 +304,22 @@ export const EdgeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
               {rule.kind === RuleKind.LABEL && (
                 <Field
                   label="Label Template"
-                  description='Use ${fieldName} to insert field values. Example: "Traffic: ${bandwidth} Mbps"'
+                  description="Use ${fieldName} to insert field values. Press Ctrl+Space to see available fields."
                 >
-                  <input
-                    type="text"
+                  <CodeEditor
                     value={rule.labelTemplate || ''}
-                    onChange={(e) => updateRule(mapping.id, ruleIndex, { labelTemplate: e.target.value })}
-                    placeholder='Example: "${source} -> ${target}: ${value}"'
-                    style={{ width: '100%', padding: '6px', fontFamily: 'monospace' }}
+                    language="plaintext"
+                    height="60px"
+                    showLineNumbers={false}
+                    showMiniMap={false}
+                    monacoOptions={{
+                      quickSuggestions: true,
+                      suggestOnTriggerCharacters: true,
+                    }}
+                    onChange={(value) => updateRule(mapping.id, ruleIndex, { labelTemplate: value })}
+                    onEditorDidMount={(editor: MonacoEditor, monaco: Monaco) => {
+                      registerEdgeLabelCompletion(monaco, context.data, mapping);
+                    }}
                   />
                 </Field>
               )}
