@@ -15,7 +15,7 @@ import {
 import { processDataFieldBindings, processWidthRules } from './data';
 import { renderDotToSvg } from './dot';
 import { applySvgTheming } from './theming';
-import { EdgeOverride, NodeOverride, NamedThreshold, DiagramSourceType } from './types';
+import { EdgeOverride, NodeOverride, NamedThreshold, InputMode } from './types';
 
 export interface RenderError {
   message: string;
@@ -31,7 +31,7 @@ export interface RenderError {
  */
 export function useFetchDotFromUrl(
   url: string | undefined,
-  sourceType: DiagramSourceType
+  sourceType: InputMode
 ): {
   dotContent: string | null;
   isLoading: boolean;
@@ -42,7 +42,7 @@ export function useFetchDotFromUrl(
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (sourceType !== DiagramSourceType.URL || !url) {
+    if (sourceType !== InputMode.URL || !url) {
       setDotContent(null);
       setIsLoading(false);
       setFetchError(null);

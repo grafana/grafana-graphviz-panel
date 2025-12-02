@@ -22,10 +22,32 @@ export const VALID_SHAPES = [
   'trapezium',
 ];
 
+const shapeIconMap: Record<string, string> = {
+  box: 'square-shape',
+  circle: 'circle',
+  ellipse: 'circle',
+  diamond: 'rocket',
+  triangle: 'rocket',
+  pentagon: 'rocket',
+  hexagon: 'rocket',
+  rectangle: 'rocket',
+  square: 'square-shape',
+  oval: 'circle',
+  cylinder: 'database',
+  note: 'file-alt',
+  tab: 'folder-open',
+  folder: 'folder',
+  component: 'cube',
+  octagon: 'rocket',
+  parallelogram: 'rocket',
+  trapezium: 'rocket',
+};
+
 export const getShapeOptions = () =>
   VALID_SHAPES.map((shape) => ({
     label: shape.charAt(0).toUpperCase() + shape.slice(1),
     value: shape,
+    icon: shapeIconMap[shape] || 'circle',
   }));
 
 export const formatEdgeId = (source: string, target: string) => `${source}__to__${target}`;
