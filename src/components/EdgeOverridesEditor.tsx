@@ -554,7 +554,7 @@ export const EdgeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
 
                           <Field
                             label="Threshold set"
-                            description="Optional: Use a named threshold set instead of field config thresholds"
+                            description="Optional: Use a named threshold set instead global panel thresholds"
                           >
                             <Combobox
                               value={rule.thresholdId}
