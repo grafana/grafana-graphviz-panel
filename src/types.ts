@@ -39,6 +39,11 @@ export enum MatchMode {
   MANUAL = 'manual',
 }
 
+export enum MappingStrategy {
+  ROW = 'row',
+  FIELD = 'field',
+}
+
 export interface ThresholdStep {
   color: string;
   value: number;
@@ -90,6 +95,7 @@ export interface EdgeOverride {
 export interface NodeOverride {
   id: string;
   targetNodeIds: string[];
+  mappingStrategy?: MappingStrategy;
   matchMode?: MatchMode;
   matchFieldName?: string;
   matchValue?: string;
