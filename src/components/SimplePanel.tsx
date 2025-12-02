@@ -52,8 +52,7 @@ export const SimplePanel: React.FC<Props> = ({
     options.inputMode || InputMode.CODE
   );
 
-  const effectiveDotDiagram =
-    options.inputMode === InputMode.URL ? dotContent || '' : options.dotDiagram;
+  const effectiveDotDiagram = options.inputMode === InputMode.URL ? dotContent || '' : options.dotDiagram;
 
   const renderError = useThemedDotSvg(
     svgRef,
@@ -120,8 +119,7 @@ export const SimplePanel: React.FC<Props> = ({
     return <ErrorDisplay errorMessage={renderError.message} errorInfo={renderError.errorInfo} />;
   }
 
-  const isBuilderMode =
-    options.inputMode === InputMode.BUILDER && isEditMode;
+  const isBuilderMode = options.inputMode === InputMode.BUILDER && isEditMode;
 
   return (
     <div
@@ -132,10 +130,12 @@ export const SimplePanel: React.FC<Props> = ({
           height: ${height}px;
         `
       )}
+      data-testid="mesh-panel"
     >
       <div
         ref={svgRef}
         className={styles.svg}
+        data-testid="mesh-panel-svg"
         style={{
           width,
           height,
