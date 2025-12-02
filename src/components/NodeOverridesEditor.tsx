@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { StandardEditorProps, SelectableValue } from '@grafana/data';
 import {
   Button,
@@ -18,6 +18,7 @@ import {
   Alert,
   Icon,
   getFieldTypeIconName,
+  Collapse,
 } from '@grafana/ui';
 import { NodeOverride, StrokeColorRule, FillColorRule, Rule, RuleKind, MatchMode } from '../types';
 import { autodetectMatchField, MatchDetectionResult, findMatchedRow } from '../data';
@@ -34,6 +35,8 @@ interface Props extends StandardEditorProps<NodeOverride[]> {}
 export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context }) => {
   const mappings = useMemo(() => value || [], [value]);
   const [detectionResults, setDetectionResults] = useState<Map<string, MatchDetectionResult | undefined>>(new Map());
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const addMapping = () => {
     const newMapping: NodeOverride = {
@@ -43,6 +46,7 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
       rules: [],
     };
     onChange([...mappings, newMapping]);
+    setOpenSections((prev) => ({ ...prev, [newMapping.id]: true }));
   };
 
   const removeMapping = (id: string) => {
@@ -123,6 +127,15 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
     updated.splice(currentIndex + 1, 0, newMapping);
 
     onChange(updated);
+    setOpenSections((prev) => ({ ...prev, [newMapping.id]: true }));
+    
+    // Scroll to the new override after it's rendered
+    setTimeout(() => {
+      const element = sectionRefs.current[newMapping.id];
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }, 100);
   };
 
   const availableNodeIds = extractNodeIds(context.options?.dotDiagram);
@@ -179,7 +192,7 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
 
   const mappingContainerStyle = css`
     margin-bottom: 16px;
-    padding: 12px;
+    padding: 8px;
     border: 1px solid rgba(204, 204, 220, 0.25);
     border-radius: 4px;
   `;
@@ -198,16 +211,34 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
     margin-bottom: 8px;
   `;
 
+  const toggleSection = (id: string) => {
+    setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
   return (
     <div>
       {mappings.map((mapping, index) => (
-        <div key={mapping.id} className={mappingContainerStyle}>
-          <div className={headerStyle}>
-            <strong>Node override rule {index + 1}</strong>
-            <IconButton name="trash-alt" onClick={() => removeMapping(mapping.id)} tooltip="Remove override" />
-          </div>
-
-          <Field label="Select nodes by ID">
+        <div key={mapping.id} ref={(el) => (sectionRefs.current[mapping.id] = el)}>
+          <Collapse
+            className={mappingContainerStyle}
+            label={
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                <span>Node override rule {index + 1}</span>
+                <IconButton
+                  name="trash-alt"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeMapping(mapping.id);
+                  }}
+                  tooltip="Remove override"
+                />
+              </div>
+            }
+            isOpen={openSections[mapping.id] ?? true}
+            onToggle={() => toggleSection(mapping.id)}
+            collapsible={true}
+          >
+            <Field label="Select Nodes by ID" description="Defines which nodes the override will be applied to">
             <div style={{ display: 'flex', gap: '4px', alignItems: 'flex-start' }}>
               <div style={{ flex: 1 }}>
                 <MultiSelect
@@ -231,7 +262,7 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
             </div>
           </Field>
 
-          <Field label="Match mode">
+          <Field label="Match mode" description="Allows you to match the node override to the value of a specific row in the data. By default, it will be matched based on the node ID">
             <RadioButtonGroup
               value={mapping.matchMode || MatchMode.MANUAL}
               options={[
@@ -661,6 +692,7 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
               );
             })()}
           </Box>
+          </Collapse>
         </div>
       ))}
 
