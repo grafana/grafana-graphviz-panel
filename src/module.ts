@@ -1,5 +1,5 @@
 import { PanelPlugin } from '@grafana/data';
-import { SimpleOptions, RankDirection, LayoutEngine, DiagramSourceType, InputMode } from './types';
+import { SimpleOptions, RankDirection, LayoutEngine, InputMode } from './types';
 import { SimplePanel } from './components/SimplePanel';
 import { DotDiagramEditor } from './components/DotDiagramEditor';
 import { BuilderModeEditor } from './components/BuilderModeEditor';
@@ -10,40 +10,24 @@ import { NodeOverridesEditor } from './components/NodeOverridesEditor';
 export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig().setPanelOptions((builder) => {
   return builder
     .addRadio({
-      path: 'diagramSourceType',
-      name: 'Diagram source',
-      description: 'Choose whether to enter the DOT diagram directly or load it from a URL',
-      defaultValue: DiagramSourceType.INLINE,
-      category: ['Diagram'],
-      settings: {
-        options: [
-          {
-            value: DiagramSourceType.INLINE,
-            label: 'Inline',
-          },
-          {
-            value: DiagramSourceType.URL,
-            label: 'URL',
-          },
-        ],
-      },
-    })
-    .addRadio({
       path: 'inputMode',
       name: 'Input mode',
       description: 'Choose how to create the diagram',
-      defaultValue: InputMode.CODE,
+      defaultValue: InputMode.BUILDER,
       category: ['Diagram'],
-      showIf: (options) => options.diagramSourceType === DiagramSourceType.INLINE,
       settings: {
         options: [
+          {
+            value: InputMode.BUILDER,
+            label: 'Builder',
+          },
           {
             value: InputMode.CODE,
             label: 'Code',
           },
           {
-            value: InputMode.BUILDER,
-            label: 'Builder',
+            value: InputMode.URL,
+            label: 'URL',
           },
         ],
       },
@@ -53,12 +37,10 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
       path: 'dotDiagram',
       name: 'DOT Diagram',
       description: 'Enter DOT syntax diagram definition. Supports multi-line input for copy-pasting DOT diagrams.',
-      defaultValue: 'digraph {\n  A -> B;\n  B -> A;\n  C -> A;\n}',
+      defaultValue: 'digraph {}',
       editor: DotDiagramEditor,
       category: ['Diagram'],
-      showIf: (options) =>
-        (options.diagramSourceType === DiagramSourceType.INLINE || !options.diagramSourceType) &&
-        (options.inputMode === InputMode.CODE || !options.inputMode),
+      showIf: (options) => options.inputMode === InputMode.CODE || !options.inputMode,
     })
     .addCustomEditor({
       id: 'builderModeActions',
@@ -68,9 +50,7 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
       defaultValue: {},
       editor: BuilderModeEditor,
       category: ['Diagram'],
-      showIf: (options) =>
-        (options.diagramSourceType === DiagramSourceType.INLINE || !options.diagramSourceType) &&
-        options.inputMode === InputMode.BUILDER,
+      showIf: (options) => options.inputMode === InputMode.BUILDER,
     })
     .addTextInput({
       path: 'dotDiagramUrl',
@@ -79,7 +59,7 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
         'Enter the URL to fetch the DOT diagram from. The URL should return a text file containing valid DOT syntax.',
       defaultValue: '',
       category: ['Diagram'],
-      showIf: (options) => options.diagramSourceType === DiagramSourceType.URL,
+      showIf: (options) => options.inputMode === InputMode.URL,
     })
     .addSelect({
       path: 'layoutEngine',
@@ -92,22 +72,28 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
           {
             value: LayoutEngine.HIERARCHICAL,
             label: 'Hierarchical',
+            icon: 'sitemap',
           },
           {
             value: LayoutEngine.NETWORK,
             label: 'Network',
+            icon: 'share-alt',
           },
           {
             value: LayoutEngine.FORCE_DIRECTED,
             label: 'Force Directed',
+            icon: 'expand-arrows-alt',
           },
           {
             value: LayoutEngine.CIRCULAR,
             label: 'Circular',
+            icon: 'circle',
           },
           {
             value: LayoutEngine.RADIAL,
             label: 'Radial',
+            // Can't find an icon for this, so using rocket as a placeholder
+            icon: 'rocket',
           },
         ],
       },
@@ -124,18 +110,22 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
           {
             value: RankDirection.TOP_TO_BOTTOM,
             label: 'Top to Bottom',
+            icon: 'arrow-down',
           },
           {
             value: RankDirection.BOTTOM_TO_TOP,
             label: 'Bottom to Top',
+            icon: 'arrow-up',
           },
           {
             value: RankDirection.LEFT_TO_RIGHT,
             label: 'Left to Right',
+            icon: 'arrow-right',
           },
           {
             value: RankDirection.RIGHT_TO_LEFT,
             label: 'Right to Left',
+            icon: 'arrow-left',
           },
         ],
       },

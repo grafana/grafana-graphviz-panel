@@ -1,6 +1,6 @@
 import React, { useRef, useCallback } from 'react';
 import { PanelProps } from '@grafana/data';
-import { SimpleOptions, DiagramSourceType, InputMode } from 'types';
+import { SimpleOptions, InputMode } from 'types';
 import { css, cx } from '@emotion/css';
 import { useStyles2, useTheme2 } from '@grafana/ui';
 import { PanelDataErrorView } from '@grafana/runtime';
@@ -49,11 +49,10 @@ export const SimplePanel: React.FC<Props> = ({
 
   const { dotContent, isLoading, fetchError } = useFetchDotFromUrl(
     options.dotDiagramUrl,
-    options.diagramSourceType || DiagramSourceType.INLINE
+    options.inputMode || InputMode.CODE
   );
 
-  const effectiveDotDiagram =
-    options.diagramSourceType === DiagramSourceType.URL ? dotContent || '' : options.dotDiagram;
+  const effectiveDotDiagram = options.inputMode === InputMode.URL ? dotContent || '' : options.dotDiagram;
 
   const renderError = useThemedDotSvg(
     svgRef,
@@ -120,8 +119,7 @@ export const SimplePanel: React.FC<Props> = ({
     return <ErrorDisplay errorMessage={renderError.message} errorInfo={renderError.errorInfo} />;
   }
 
-  const isBuilderMode =
-    options.diagramSourceType === DiagramSourceType.INLINE && options.inputMode === InputMode.BUILDER && isEditMode;
+  const isBuilderMode = options.inputMode === InputMode.BUILDER && isEditMode;
 
   return (
     <div
@@ -132,10 +130,12 @@ export const SimplePanel: React.FC<Props> = ({
           height: ${height}px;
         `
       )}
+      data-testid="mesh-panel"
     >
       <div
         ref={svgRef}
         className={styles.svg}
+        data-testid="mesh-panel-svg"
         style={{
           width,
           height,

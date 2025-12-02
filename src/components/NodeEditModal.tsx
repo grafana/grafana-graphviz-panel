@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Modal, Input, Button, Combobox, Field } from '@grafana/ui';
+import { Modal, Input, Button, Select, Field } from '@grafana/ui';
 import { getShapeOptions, toOptional } from '../builderMode';
 import { useModalForm } from '../hooks/useModalForm';
 
@@ -54,7 +54,7 @@ export const NodeEditModal: React.FC<NodeEditModalProps> = ({
         />
       </Field>
       <Field label="Shape">
-        <Combobox
+        <Select
           options={shapeOptions}
           placeholder="Select shape (optional)"
           value={values.nodeShape}
