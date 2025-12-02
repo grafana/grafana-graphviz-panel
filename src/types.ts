@@ -38,6 +38,11 @@ export enum DataFormatStrategy {
   MIXED = 'mixed',
 }
 
+export enum MatchMode {
+  AUTODETECT = 'autodetect',
+  MANUAL = 'manual',
+}
+
 export interface ThresholdStep {
   color: string;
   value: number;
@@ -79,6 +84,7 @@ export type Rule = StrokeColorRule | FillColorRule | StrokeWidthRule | LabelRule
 export interface EdgeOverride {
   id: string;
   targetEdgeIds: string[];
+  matchMode?: MatchMode;
   matchFieldName?: string;
   matchValue?: string;
   matchPattern?: string;
@@ -88,6 +94,7 @@ export interface EdgeOverride {
 export interface NodeOverride {
   id: string;
   targetNodeIds: string[];
+  matchMode?: MatchMode;
   matchFieldName?: string;
   matchValue?: string;
   matchPattern?: string;

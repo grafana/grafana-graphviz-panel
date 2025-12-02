@@ -414,6 +414,84 @@
       ],
       "title": "MIXED Data (timeseries + wide)",
       "type": "grafana-mesh-panel"
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "description": "Demonstrates autodetect partial match UX - some nodes match, others don't",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 12,
+        "x": 0,
+        "y": 28
+      },
+      "id": 4,
+      "options": {
+        "dotDiagram": "digraph PartialMatch {\n  ServerA [shape=box];\n  ServerB [shape=box];\n  ServerC [shape=box];\n  ServerD [shape=box];\n  ServerE [shape=box];\n  \n  ServerA -> ServerB;\n  ServerB -> ServerC;\n  ServerC -> ServerD;\n  ServerD -> ServerE;\n}",
+        "edgeOverrides": [],
+        "layoutEngine": "dot",
+        "namedThresholds": [
+          {
+            "id": "health-threshold",
+            "name": "Health Status",
+            "steps": [
+              {
+                "color": "#F2495C",
+                "value": 0
+              },
+              {
+                "color": "#FF9830",
+                "value": 30
+              },
+              {
+                "color": "#FADE2A",
+                "value": 60
+              },
+              {
+                "color": "#73BF69",
+                "value": 80
+              }
+            ]
+          }
+        ],
+        "nodeOverrides": [],
+        "rankDirection": "LR"
+      },
+      "pluginVersion": "1.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "db84e60d-b92a-4089-82cb-34842fb1754b"
+          },
+          "rawFrameContent": "[\n  {\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"hostname\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"health_score\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"ServerA\", 95],\n      [1609462800000, \"ServerB\", 75],\n      [1609466400000, \"ServerC\", 45]\n    ]\n  },\n  {\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"server_name\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"cpu_usage\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"ServerD\", 62]\n    ]\n  },\n  {\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"node_id\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"memory_usage\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"EServer\", 38]\n    ]\n  },\n  {\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"link_id\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"bandwidth\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"ServerA__to__ServerB\", 850],\n      [1609462800000, \"ServerB__to__ServerC\", 450]\n    ]\n  },\n  {\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"connection\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"latency\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"ServerC__to__ServerD\", 25],\n      [1609462800000, \"ServerE__to__ServerA\", 15]\n    ]\n  }\n]",
+          "refId": "A",
+          "scenarioId": "raw_frame"
+        }
+      ],
+      "title": "Partial Match Demo (Autodetect)",
+      "type": "grafana-mesh-panel"
     }
   ],
   "preload": false,
