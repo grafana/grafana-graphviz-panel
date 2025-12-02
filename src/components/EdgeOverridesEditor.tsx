@@ -1,18 +1,37 @@
 import React from 'react';
 import { StandardEditorProps, SelectableValue } from '@grafana/data';
-import { Button, Field, MultiSelect, ColorPicker, IconButton, Combobox } from '@grafana/ui';
-import { NodeMapping, StrokeColorRule, FillColorRule, Rule, RuleKind } from '../types';
+import {
+  Button,
+  Field,
+  MultiSelect,
+  ColorPicker,
+  IconButton,
+  Combobox,
+  Dropdown,
+  Menu,
+  Box,
+  CodeEditor,
+  Monaco,
+  MonacoEditor,
+} from '@grafana/ui';
+import { EdgeOverride, StrokeColorRule, StrokeWidthRule, Rule, RuleKind } from '../types';
 import { css } from '@emotion/css';
+import {
+  registerEdgeLabelCompletion,
+  SINGLE_LINE_MONACO_OPTIONS,
+  registerSingleLineKeyCommands,
+  registerMatchValueCompletion,
+} from '../utils/monacoConfig';
 
-interface Props extends StandardEditorProps<NodeMapping[]> {}
+interface Props extends StandardEditorProps<EdgeOverride[]> {}
 
-export const NodeMappingsEditor: React.FC<Props> = ({ value, onChange, context }) => {
+export const EdgeOverridesEditor: React.FC<Props> = ({ value, onChange, context }) => {
   const mappings = value || [];
 
   const addMapping = () => {
-    const newMapping: NodeMapping = {
-      id: `node-mapping-${Date.now()}`,
-      targetNodeIds: [],
+    const newMapping: EdgeOverride = {
+      id: `edge-mapping-${Date.now()}`,
+      targetEdgeIds: [],
       rules: [],
     };
     onChange([...mappings, newMapping]);
@@ -22,11 +41,11 @@ export const NodeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
     onChange(mappings.filter((mapping) => mapping.id !== id));
   };
 
-  const updateMapping = (id: string, updates: Partial<NodeMapping>) => {
+  const updateMapping = (id: string, updates: Partial<EdgeOverride>) => {
     onChange(mappings.map((mapping) => (mapping.id === id ? { ...mapping, ...updates } : mapping)));
   };
 
-  const addBorderColorRule = (mappingId: string) => {
+  const addColorRule = (mappingId: string) => {
     const mapping = mappings.find((m) => m.id === mappingId);
     if (mapping) {
       const newRule: StrokeColorRule = {
@@ -37,12 +56,23 @@ export const NodeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
     }
   };
 
-  const addFillColorRule = (mappingId: string) => {
+  const addWidthRule = (mappingId: string) => {
     const mapping = mappings.find((m) => m.id === mappingId);
     if (mapping) {
-      const newRule: FillColorRule = {
-        kind: RuleKind.FILL_COLOR,
-        staticColor: '#00FF00',
+      const newRule: StrokeWidthRule = {
+        kind: RuleKind.STROKE_WIDTH,
+        staticWidth: 1,
+      };
+      updateMapping(mappingId, { rules: [...mapping.rules, newRule] });
+    }
+  };
+
+  const addLabelRule = (mappingId: string) => {
+    const mapping = mappings.find((m) => m.id === mappingId);
+    if (mapping) {
+      const newRule = {
+        kind: RuleKind.LABEL,
+        labelTemplate: '${field}',
       };
       updateMapping(mappingId, { rules: [...mapping.rules, newRule] });
     }
@@ -64,7 +94,7 @@ export const NodeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
     }
   };
 
-  const availableNodeIds = extractNodeIds(context.options?.dotDiagram);
+  const availableEdgeIds = extractEdgeIds(context.options?.dotDiagram);
   const stringFields = extractStringFields(context.data);
   const numericFields = extractNumericFields(context.data);
 
@@ -94,28 +124,28 @@ export const NodeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
       {mappings.map((mapping, index) => (
         <div key={mapping.id} className={mappingContainerStyle}>
           <div className={headerStyle}>
-            <strong>Node Mapping {index + 1}</strong>
-            <IconButton name="trash-alt" onClick={() => removeMapping(mapping.id)} tooltip="Remove mapping" />
+            <strong>Edge Override {index + 1}</strong>
+            <IconButton name="trash-alt" onClick={() => removeMapping(mapping.id)} tooltip="Remove override" />
           </div>
 
-          <Field label="Select Nodes">
+          <Field label="Select Edges">
             <div style={{ display: 'flex', gap: '4px', alignItems: 'flex-start' }}>
               <div style={{ flex: 1 }}>
                 <MultiSelect
-                  value={mapping.targetNodeIds}
-                  options={availableNodeIds.map((id) => ({ label: id, value: id }))}
+                  value={mapping.targetEdgeIds}
+                  options={availableEdgeIds.map((id) => ({ label: id, value: id }))}
                   onChange={(selections) => {
                     const selectedIds = selections.map((s) => s.value!);
-                    updateMapping(mapping.id, { targetNodeIds: selectedIds });
+                    updateMapping(mapping.id, { targetEdgeIds: selectedIds });
                   }}
-                  placeholder="Select nodes..."
+                  placeholder="Select edges..."
                 />
               </div>
               <Button
                 variant="secondary"
                 size="md"
-                onClick={() => updateMapping(mapping.id, { targetNodeIds: availableNodeIds })}
-                tooltip="Select all nodes"
+                onClick={() => updateMapping(mapping.id, { targetEdgeIds: availableEdgeIds })}
+                tooltip="Select all edges"
               >
                 All
               </Button>
@@ -130,10 +160,11 @@ export const NodeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
                 updateMapping(mapping.id, {
                   matchFieldName: selection?.value as string | undefined,
                   matchValue: undefined,
-                  matchPattern: undefined,
+                  matchPattern: selection?.value ? '${id}' : undefined,
                   rules: mapping.rules.map((rule) => ({
                     ...rule,
                     colorFieldName: undefined,
+                    widthFieldName: undefined,
                     thresholdId: undefined,
                   })),
                 })
@@ -144,20 +175,26 @@ export const NodeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
           </Field>
 
           {mapping.matchFieldName && (
-            <Field label="Match Value" description='Use "${id}" to match node ID, or select specific value'>
-              <input
-                type="text"
+            <Field label="Match Value" description='Use "${id}" to match edge ID, or enter specific value'>
+              <CodeEditor
                 value={mapping.matchPattern || mapping.matchValue || ''}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value.includes('${id}')) {
-                    updateMapping(mapping.id, { matchPattern: value, matchValue: undefined });
+                language="plaintext"
+                height={30}
+                showLineNumbers={false}
+                showMiniMap={false}
+                monacoOptions={SINGLE_LINE_MONACO_OPTIONS}
+                onChange={(value) => {
+                  const cleanValue = value.replace(/\n/g, '');
+                  if (cleanValue.includes('${id}')) {
+                    updateMapping(mapping.id, { matchPattern: cleanValue, matchValue: undefined });
                   } else {
-                    updateMapping(mapping.id, { matchValue: value, matchPattern: undefined });
+                    updateMapping(mapping.id, { matchValue: cleanValue, matchPattern: undefined });
                   }
                 }}
-                placeholder='Enter "${id}" or specific value...'
-                style={{ width: '100%', padding: '6px', fontFamily: 'monospace' }}
+                onEditorDidMount={(editor: MonacoEditor, monaco: Monaco) => {
+                  registerMatchValueCompletion(monaco, 'edge');
+                  registerSingleLineKeyCommands(editor, monaco);
+                }}
               />
             </Field>
           )}
@@ -166,18 +203,19 @@ export const NodeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
             <div key={ruleIndex} className={ruleContainerStyle}>
               <div className={headerStyle}>
                 <strong>
-                  {rule.kind === RuleKind.STROKE_COLOR && 'Border Color Rule'}
-                  {rule.kind === RuleKind.FILL_COLOR && 'Fill Color Rule'}
+                  {rule.kind === RuleKind.STROKE_COLOR && 'Stroke Color Override'}
+                  {rule.kind === RuleKind.STROKE_WIDTH && 'Stroke Width Override'}
+                  {rule.kind === RuleKind.LABEL && 'Label Override'}
                 </strong>
                 <IconButton
                   name="trash-alt"
                   onClick={() => removeRule(mapping.id, ruleIndex)}
-                  tooltip="Remove rule"
+                  tooltip="Remove override"
                   size="sm"
                 />
               </div>
 
-              {(rule.kind === RuleKind.STROKE_COLOR || rule.kind === RuleKind.FILL_COLOR) && (
+              {rule.kind === RuleKind.STROKE_COLOR && (
                 <>
                   {mapping.matchFieldName ? (
                     <>
@@ -232,47 +270,123 @@ export const NodeMappingsEditor: React.FC<Props> = ({ value, onChange, context }
                   )}
                 </>
               )}
+
+              {rule.kind === RuleKind.STROKE_WIDTH && (
+                <>
+                  {mapping.matchFieldName ? (
+                    <>
+                      {numericFields.length > 1 && (
+                        <Field label="Width Field">
+                          <Combobox
+                            value={rule.widthFieldName}
+                            options={numericFields as any}
+                            onChange={(selection: any) =>
+                              updateRule(mapping.id, ruleIndex, { widthFieldName: selection?.value })
+                            }
+                            placeholder="Select width field..."
+                          />
+                        </Field>
+                      )}
+                      {numericFields.length === 1 &&
+                        !rule.widthFieldName &&
+                        (() => {
+                          updateRule(mapping.id, ruleIndex, { widthFieldName: numericFields[0].value });
+                          return null;
+                        })()}
+                    </>
+                  ) : (
+                    <Field label="Static Width (px)">
+                      <input
+                        type="number"
+                        value={rule.staticWidth || 1}
+                        onChange={(e) =>
+                          updateRule(mapping.id, ruleIndex, { staticWidth: parseFloat(e.target.value) || 1 })
+                        }
+                        min={0.1}
+                        max={5}
+                        step={0.5}
+                        style={{ width: '100%', padding: '6px' }}
+                      />
+                    </Field>
+                  )}
+                </>
+              )}
+
+              {rule.kind === RuleKind.LABEL && (
+                <Field
+                  label="Label Template"
+                  description="Use ${fieldName} to insert field values. Press Ctrl+Space to see available fields."
+                >
+                  <CodeEditor
+                    value={rule.labelTemplate || ''}
+                    language="plaintext"
+                    height="60px"
+                    showLineNumbers={false}
+                    showMiniMap={false}
+                    monacoOptions={{
+                      quickSuggestions: true,
+                      suggestOnTriggerCharacters: true,
+                    }}
+                    onChange={(value) => updateRule(mapping.id, ruleIndex, { labelTemplate: value })}
+                    onEditorDidMount={(editor: MonacoEditor, monaco: Monaco) => {
+                      registerEdgeLabelCompletion(monaco, context.data, mapping);
+                    }}
+                  />
+                </Field>
+              )}
             </div>
           ))}
 
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <Button icon="plus" onClick={() => addBorderColorRule(mapping.id)} variant="secondary" size="sm">
-              Add Border Color Rule
-            </Button>
-            <Button icon="plus" onClick={() => addFillColorRule(mapping.id)} variant="secondary" size="sm">
-              Add Fill Color Rule
-            </Button>
-          </div>
+          <Box marginTop={1.5}>
+            <Dropdown
+              overlay={
+                <Menu>
+                  <Menu.Item label="Stroke Color" icon="circle" onClick={() => addColorRule(mapping.id)} />
+                  <Menu.Item label="Stroke Width" icon="arrows-h" onClick={() => addWidthRule(mapping.id)} />
+                  <Menu.Item label="Label" icon="font" onClick={() => addLabelRule(mapping.id)} />
+                </Menu>
+              }
+            >
+              <Button icon="plus" variant="secondary" size="sm">
+                Add Edge Override
+              </Button>
+            </Dropdown>
+          </Box>
         </div>
       ))}
 
       <Button icon="plus" onClick={addMapping} variant="secondary">
-        Add Node Mapping
+        Add Edge Override
       </Button>
     </div>
   );
 };
 
-function extractNodeIds(dotDiagram: string | undefined): string[] {
+function extractEdgeIds(dotDiagram: string | undefined): string[] {
   if (!dotDiagram) {
     return [];
   }
 
-  const nodePattern = /(\w+)\s*\[/g;
-  const nodeIds = new Set<string>();
+  const edgeIdPattern = /(\w+)\s*-[->]\s*(\w+)(?:\s*\[([^\]]*)\])?/g;
+  const edgeIds: string[] = [];
   let match;
 
-  while ((match = nodePattern.exec(dotDiagram)) !== null) {
-    nodeIds.add(match[1]);
+  while ((match = edgeIdPattern.exec(dotDiagram)) !== null) {
+    const source = match[1];
+    const target = match[2];
+    const attributes = match[3];
+
+    if (attributes && attributes.includes('id=')) {
+      const idMatch = attributes.match(/id\s*=\s*"?([^",\]]+)"?/);
+      if (idMatch) {
+        edgeIds.push(idMatch[1]);
+      }
+    } else {
+      edgeIds.push(`${source}__to__${target}`);
+    }
   }
 
-  const edgePattern = /(\w+)\s*-[->]\s*(\w+)/g;
-  while ((match = edgePattern.exec(dotDiagram)) !== null) {
-    nodeIds.add(match[1]);
-    nodeIds.add(match[2]);
-  }
-
-  return Array.from(nodeIds).sort();
+  return edgeIds;
 }
 
 function extractStringFields(data: any): Array<SelectableValue<string>> {

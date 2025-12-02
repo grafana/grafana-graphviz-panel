@@ -8,7 +8,7 @@ import {
   isTimeSeriesFrame,
   FieldWithIndex,
 } from '@grafana/data';
-import { EdgeMapping, NodeMapping, RuleKind, NamedThreshold, DataFormatStrategy } from './types';
+import { EdgeOverride, NodeOverride, RuleKind, NamedThreshold, DataFormatStrategy } from './types';
 
 export interface DataDrivenColors {
   nodeBorderColors: Map<string, string>;
@@ -46,8 +46,8 @@ export function detectDataFormatStrategy(series: DataFrame[]): DataFormatStrateg
 export function processDataFieldBindings(
   data: PanelData,
   fieldConfig: FieldConfigSource,
-  nodeMappings: NodeMapping[],
-  edgeMappings: EdgeMapping[],
+  nodeOverrides: NodeOverride[],
+  edgeOverrides: EdgeOverride[],
   namedThresholds: NamedThreshold[],
   theme: GrafanaTheme2
 ): DataDrivenColors {
@@ -59,7 +59,7 @@ export function processDataFieldBindings(
     return { nodeBorderColors, nodeFillColors, edgeColors };
   }
 
-  nodeMappings.forEach((mapping) => {
+  nodeOverrides.forEach((mapping) => {
     const borderColorRules = mapping.rules.filter((r) => r.kind === RuleKind.STROKE_COLOR);
     const fillColorRules = mapping.rules.filter((r) => r.kind === RuleKind.FILL_COLOR);
 
@@ -118,7 +118,7 @@ export function processDataFieldBindings(
     });
   });
 
-  edgeMappings.forEach((mapping) => {
+  edgeOverrides.forEach((mapping) => {
     const colorRules = mapping.rules.filter((r) => r.kind === RuleKind.STROKE_COLOR);
 
     colorRules.forEach((rule) => {
@@ -155,14 +155,14 @@ export function processDataFieldBindings(
 /**
  * Processes width rules from edge mappings to determine stroke widths.
  */
-export function processWidthRules(data: PanelData, edgeMappings: EdgeMapping[]): DataDrivenWidths {
+export function processWidthRules(data: PanelData, edgeOverrides: EdgeOverride[]): DataDrivenWidths {
   const edgeWidths = new Map<string, number>();
 
   if (!data.series || data.series.length === 0) {
     return { edgeWidths };
   }
 
-  edgeMappings.forEach((mapping) => {
+  edgeOverrides.forEach((mapping) => {
     const widthRules = mapping.rules.filter((r) => r.kind === RuleKind.STROKE_WIDTH);
 
     widthRules.forEach((rule) => {
@@ -470,4 +470,85 @@ function extractColorFromTimeSeries(
 ): string | undefined {
   const finder = createTimeSeriesFinder<string>(createColorProcessor(namedThresholds, thresholdId));
   return finder(series, matchFieldName, matchValue, colorFieldName);
+}
+
+function findMatchedRowFromWide(
+  series: DataFrame[],
+  matchFieldName: string,
+  matchValue: string
+): Record<string, any> | undefined {
+  for (const frame of series) {
+    const matchField = frame.fields.find((f) => f.name === matchFieldName);
+
+    if (!matchField) {
+      continue;
+    }
+
+    const view = new DataFrameView(frame);
+    for (let i = 0; i < view.length; i++) {
+      const row = view.get(i);
+      if (String(row[matchFieldName]) === matchValue) {
+        return row;
+      }
+    }
+  }
+  return undefined;
+}
+
+function findMatchedRowFromTimeSeries(
+  series: DataFrame[],
+  matchFieldName: string,
+  matchValue: string
+): Record<string, any> | undefined {
+  for (const frame of series) {
+    for (const field of frame.fields) {
+      if (field.labels && field.labels[matchFieldName] === matchValue) {
+        const row: Record<string, any> = {};
+
+        if (field.labels) {
+          Object.entries(field.labels).forEach(([key, value]) => {
+            row[key] = value;
+          });
+        }
+
+        if (field.values.length > 0) {
+          row[field.name] = field.values[field.values.length - 1];
+        }
+
+        return row;
+      }
+    }
+  }
+  return undefined;
+}
+
+function findMatchedRowFromMixed(
+  series: DataFrame[],
+  matchFieldName: string,
+  matchValue: string
+): Record<string, any> | undefined {
+  return (
+    findMatchedRowFromTimeSeries(series, matchFieldName, matchValue) ||
+    findMatchedRowFromWide(series, matchFieldName, matchValue)
+  );
+}
+
+export function findMatchedRow(
+  series: DataFrame[],
+  matchFieldName: string,
+  matchValue: string
+): Record<string, any> | undefined {
+  const strategy = detectDataFormatStrategy(series);
+
+  switch (strategy) {
+    case DataFormatStrategy.TIMESERIES:
+      return findMatchedRowFromTimeSeries(series, matchFieldName, matchValue);
+
+    case DataFormatStrategy.MIXED:
+      return findMatchedRowFromMixed(series, matchFieldName, matchValue);
+
+    case DataFormatStrategy.WIDE:
+    default:
+      return findMatchedRowFromWide(series, matchFieldName, matchValue);
+  }
 }

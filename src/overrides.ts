@@ -1,23 +1,24 @@
 import * as graphlibDot from 'graphlib-dot';
 import { Graph } from 'graphlib';
-import { EdgeMapping, NodeMapping, RuleKind } from './types';
-import { DataDrivenColors, DataDrivenWidths } from './data';
+import { EdgeOverride, NodeOverride, RuleKind } from './types';
+import { DataDrivenColors, DataDrivenWidths, findMatchedRow } from './data';
+import { interpolateLabel, hasInterpolation } from './interpolation';
 
 /**
  * Applies edge mappings (static color rules) to the graph.
  *
  * @param dotString - The DOT notation string to process
- * @param edgeMappings - Array of edge mappings to apply
+ * @param edgeOverrides - Array of edge mappings to apply
  * @returns DOT string with edge mappings applied
  */
-export function applyEdgeStyleMappings(dotString: string, edgeMappings: EdgeMapping[]): string {
-  if (!edgeMappings || edgeMappings.length === 0) {
+export function applyEdgeStyleOverrides(dotString: string, edgeOverrides: EdgeOverride[]): string {
+  if (!edgeOverrides || edgeOverrides.length === 0) {
     return dotString;
   }
 
   const graph = graphlibDot.read(dotString);
 
-  edgeMappings.forEach((mapping) => {
+  edgeOverrides.forEach((mapping) => {
     const colorRules = mapping.rules.filter((r) => r.kind === RuleKind.STROKE_COLOR);
 
     colorRules.forEach((rule) => {
@@ -40,26 +41,127 @@ export function applyEdgeStyleMappings(dotString: string, edgeMappings: EdgeMapp
   return graphlibDot.write(graph);
 }
 
-/**
- * Applies node mappings (static color rules) to the graph.
- *
- * @param dotString - The DOT notation string to process
- * @param nodeMappings - Array of node mappings to apply
- * @returns DOT string with node mappings applied
- */
-export function applyNodeStyleMappings(dotString: string, nodeMappings: NodeMapping[]): string {
-  return applyStyleMappings(dotString, nodeMappings);
+export function applyNodeStyleOverrides(dotString: string, nodeOverrides: NodeOverride[]): string {
+  return applyStyleMappings(dotString, nodeOverrides);
+}
+
+function applyLabelToNode(graph: Graph, nodeId: string, labelRules: any[], dataRow: Record<string, any>): void {
+  if (!graph.hasNode(nodeId)) {
+    return;
+  }
+
+  const nodeData = graph.node(nodeId);
+  let finalLabel = nodeData.label;
+
+  if (labelRules.length > 0 && labelRules[0].labelTemplate) {
+    finalLabel = interpolateLabel(labelRules[0].labelTemplate, dataRow);
+  } else if (nodeData.label && hasInterpolation(nodeData.label)) {
+    finalLabel = interpolateLabel(nodeData.label, dataRow);
+  }
+
+  if (finalLabel !== nodeData.label) {
+    graph.setNode(nodeId, {
+      ...nodeData,
+      label: finalLabel,
+    });
+  }
+}
+
+function applyLabelToEdge(graph: Graph, edgeId: string, labelRules: any[], dataRow: Record<string, any>): void {
+  graph.edges().forEach((edgeObj) => {
+    const edgeData = graph.edge(edgeObj);
+    const currentEdgeId = edgeData?.id || `${edgeObj.v}__to__${edgeObj.w}`;
+
+    if (currentEdgeId !== edgeId) {
+      return;
+    }
+
+    let finalLabel = edgeData.label;
+
+    if (labelRules.length > 0 && labelRules[0].labelTemplate) {
+      finalLabel = interpolateLabel(labelRules[0].labelTemplate, dataRow);
+    } else if (edgeData.label && hasInterpolation(edgeData.label)) {
+      finalLabel = interpolateLabel(edgeData.label, dataRow);
+    }
+
+    if (finalLabel !== edgeData.label) {
+      graph.setEdge(edgeObj.v, edgeObj.w, {
+        ...edgeData,
+        label: finalLabel,
+      });
+    }
+  });
+}
+
+export function applyDataDrivenNodeLabels(dotString: string, nodeOverrides: NodeOverride[], data: any): string {
+  if (!data.series || data.series.length === 0) {
+    return dotString;
+  }
+
+  const graph = graphlibDot.read(dotString);
+
+  nodeOverrides.forEach((mapping) => {
+    const labelRules = mapping.rules.filter((r) => r.kind === RuleKind.LABEL);
+
+    mapping.targetNodeIds.forEach((nodeId: string) => {
+      const matchValue = mapping.matchPattern ? mapping.matchPattern.replace(/\$\{id\}/g, nodeId) : mapping.matchValue;
+
+      if (!matchValue || !mapping.matchFieldName) {
+        return;
+      }
+
+      const dataRow = findMatchedRow(data.series, mapping.matchFieldName, matchValue);
+
+      if (!dataRow) {
+        return;
+      }
+
+      applyLabelToNode(graph, nodeId, labelRules, dataRow);
+    });
+  });
+
+  return graphlibDot.write(graph);
+}
+
+export function applyDataDrivenEdgeLabels(dotString: string, edgeOverrides: EdgeOverride[], data: any): string {
+  if (!data.series || data.series.length === 0) {
+    return dotString;
+  }
+
+  const graph = graphlibDot.read(dotString);
+
+  edgeOverrides.forEach((mapping) => {
+    const labelRules = mapping.rules.filter((r) => r.kind === RuleKind.LABEL);
+
+    mapping.targetEdgeIds.forEach((edgeId: string) => {
+      const matchValue = mapping.matchPattern ? mapping.matchPattern.replace(/\$\{id\}/g, edgeId) : mapping.matchValue;
+
+      if (!matchValue || !mapping.matchFieldName) {
+        return;
+      }
+
+      const dataRow = findMatchedRow(data.series, mapping.matchFieldName, matchValue);
+
+      if (!dataRow) {
+        return;
+      }
+
+      applyLabelToEdge(graph, edgeId, labelRules, dataRow);
+    });
+  });
+
+  return graphlibDot.write(graph);
 }
 
 /**
  * Applies all style mappings to a DOT string.
  * Handles DOT marshalling/unmarshalling and coordinates between different mapping types.
  */
-function applyStyleMappings(dotString: string, nodeMappings: NodeMapping[]): string {
+function applyStyleMappings(dotString: string, nodeOverrides: NodeOverride[]): string {
   const graph = graphlibDot.read(dotString);
 
   applyClusterStyleMappings(graph);
-  applyUserNodeMappings(graph, nodeMappings);
+  applyUserNodeOverrides(graph, nodeOverrides);
 
   return graphlibDot.write(graph);
 }
@@ -67,9 +169,9 @@ function applyStyleMappings(dotString: string, nodeMappings: NodeMapping[]): str
 /**
  * Applies user-defined node mappings to the graph.
  */
-function applyUserNodeMappings(graph: Graph, nodeMappings: NodeMapping[]): void {
-  if (nodeMappings && nodeMappings.length > 0) {
-    nodeMappings.forEach((mapping) => {
+function applyUserNodeOverrides(graph: Graph, nodeOverrides: NodeOverride[]): void {
+  if (nodeOverrides && nodeOverrides.length > 0) {
+    nodeOverrides.forEach((mapping) => {
       const borderColorRules = mapping.rules.filter((r) => r.kind === RuleKind.STROKE_COLOR);
       const fillColorRules = mapping.rules.filter((r) => r.kind === RuleKind.FILL_COLOR);
 

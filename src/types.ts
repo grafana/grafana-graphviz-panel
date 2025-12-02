@@ -29,6 +29,7 @@ export enum RuleKind {
   STROKE_COLOR = 'strokeColor',
   FILL_COLOR = 'fillColor',
   STROKE_WIDTH = 'strokeWidth',
+  LABEL = 'label',
 }
 
 export enum DataFormatStrategy {
@@ -68,9 +69,14 @@ export interface StrokeWidthRule {
   staticWidth?: number;
 }
 
-export type Rule = StrokeColorRule | FillColorRule | StrokeWidthRule;
+export interface LabelRule {
+  kind: RuleKind.LABEL;
+  labelTemplate?: string;
+}
 
-export interface EdgeMapping {
+export type Rule = StrokeColorRule | FillColorRule | StrokeWidthRule | LabelRule;
+
+export interface EdgeOverride {
   id: string;
   targetEdgeIds: string[];
   matchFieldName?: string;
@@ -79,7 +85,7 @@ export interface EdgeMapping {
   rules: Rule[];
 }
 
-export interface NodeMapping {
+export interface NodeOverride {
   id: string;
   targetNodeIds: string[];
   matchFieldName?: string;
@@ -101,7 +107,7 @@ export interface SimpleOptions {
   layoutEngine: LayoutEngine;
   rankDirection: RankDirection;
   namedThresholds: NamedThreshold[];
-  edgeMappings: EdgeMapping[];
-  nodeMappings: NodeMapping[];
+  edgeOverrides: EdgeOverride[];
+  nodeOverrides: NodeOverride[];
   builderModeActions?: BuilderModeActions;
 }

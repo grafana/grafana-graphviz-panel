@@ -55,7 +55,7 @@
       "id": 1,
       "options": {
         "dotDiagram": "digraph Network {\n  Start [shape=ellipse];\n  Gateway [shape=box];\n  End [shape=doublecircle];\n  \n  Start -> Gateway;\n  Gateway -> End;\n  End -> Gateway;\n  Start -> Backup [dir=none];\n  \n  subgraph cluster_services {\n    label=\"Microservices\";\n    style=rounded;\n    bgcolor=lightblue;\n    \n    API [shape=hexagon];\n    DB [shape=cylinder];\n    Cache;\n    \n    API -> DB;\n    API -> Cache;\n    Cache -> DB [style=dashed];\n  }\n  \n  Gateway -> API;\n  \n  Monitor [shape=triangle, style=filled];\n}",
-        "edgeMappings": [
+        "edgeOverrides": [
           {
             "id": "edge-mapping-1",
             "targetEdgeIds": [
@@ -126,7 +126,7 @@
             ]
           }
         ],
-        "nodeMappings": [
+        "nodeOverrides": [
           {
             "id": "node-mapping-1",
             "targetNodeIds": ["Start", "Gateway", "End", "API", "DB", "Cache", "Monitor", "Backup"],
@@ -194,7 +194,7 @@
       "id": 2,
       "options": {
         "dotDiagram": "digraph Simple {\n  Start [shape=ellipse];\n  Gateway [shape=box];\n  End [shape=doublecircle];\n  \n  Start -> Gateway;\n  Gateway -> End;\n}",
-        "edgeMappings": [
+        "edgeOverrides": [
           {
             "id": "edge-mapping-wide",
             "targetEdgeIds": ["Start__to__Gateway", "Gateway__to__End"],
@@ -256,7 +256,7 @@
             ]
           }
         ],
-        "nodeMappings": [
+        "nodeOverrides": [
           {
             "id": "node-mapping-wide",
             "targetNodeIds": ["Start", "Gateway", "End"],
@@ -321,7 +321,7 @@
       "id": 3,
       "options": {
         "dotDiagram": "digraph Mixed {\n  A [shape=ellipse];\n  B [shape=box];\n  C [shape=diamond];\n  D [shape=hexagon];\n  \n  A -> B;\n  B -> C;\n  C -> D;\n  D -> A;\n}",
-        "edgeMappings": [
+        "edgeOverrides": [
           {
             "id": "edge-mapping-mixed",
             "targetEdgeIds": ["A__to__B", "B__to__C", "C__to__D", "D__to__A"],
@@ -383,7 +383,7 @@
             ]
           }
         ],
-        "nodeMappings": [
+        "nodeOverrides": [
           {
             "id": "node-mapping-mixed",
             "targetNodeIds": ["A", "B", "C", "D"],
