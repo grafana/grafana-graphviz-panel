@@ -1,6 +1,6 @@
 {
   "name": "mesh",
-  "version": "1.0.0",
+  "version": "0.0.1-beta-rc1",
   "scripts": {
     "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
     "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
