@@ -128,7 +128,7 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
             <IconButton name="trash-alt" onClick={() => removeMapping(mapping.id)} tooltip="Remove override" />
           </div>
 
-          <Field label="Select Nodes">
+          <Field label="Select Nodes" description="Defines which nodes the override will be applied to">
             <div style={{ display: 'flex', gap: '4px', alignItems: 'flex-start' }}>
               <div style={{ flex: 1 }}>
                 <MultiSelect
@@ -152,7 +152,7 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
             </div>
           </Field>
 
-          <Field label="Match Field (Optional)">
+          <Field label="Match Field (Optional)" description="The matching will be based on the value of the field.">
             <Combobox
               value={mapping.matchFieldName}
               options={stringFields as any}
@@ -174,7 +174,7 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
           </Field>
 
           {mapping.matchFieldName && (
-            <Field label="Match Value" description='Use "${id}" to match node ID, or select specific value'>
+            <Field label="Match Value" description='Defines the row to match on. By default, it matches based on the node ID'>
               <CodeEditor
                 value={mapping.matchPattern || mapping.matchValue || ''}
                 language="plaintext"
@@ -306,7 +306,7 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
               }
             >
               <Button icon="plus" variant="secondary" size="sm">
-                Add Node Override
+                Add attribute 
               </Button>
             </Dropdown>
           </Box>
