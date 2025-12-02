@@ -15,6 +15,7 @@ import {
 import { processDataFieldBindings, processWidthRules } from './data';
 import { renderDotToSvg } from './dot';
 import { applySvgTheming } from './theming';
+import { getOrCreateSvgDefinitions, applyBlurGlowFilter, applyNodeGradient } from './utils/svgFilters';
 import { EdgeOverride, NodeOverride, NamedThreshold, InputMode } from './types';
 
 export interface RenderError {
@@ -162,6 +163,10 @@ export function useThemedDotSvg(
           const d3Svg = d3.select(svgElement);
           normalizeNodePathStyling(d3Svg);
           applySvgTheming(svgElement, theme, isEditMode);
+
+          const svgDefinitions = getOrCreateSvgDefinitions(svgElement);
+          applyBlurGlowFilter(svgDefinitions, svgElement);
+          applyNodeGradient(svgDefinitions, svgElement, theme);
         }
 
         setRenderError(null);
