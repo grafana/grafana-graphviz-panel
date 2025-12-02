@@ -15,14 +15,10 @@ export enum RankDirection {
   RIGHT_TO_LEFT = 'RL',
 }
 
-export enum DiagramSourceType {
-  INLINE = 'inline',
-  URL = 'url',
-}
-
 export enum InputMode {
   CODE = 'code',
   BUILDER = 'builder',
+  URL = 'url',
 }
 
 export enum RuleKind {
@@ -100,7 +96,6 @@ export interface BuilderModeActions {
 }
 
 export interface SimpleOptions {
-  diagramSourceType: DiagramSourceType;
   inputMode?: InputMode;
   dotDiagram: string;
   dotDiagramUrl: string;

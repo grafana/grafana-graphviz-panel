@@ -409,7 +409,7 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
                     <Button
                       variant="secondary"
                       size="sm"
-                      icon="upload"
+                      icon="gf-interpolation-step-after"
                       aria-label={`Drag to create edge from ${pos.id}`}
                       title="Drag to create edge"
                     />

@@ -1,5 +1,5 @@
 import { PanelPlugin } from '@grafana/data';
-import { SimpleOptions, RankDirection, LayoutEngine, DiagramSourceType, InputMode } from './types';
+import { SimpleOptions, RankDirection, LayoutEngine, InputMode } from './types';
 import { SimplePanel } from './components/SimplePanel';
 import { DotDiagramEditor } from './components/DotDiagramEditor';
 import { BuilderModeEditor } from './components/BuilderModeEditor';
@@ -10,38 +10,23 @@ import { NodeOverridesEditor } from './components/NodeOverridesEditor';
 export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig().setPanelOptions((builder) => {
   return builder
     .addRadio({
-      path: 'diagramSourceType',
-      name: 'Diagram Source',
-      description: 'Choose whether to enter the DOT diagram directly or load it from a URL',
-      defaultValue: DiagramSourceType.INLINE,
-      settings: {
-        options: [
-          {
-            value: DiagramSourceType.INLINE,
-            label: 'Inline',
-          },
-          {
-            value: DiagramSourceType.URL,
-            label: 'URL',
-          },
-        ],
-      },
-    })
-    .addRadio({
       path: 'inputMode',
       name: 'Input Mode',
       description: 'Choose how to create the diagram',
-      defaultValue: InputMode.CODE,
-      showIf: (options) => options.diagramSourceType === DiagramSourceType.INLINE,
+      defaultValue: InputMode.BUILDER,
       settings: {
         options: [
+          {
+            value: InputMode.BUILDER,
+            label: 'Builder',
+          },
           {
             value: InputMode.CODE,
             label: 'Code',
           },
           {
-            value: InputMode.BUILDER,
-            label: 'Builder',
+            value: InputMode.URL,
+            label: 'URL',
           },
         ],
       },
@@ -51,10 +36,9 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
       path: 'dotDiagram',
       name: 'DOT Diagram',
       description: 'Enter DOT syntax diagram definition. Supports multi-line input for copy-pasting DOT diagrams.',
-      defaultValue: 'digraph {\n  A -> B;\n  B -> A;\n  C -> A;\n}',
+      defaultValue: 'digraph {}',
       editor: DotDiagramEditor,
       showIf: (options) =>
-        (options.diagramSourceType === DiagramSourceType.INLINE || !options.diagramSourceType) &&
         (options.inputMode === InputMode.CODE || !options.inputMode),
     })
     .addCustomEditor({
@@ -65,7 +49,6 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
       defaultValue: {},
       editor: BuilderModeEditor,
       showIf: (options) =>
-        (options.diagramSourceType === DiagramSourceType.INLINE || !options.diagramSourceType) &&
         options.inputMode === InputMode.BUILDER,
     })
     .addTextInput({
@@ -74,7 +57,7 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
       description:
         'Enter the URL to fetch the DOT diagram from. The URL should return a text file containing valid DOT syntax.',
       defaultValue: '',
-      showIf: (options) => options.diagramSourceType === DiagramSourceType.URL,
+      showIf: (options) => options.inputMode === InputMode.URL,
     })
     .addSelect({
       path: 'layoutEngine',
