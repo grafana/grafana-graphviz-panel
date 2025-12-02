@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { StandardEditorProps, SelectableValue } from '@grafana/data';
 import {
   Button,
@@ -32,7 +32,7 @@ import {
 interface Props extends StandardEditorProps<NodeOverride[]> {}
 
 export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context }) => {
-  const mappings = value || [];
+  const mappings = useMemo(() => value || [], [value]);
   const [detectionResults, setDetectionResults] = useState<Map<string, MatchDetectionResult | undefined>>(new Map());
 
   const addMapping = () => {
@@ -129,43 +129,53 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
   const stringFields = extractStringFields(context.data);
   const numericFields = extractNumericFields(context.data);
 
-  useEffect(() => {
-    const newResults = new Map<string, MatchDetectionResult | undefined>();
-    const updatesToApply: Array<{ id: string; updates: Partial<NodeOverride> }> = [];
+  useEffect(
+    function computeDetectionResults() {
+      const newResults = new Map<string, MatchDetectionResult | undefined>();
 
-    mappings.forEach((mapping) => {
-      const matchMode = mapping.matchMode || MatchMode.MANUAL;
+      mappings.forEach((mapping) => {
+        const matchMode = mapping.matchMode || MatchMode.MANUAL;
 
-      if (matchMode === MatchMode.AUTODETECT && mapping.targetNodeIds.length > 0 && context.data) {
-        const result = autodetectMatchField(context.data, mapping.targetNodeIds);
-        newResults.set(mapping.id, result);
+        if (matchMode === MatchMode.AUTODETECT && mapping.targetNodeIds.length > 0 && context.data) {
+          const result = autodetectMatchField(context.data, mapping.targetNodeIds);
+          newResults.set(mapping.id, result);
+        }
+      });
 
-        if (result && !mapping.matchFieldName) {
+      setDetectionResults(newResults);
+    },
+    [mappings, context.data]
+  );
+
+  useEffect(
+    function autoApplyMatchField() {
+      const updatesToApply: Array<{ id: string; updates: Partial<NodeOverride> }> = [];
+
+      mappings.forEach((mapping) => {
+        const matchMode = mapping.matchMode || MatchMode.MANUAL;
+        const detectionResult = detectionResults.get(mapping.id);
+
+        if (matchMode === MatchMode.AUTODETECT && detectionResult && !mapping.matchFieldName) {
           updatesToApply.push({
             id: mapping.id,
             updates: {
-              matchFieldName: result.matchFieldName,
+              matchFieldName: detectionResult.matchFieldName,
               matchPattern: '${id}',
             },
           });
         }
-      }
-    });
-
-    setDetectionResults(newResults);
-
-    if (updatesToApply.length > 0) {
-      const updatedMappings = mappings.map((mapping) => {
-        const update = updatesToApply.find((u) => u.id === mapping.id);
-        return update ? { ...mapping, ...update.updates } : mapping;
       });
-      onChange(updatedMappings);
-    }
-  }, [
-    mappings.map((m) => `${m.id}-${m.targetNodeIds.join(',')}-${m.matchMode}-${m.matchFieldName || ''}`).join('|'),
-    context.data,
-    onChange,
-  ]);
+
+      if (updatesToApply.length > 0) {
+        const updatedMappings = mappings.map((mapping) => {
+          const update = updatesToApply.find((u) => u.id === mapping.id);
+          return update ? { ...mapping, ...update.updates } : mapping;
+        });
+        onChange(updatedMappings);
+      }
+    },
+    [mappings, detectionResults, onChange]
+  );
 
   const mappingContainerStyle = css`
     margin-bottom: 16px;
@@ -422,8 +432,8 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
                           }}
                         >
                           <span>
-                            {mapping.matchFieldName} = "
-                            {mapping.matchPattern ? mapping.matchPattern : mapping.matchValue}"
+                            {mapping.matchFieldName} = &quot;
+                            {mapping.matchPattern ? mapping.matchPattern : mapping.matchValue}&quot;
                           </span>
                           {matchPercentage === 100 ? (
                             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
