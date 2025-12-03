@@ -883,7 +883,7 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
                                     <span style={{ fontWeight: 500 }}>{nodeId}</span>
                                     <span style={{ color: 'rgba(204, 204, 220, 0.7)' }}>→</span>
                                     <span style={{ fontStyle: 'italic' }}>
-                                      {mapping.fieldMatchPattern.replace(/\$\{id\}/g, nodeId)} (not found)
+                                      {mapping.fieldMatchPattern?.replace(/\$\{id\}/g, nodeId) || nodeId} (not found)
                                     </span>
                                   </div>
                                 ))}
@@ -947,7 +947,8 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
                             {matchPercentage === 0 && (
                               <Alert severity="error" title="No matching fields found">
                                 <div>
-                                  No fields match the pattern "{mapping.fieldMatchPattern}" for the selected nodes.
+                                  No fields match the pattern &quot;{mapping.fieldMatchPattern}&quot; for the selected
+                                  nodes.
                                 </div>
                               </Alert>
                             )}
@@ -977,6 +978,34 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
 
                 {(rule.kind === RuleKind.STROKE_COLOR || rule.kind === RuleKind.FILL_COLOR) &&
                   (() => {
+                    const mappingStrategy = mapping.mappingStrategy || MappingStrategy.ROW;
+
+                    if (mappingStrategy === MappingStrategy.FIELD) {
+                      return (
+                        <Field
+                          label="Threshold set"
+                          description="Optional: Use a named threshold set instead of field config thresholds. By default, uses the matched field's value with panel thresholds."
+                        >
+                          <Combobox
+                            value={rule.thresholdId}
+                            options={
+                              [
+                                ...(context.options?.namedThresholds || []).map((t: any) => ({
+                                  label: t.name,
+                                  value: t.id,
+                                })),
+                              ] as any
+                            }
+                            onChange={(selection: any) =>
+                              updateRule(mapping.id, ruleIndex, { thresholdId: selection?.value })
+                            }
+                            placeholder="Field config thresholds"
+                            isClearable
+                          />
+                        </Field>
+                      );
+                    }
+
                     const sampleNodeId = mapping.targetNodeIds[0];
                     const matchValue = mapping.matchPattern
                       ? mapping.matchPattern.replace(/\$\{id\}/g, sampleNodeId)
@@ -1043,41 +1072,57 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
                     );
                   })()}
 
-                {rule.kind === RuleKind.LABEL && (
-                  <Field
-                    label="Label template"
-                    description="Use ${fieldName} to insert field values. Press Ctrl+Space to see available fields."
-                  >
-                    <CodeEditor
-                      value={rule.labelTemplate || ''}
-                      language="plaintext"
-                      height="60px"
-                      showLineNumbers={false}
-                      showMiniMap={false}
-                      monacoOptions={{
-                        quickSuggestions: true,
-                        suggestOnTriggerCharacters: true,
-                      }}
-                      onChange={(value) => updateRule(mapping.id, ruleIndex, { labelTemplate: value })}
-                      onEditorDidMount={(editor: MonacoEditor, monaco: Monaco) => {
-                        registerNodeLabelCompletion(monaco, context.data, mapping);
-                      }}
-                    />
-                  </Field>
-                )}
+                {rule.kind === RuleKind.LABEL &&
+                  (() => {
+                    const mappingStrategy = mapping.mappingStrategy || MappingStrategy.ROW;
+                    const description =
+                      mappingStrategy === MappingStrategy.FIELD
+                        ? 'Use ${fieldName} to insert field values. Special variables: ${id} (node ID), ${first}, ${last}, ${sum}, ${avg}, ${min}, ${max}, ${count}.'
+                        : 'Use ${fieldName} to insert field values. Press Ctrl+Space to see available fields.';
+
+                    return (
+                      <Field label="Label template" description={description}>
+                        <CodeEditor
+                          value={rule.labelTemplate || ''}
+                          language="plaintext"
+                          height="60px"
+                          showLineNumbers={false}
+                          showMiniMap={false}
+                          monacoOptions={{
+                            quickSuggestions: true,
+                            suggestOnTriggerCharacters: true,
+                          }}
+                          onChange={(value) => updateRule(mapping.id, ruleIndex, { labelTemplate: value })}
+                          onEditorDidMount={(editor: MonacoEditor, monaco: Monaco) => {
+                            registerNodeLabelCompletion(monaco, context.data, mapping);
+                          }}
+                        />
+                      </Field>
+                    );
+                  })()}
               </div>
             ))}
 
             <Box marginTop={1.5}>
               {(() => {
+                const mappingStrategy = mapping.mappingStrategy || MappingStrategy.ROW;
                 const detectionResult = detectionResults.get(mapping.id);
+                const fieldMappingResult = fieldMappingResults.get(mapping.id);
                 const matchMode = mapping.matchMode || MatchMode.MANUAL;
 
                 let hasMatchedNodes;
-                if (matchMode === MatchMode.AUTODETECT) {
-                  hasMatchedNodes = detectionResult && detectionResult.matchedIds.length > 0;
+                if (mappingStrategy === MappingStrategy.FIELD) {
+                  if (matchMode === MatchMode.AUTODETECT) {
+                    hasMatchedNodes = fieldMappingResult && fieldMappingResult.matchedIds.length > 0;
+                  } else {
+                    hasMatchedNodes = mapping.fieldMappings && mapping.fieldMappings.length > 0;
+                  }
                 } else {
-                  hasMatchedNodes = mapping.targetNodeIds.length > 0;
+                  if (matchMode === MatchMode.AUTODETECT) {
+                    hasMatchedNodes = detectionResult && detectionResult.matchedIds.length > 0;
+                  } else {
+                    hasMatchedNodes = mapping.targetNodeIds.length > 0;
+                  }
                 }
 
                 const hasStrokeColor = mapping.rules.some((r) => r.kind === RuleKind.STROKE_COLOR);

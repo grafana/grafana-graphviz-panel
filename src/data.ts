@@ -77,8 +77,10 @@ export function processDataFieldBindings(
         const colors = processFieldMappingColors(
           data.series,
           mapping.fieldMappings!,
+          fieldConfig,
           namedThresholds,
-          rule.thresholdId
+          rule.thresholdId,
+          theme
         );
         colors.forEach((color, nodeId) => {
           nodeBorderColors.set(nodeId, color);
@@ -89,8 +91,10 @@ export function processDataFieldBindings(
         const colors = processFieldMappingColors(
           data.series,
           mapping.fieldMappings!,
+          fieldConfig,
           namedThresholds,
-          rule.thresholdId
+          rule.thresholdId,
+          theme
         );
         colors.forEach((color, nodeId) => {
           nodeFillColors.set(nodeId, color);
@@ -775,15 +779,7 @@ export function autodetectFieldMappings(series: DataFrame[], targetIds: string[]
   });
 
   targetIds.forEach((nodeId) => {
-    let match = numericFields.find((f) => f.name === nodeId);
-
-    if (!match) {
-      match = numericFields.find((f) => f.name.includes(nodeId));
-    }
-
-    if (!match) {
-      match = numericFields.find((f) => f.name.toLowerCase().includes(nodeId.toLowerCase()));
-    }
+    const match = numericFields.find((f) => f.name === nodeId);
 
     if (match) {
       fieldMappings.push({
@@ -814,8 +810,10 @@ export function autodetectFieldMappings(series: DataFrame[], targetIds: string[]
 export function processFieldMappingColors(
   series: DataFrame[],
   fieldMappings: FieldMapping[],
+  fieldConfig: FieldConfigSource,
   namedThresholds: NamedThreshold[],
-  thresholdId: string | undefined
+  thresholdId: string | undefined,
+  theme: GrafanaTheme2
 ): Map<string, string> {
   const colors = new Map<string, string>();
 
@@ -844,11 +842,19 @@ export function processFieldMappingColors(
       if (threshold) {
         color = applyThresholdToValue(latestValue, threshold);
       }
-    }
-
-    if (!color && field.display) {
+    } else if (field.display) {
       const display = field.display(latestValue);
       color = display.color;
+    } else if (fieldConfig.defaults.thresholds) {
+      const thresholds = fieldConfig.defaults.thresholds.steps || [];
+      const sortedThresholds = [...thresholds].sort((a, b) => (b.value || 0) - (a.value || 0));
+
+      for (const step of sortedThresholds) {
+        if (latestValue >= (step.value || 0)) {
+          color = step.color;
+          break;
+        }
+      }
     }
 
     if (color) {

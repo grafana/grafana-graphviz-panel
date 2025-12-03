@@ -648,6 +648,10 @@
             "rules": [
               {
                 "kind": "fillColor"
+              },
+              {
+                "kind": "label",
+                "labelTemplate": "${id}\\nLast: ${last}\\nAvg: ${avg}"
               }
             ]
           }

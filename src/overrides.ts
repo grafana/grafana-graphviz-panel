@@ -1,6 +1,6 @@
 import * as graphlibDot from 'graphlib-dot';
 import { Graph } from 'graphlib';
-import { EdgeOverride, NodeOverride, RuleKind } from './types';
+import { EdgeOverride, NodeOverride, RuleKind, MappingStrategy } from './types';
 import { DataDrivenColors, DataDrivenWidths, findMatchedRow } from './data';
 import { interpolateLabel, hasInterpolation } from './interpolation';
 
@@ -101,23 +101,71 @@ export function applyDataDrivenNodeLabels(dotString: string, nodeOverrides: Node
   const graph = graphlibDot.read(dotString);
 
   nodeOverrides.forEach((mapping) => {
+    const mappingStrategy = mapping.mappingStrategy || MappingStrategy.ROW;
     const labelRules = mapping.rules.filter((r) => r.kind === RuleKind.LABEL);
 
-    mapping.targetNodeIds.forEach((nodeId: string) => {
-      const matchValue = mapping.matchPattern ? mapping.matchPattern.replace(/\$\{id\}/g, nodeId) : mapping.matchValue;
+    if (labelRules.length === 0) {
+      return;
+    }
 
-      if (!matchValue || !mapping.matchFieldName) {
-        return;
-      }
+    if (mappingStrategy === MappingStrategy.FIELD && mapping.fieldMappings) {
+      mapping.fieldMappings.forEach((fm) => {
+        const frameIndex = fm.dataFrameIndex || 0;
+        if (frameIndex >= data.series.length) {
+          return;
+        }
 
-      const dataRow = findMatchedRow(data.series, mapping.matchFieldName, matchValue);
+        const frame = data.series[frameIndex];
+        const matchedField = frame.fields.find((f: any) => f.name === fm.fieldName);
 
-      if (!dataRow) {
-        return;
-      }
+        const fieldData: Record<string, any> = {
+          id: fm.nodeId,
+        };
 
-      applyLabelToNode(graph, nodeId, labelRules, dataRow);
-    });
+        if (matchedField && matchedField.values && matchedField.values.length > 0) {
+          const values = matchedField.values;
+          const numericValues = values.filter((v: any) => typeof v === 'number' && !isNaN(v));
+
+          fieldData.first = values[0];
+          fieldData.last = values[values.length - 1];
+          fieldData.count = values.length;
+
+          if (numericValues.length > 0) {
+            fieldData.sum = numericValues.reduce((acc: number, val: number) => acc + val, 0);
+            fieldData.avg = fieldData.sum / numericValues.length;
+            fieldData.min = Math.min(...numericValues);
+            fieldData.max = Math.max(...numericValues);
+          }
+        }
+
+        frame.fields.forEach((field: any) => {
+          if (field.name && field.values && field.values.length > 0) {
+            const latestValue = field.values[field.values.length - 1];
+            fieldData[field.name] = latestValue;
+          }
+        });
+
+        applyLabelToNode(graph, fm.nodeId, labelRules, fieldData);
+      });
+    } else {
+      mapping.targetNodeIds.forEach((nodeId: string) => {
+        const matchValue = mapping.matchPattern
+          ? mapping.matchPattern.replace(/\$\{id\}/g, nodeId)
+          : mapping.matchValue;
+
+        if (!matchValue || !mapping.matchFieldName) {
+          return;
+        }
+
+        const dataRow = findMatchedRow(data.series, mapping.matchFieldName, matchValue);
+
+        if (!dataRow) {
+          return;
+        }
+
+        applyLabelToNode(graph, nodeId, labelRules, dataRow);
+      });
+    }
   });
 
   return graphlibDot.write(graph);
@@ -196,8 +244,10 @@ function applyUserNodeOverrides(graph: Graph, nodeOverrides: NodeOverride[]): vo
               const nodeData = graph.node(nodeId);
               // Preserve existing style (e.g. 'rounded') when adding 'filled'
               const existingStyle = nodeData.style || '';
-              const newStyle = existingStyle.includes('filled') ? existingStyle : `${existingStyle ? existingStyle + ',' : ''}filled`;
-              
+              const newStyle = existingStyle.includes('filled')
+                ? existingStyle
+                : `${existingStyle ? existingStyle + ',' : ''}filled`;
+
               graph.setNode(nodeId, {
                 ...nodeData,
                 fillcolor: rule.staticColor,
@@ -276,7 +326,9 @@ export function applyDataDrivenColors(dotString: string, dataDrivenColors: DataD
       const nodeData = graph.node(nodeId);
       // Preserve existing style (e.g. 'rounded') when adding 'filled'
       const existingStyle = nodeData.style || '';
-      const newStyle = existingStyle.includes('filled') ? existingStyle : `${existingStyle ? existingStyle + ',' : ''}filled`;
+      const newStyle = existingStyle.includes('filled')
+        ? existingStyle
+        : `${existingStyle ? existingStyle + ',' : ''}filled`;
 
       graph.setNode(nodeId, {
         ...nodeData,
