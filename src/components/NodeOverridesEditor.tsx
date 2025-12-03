@@ -21,7 +21,13 @@ import {
   Collapse,
 } from '@grafana/ui';
 import { NodeOverride, StrokeColorRule, FillColorRule, Rule, RuleKind, MatchMode, MappingStrategy } from '../types';
-import { autodetectMatchField, MatchDetectionResult, findMatchedRow } from '../data';
+import {
+  autodetectMatchField,
+  MatchDetectionResult,
+  findMatchedRow,
+  autodetectFieldMappings,
+  FieldMappingResult,
+} from '../data';
 import { css } from '@emotion/css';
 import {
   registerNodeLabelCompletion,
@@ -35,6 +41,9 @@ interface Props extends StandardEditorProps<NodeOverride[]> {}
 export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context }) => {
   const mappings = useMemo(() => value || [], [value]);
   const [detectionResults, setDetectionResults] = useState<Map<string, MatchDetectionResult | undefined>>(new Map());
+  const [fieldMappingResults, setFieldMappingResults] = useState<Map<string, FieldMappingResult | undefined>>(
+    new Map()
+  );
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -145,17 +154,27 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
   useEffect(
     function computeDetectionResults() {
       const newResults = new Map<string, MatchDetectionResult | undefined>();
+      const newFieldMappingResults = new Map<string, FieldMappingResult | undefined>();
 
       mappings.forEach((mapping) => {
+        const mappingStrategy = mapping.mappingStrategy || MappingStrategy.ROW;
         const matchMode = mapping.matchMode || MatchMode.MANUAL;
 
-        if (matchMode === MatchMode.AUTODETECT && mapping.targetNodeIds.length > 0 && context.data) {
-          const result = autodetectMatchField(context.data, mapping.targetNodeIds);
-          newResults.set(mapping.id, result);
+        if (mappingStrategy === MappingStrategy.ROW) {
+          if (matchMode === MatchMode.AUTODETECT && mapping.targetNodeIds.length > 0 && context.data) {
+            const result = autodetectMatchField(context.data, mapping.targetNodeIds);
+            newResults.set(mapping.id, result);
+          }
+        } else if (mappingStrategy === MappingStrategy.FIELD) {
+          if (matchMode === MatchMode.AUTODETECT && mapping.targetNodeIds.length > 0 && context.data) {
+            const result = autodetectFieldMappings(context.data, mapping.targetNodeIds);
+            newFieldMappingResults.set(mapping.id, result);
+          }
         }
       });
 
       setDetectionResults(newResults);
+      setFieldMappingResults(newFieldMappingResults);
     },
     [mappings, context.data]
   );
@@ -188,6 +207,41 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
       }
     },
     [mappings, detectionResults, onChange]
+  );
+
+  useEffect(
+    function autoApplyFieldMappings() {
+      const updatesToApply: Array<{ id: string; updates: Partial<NodeOverride> }> = [];
+
+      mappings.forEach((mapping) => {
+        const mappingStrategy = mapping.mappingStrategy || MappingStrategy.ROW;
+        const matchMode = mapping.matchMode || MatchMode.MANUAL;
+        const fieldMappingResult = fieldMappingResults.get(mapping.id);
+
+        if (
+          mappingStrategy === MappingStrategy.FIELD &&
+          matchMode === MatchMode.AUTODETECT &&
+          fieldMappingResult &&
+          !mapping.fieldMappings
+        ) {
+          updatesToApply.push({
+            id: mapping.id,
+            updates: {
+              fieldMappings: fieldMappingResult.fieldMappings,
+            },
+          });
+        }
+      });
+
+      if (updatesToApply.length > 0) {
+        const updatedMappings = mappings.map((mapping) => {
+          const update = updatesToApply.find((u) => u.id === mapping.id);
+          return update ? { ...mapping, ...update.updates } : mapping;
+        });
+        onChange(updatedMappings);
+      }
+    },
+    [mappings, fieldMappingResults, onChange]
   );
 
   const mappingContainerStyle = css`
@@ -554,7 +608,140 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
               </>
             )}
 
-            {(mapping.mappingStrategy || MappingStrategy.ROW) === MappingStrategy.FIELD && <div>TODO</div>}
+            {(mapping.mappingStrategy || MappingStrategy.ROW) === MappingStrategy.FIELD && (
+              <>
+                <Field label="Match mode">
+                  <RadioButtonGroup
+                    value={mapping.matchMode || MatchMode.MANUAL}
+                    options={[
+                      { label: 'Autodetect', value: MatchMode.AUTODETECT },
+                      { label: 'Manual', value: MatchMode.MANUAL },
+                    ]}
+                    onChange={(value) => {
+                      if (value === MatchMode.AUTODETECT) {
+                        updateMapping(mapping.id, {
+                          matchMode: value,
+                          fieldMappings: undefined,
+                        });
+                      } else {
+                        updateMapping(mapping.id, {
+                          matchMode: value,
+                        });
+                      }
+                    }}
+                  />
+                </Field>
+
+                {mapping.matchMode === MatchMode.AUTODETECT &&
+                  mapping.targetNodeIds.length > 0 &&
+                  (() => {
+                    const fieldMappingResult = fieldMappingResults.get(mapping.id);
+
+                    if (!fieldMappingResult) {
+                      return (
+                        <Alert severity="error" title="No matching fields found">
+                          <div>No numeric fields match the selected node IDs.</div>
+                          <div style={{ marginTop: 12 }}>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => updateMapping(mapping.id, { matchMode: MatchMode.MANUAL })}
+                            >
+                              Switch to Manual Mode
+                            </Button>
+                          </div>
+                        </Alert>
+                      );
+                    }
+
+                    return (
+                      <>
+                        <Field label="Detected field mappings">
+                          <div
+                            style={{
+                              padding: '8px',
+                              background: 'rgba(100, 100, 100, 0.1)',
+                              borderRadius: '2px',
+                            }}
+                          >
+                            {fieldMappingResult.fieldMappings.map((fm) => (
+                              <div
+                                key={fm.nodeId}
+                                style={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  padding: '4px 0',
+                                  borderBottom: '1px solid rgba(204, 204, 220, 0.15)',
+                                }}
+                              >
+                                <span style={{ fontWeight: 500 }}>{fm.nodeId}</span>
+                                <span style={{ color: 'rgba(204, 204, 220, 0.7)' }}>→</span>
+                                <span>{fm.fieldName}</span>
+                              </div>
+                            ))}
+                            <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              {fieldMappingResult.matchPercentage === 100 ? (
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  <Icon name="check-circle" style={{ color: '#73BF69' }} />(
+                                  {fieldMappingResult.matchedIds.length}/{mapping.targetNodeIds.length})
+                                </span>
+                              ) : (
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  <Icon name="exclamation-triangle" style={{ color: '#FF9830' }} />(
+                                  {fieldMappingResult.matchedIds.length}/{mapping.targetNodeIds.length})
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </Field>
+
+                        {fieldMappingResult.matchPercentage < 100 && (
+                          <Alert severity="warning" title="Partial match">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                              <span>
+                                Could not match {fieldMappingResult.unmatchedIds.length}/{mapping.targetNodeIds.length}{' '}
+                                nodes to fields
+                              </span>
+                              <IconButton
+                                name="info-circle"
+                                size="sm"
+                                tooltip={
+                                  <div>
+                                    <div style={{ marginBottom: 4, fontWeight: 500 }}>Unmatched IDs:</div>
+                                    <ul style={{ margin: 0, paddingLeft: 20 }}>
+                                      {fieldMappingResult.unmatchedIds.map((id) => (
+                                        <li key={id}>{id}</li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                }
+                              />
+                            </div>
+                            <div style={{ marginTop: 12 }}>
+                              <Button
+                                size="sm"
+                                variant="primary"
+                                icon="plus"
+                                onClick={() => splitUnmatchedToNewOverride(mapping.id, fieldMappingResult.unmatchedIds)}
+                              >
+                                Move {fieldMappingResult.unmatchedIds.length} to new rule
+                              </Button>
+                            </div>
+                          </Alert>
+                        )}
+                      </>
+                    );
+                  })()}
+
+                {mapping.matchMode === MatchMode.MANUAL && (
+                  <div>
+                    <Alert severity="info" title="Manual field mapping">
+                      Manual field mapping UI coming soon. For now, use autodetect mode.
+                    </Alert>
+                  </div>
+                )}
+              </>
+            )}
 
             {mapping.rules.map((rule, ruleIndex) => (
               <div key={ruleIndex} className={ruleContainerStyle}>

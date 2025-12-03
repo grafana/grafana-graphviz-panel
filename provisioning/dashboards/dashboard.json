@@ -129,7 +129,16 @@
         "nodeOverrides": [
           {
             "id": "node-mapping-1",
-            "targetNodeIds": ["Start", "Gateway", "End", "API", "DB", "Cache", "Monitor", "Backup"],
+            "targetNodeIds": [
+              "Start",
+              "Gateway",
+              "End",
+              "API",
+              "DB",
+              "Cache",
+              "Monitor",
+              "Backup"
+            ],
             "matchFieldName": "node",
             "matchPattern": "${id}",
             "rules": [
@@ -197,7 +206,10 @@
         "edgeOverrides": [
           {
             "id": "edge-mapping-wide",
-            "targetEdgeIds": ["Start__to__Gateway", "Gateway__to__End"],
+            "targetEdgeIds": [
+              "Start__to__Gateway",
+              "Gateway__to__End"
+            ],
             "matchFieldName": "edge_id",
             "matchPattern": "${id}",
             "rules": [
@@ -259,7 +271,11 @@
         "nodeOverrides": [
           {
             "id": "node-mapping-wide",
-            "targetNodeIds": ["Start", "Gateway", "End"],
+            "targetNodeIds": [
+              "Start",
+              "Gateway",
+              "End"
+            ],
             "matchFieldName": "node_id",
             "matchPattern": "${id}",
             "rules": [
@@ -324,7 +340,12 @@
         "edgeOverrides": [
           {
             "id": "edge-mapping-mixed",
-            "targetEdgeIds": ["A__to__B", "B__to__C", "C__to__D", "D__to__A"],
+            "targetEdgeIds": [
+              "A__to__B",
+              "B__to__C",
+              "C__to__D",
+              "D__to__A"
+            ],
             "matchFieldName": "edge",
             "matchPattern": "${id}",
             "rules": [
@@ -386,7 +407,12 @@
         "nodeOverrides": [
           {
             "id": "node-mapping-mixed",
-            "targetNodeIds": ["A", "B", "C", "D"],
+            "targetNodeIds": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
             "matchFieldName": "node_id",
             "matchPattern": "${id}",
             "rules": [
@@ -491,6 +517,81 @@
         }
       ],
       "title": "Partial Match Demo (Autodetect)",
+      "type": "grafana-mesh-panel"
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "description": "Demo of field mapping strategy - node names match field names directly",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 12,
+        "x": 0,
+        "y": 28
+      },
+      "id": 5,
+      "options": {
+        "dotDiagram": "digraph {\n  server1;\n  server2;\n  server3;\n  database;\n  \n  server1 -> database;\n  server2 -> database;\n  server3 -> database;\n}",
+        "layoutEngine": "dot",
+        "nodeOverrides": [
+          {
+            "id": "field-mapping-demo",
+            "targetNodeIds": [
+              "server1",
+              "server2",
+              "server3",
+              "database"
+            ],
+            "mappingStrategy": "field",
+            "matchMode": "autodetect",
+            "rules": [
+              {
+                "kind": "fillColor"
+              }
+            ]
+          }
+        ],
+        "edgeOverrides": [],
+        "namedThresholds": []
+      },
+      "pluginVersion": "0.0.1-beta-rc1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "rawFrameContent": "[\n  {\n    \"name\": \"Server Metrics\",\n    \"fields\": [\n      {\n        \"name\": \"Time\",\n        \"type\": \"time\",\n        \"values\": [1609459200000, 1609462800000, 1609466400000, 1609470000000, 1609473600000]\n      },\n      {\n        \"name\": \"server1\",\n        \"type\": \"number\",\n        \"values\": [45, 48, 52, 56, 54]\n      },\n      {\n        \"name\": \"server2\",\n        \"type\": \"number\",\n        \"values\": [65, 68, 72, 76, 74]\n      },\n      {\n        \"name\": \"server3\",\n        \"type\": \"number\",\n        \"values\": [25, 28, 32, 36, 34]\n      },\n      {\n        \"name\": \"database\",\n        \"type\": \"number\",\n        \"values\": [85, 88, 92, 86, 84]\n      }\n    ]\n  }\n]",
+          "refId": "A",
+          "scenarioId": "raw_frame"
+        }
+      ],
+      "title": "FIELD Mapping Demo (Autodetect)",
       "type": "grafana-mesh-panel"
     }
   ],

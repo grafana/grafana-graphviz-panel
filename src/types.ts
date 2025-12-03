@@ -44,6 +44,12 @@ export enum MappingStrategy {
   FIELD = 'field',
 }
 
+export interface FieldMapping {
+  nodeId: string;
+  fieldName: string;
+  dataFrameIndex?: number;
+}
+
 export interface ThresholdStep {
   color: string;
   value: number;
@@ -100,6 +106,7 @@ export interface NodeOverride {
   matchFieldName?: string;
   matchValue?: string;
   matchPattern?: string;
+  fieldMappings?: FieldMapping[];
   rules: Rule[];
 }
 

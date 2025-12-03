@@ -8,7 +8,15 @@ import {
   isTimeSeriesFrame,
   FieldWithIndex,
 } from '@grafana/data';
-import { EdgeOverride, NodeOverride, RuleKind, NamedThreshold, DataFormatStrategy } from './types';
+import {
+  EdgeOverride,
+  NodeOverride,
+  RuleKind,
+  NamedThreshold,
+  DataFormatStrategy,
+  FieldMapping,
+  MappingStrategy,
+} from './types';
 
 export interface DataDrivenColors {
   nodeBorderColors: Map<string, string>;
@@ -60,62 +68,89 @@ export function processDataFieldBindings(
   }
 
   nodeOverrides.forEach((mapping) => {
+    const mappingStrategy = mapping.mappingStrategy || MappingStrategy.ROW;
     const borderColorRules = mapping.rules.filter((r) => r.kind === RuleKind.STROKE_COLOR);
     const fillColorRules = mapping.rules.filter((r) => r.kind === RuleKind.FILL_COLOR);
 
-    borderColorRules.forEach((rule) => {
-      if (mapping.matchFieldName && rule.colorFieldName) {
-        mapping.targetNodeIds.forEach((nodeId: string) => {
-          const matchValue = mapping.matchPattern
-            ? mapping.matchPattern.replace(/\$\{id\}/g, nodeId)
-            : mapping.matchValue;
-
-          if (matchValue && mapping.matchFieldName && rule.colorFieldName) {
-            const color = extractColorValue(
-              data.series,
-              mapping.matchFieldName,
-              matchValue,
-              rule.colorFieldName,
-              fieldConfig,
-              namedThresholds,
-              rule.thresholdId,
-              theme
-            );
-
-            if (color) {
-              nodeBorderColors.set(nodeId, color);
-            }
-          }
+    if (mappingStrategy === MappingStrategy.FIELD && mapping.fieldMappings) {
+      borderColorRules.forEach((rule) => {
+        const colors = processFieldMappingColors(
+          data.series,
+          mapping.fieldMappings!,
+          namedThresholds,
+          rule.thresholdId
+        );
+        colors.forEach((color, nodeId) => {
+          nodeBorderColors.set(nodeId, color);
         });
-      }
-    });
+      });
 
-    fillColorRules.forEach((rule) => {
-      if (mapping.matchFieldName && rule.colorFieldName) {
-        mapping.targetNodeIds.forEach((nodeId: string) => {
-          const matchValue = mapping.matchPattern
-            ? mapping.matchPattern.replace(/\$\{id\}/g, nodeId)
-            : mapping.matchValue;
-
-          if (matchValue && mapping.matchFieldName && rule.colorFieldName) {
-            const color = extractColorValue(
-              data.series,
-              mapping.matchFieldName,
-              matchValue,
-              rule.colorFieldName,
-              fieldConfig,
-              namedThresholds,
-              rule.thresholdId,
-              theme
-            );
-
-            if (color) {
-              nodeFillColors.set(nodeId, color);
-            }
-          }
+      fillColorRules.forEach((rule) => {
+        const colors = processFieldMappingColors(
+          data.series,
+          mapping.fieldMappings!,
+          namedThresholds,
+          rule.thresholdId
+        );
+        colors.forEach((color, nodeId) => {
+          nodeFillColors.set(nodeId, color);
         });
-      }
-    });
+      });
+    } else {
+      borderColorRules.forEach((rule) => {
+        if (mapping.matchFieldName && rule.colorFieldName) {
+          mapping.targetNodeIds.forEach((nodeId: string) => {
+            const matchValue = mapping.matchPattern
+              ? mapping.matchPattern.replace(/\$\{id\}/g, nodeId)
+              : mapping.matchValue;
+
+            if (matchValue && mapping.matchFieldName && rule.colorFieldName) {
+              const color = extractColorValue(
+                data.series,
+                mapping.matchFieldName,
+                matchValue,
+                rule.colorFieldName,
+                fieldConfig,
+                namedThresholds,
+                rule.thresholdId,
+                theme
+              );
+
+              if (color) {
+                nodeBorderColors.set(nodeId, color);
+              }
+            }
+          });
+        }
+      });
+
+      fillColorRules.forEach((rule) => {
+        if (mapping.matchFieldName && rule.colorFieldName) {
+          mapping.targetNodeIds.forEach((nodeId: string) => {
+            const matchValue = mapping.matchPattern
+              ? mapping.matchPattern.replace(/\$\{id\}/g, nodeId)
+              : mapping.matchValue;
+
+            if (matchValue && mapping.matchFieldName && rule.colorFieldName) {
+              const color = extractColorValue(
+                data.series,
+                mapping.matchFieldName,
+                matchValue,
+                rule.colorFieldName,
+                fieldConfig,
+                namedThresholds,
+                rule.thresholdId,
+                theme
+              );
+
+              if (color) {
+                nodeFillColors.set(nodeId, color);
+              }
+            }
+          });
+        }
+      });
+    }
   });
 
   edgeOverrides.forEach((mapping) => {
@@ -712,4 +747,114 @@ export function autodetectMatchField(series: DataFrame[], targetIds: string[]): 
   }
 
   return undefined;
+}
+
+export interface FieldMappingResult {
+  fieldMappings: FieldMapping[];
+  matchPercentage: number;
+  matchedIds: string[];
+  unmatchedIds: string[];
+}
+
+export function autodetectFieldMappings(series: DataFrame[], targetIds: string[]): FieldMappingResult | undefined {
+  if (!series || series.length === 0 || !targetIds || targetIds.length === 0) {
+    return undefined;
+  }
+
+  const fieldMappings: FieldMapping[] = [];
+  const matchedIds: string[] = [];
+  const unmatchedIds: string[] = [];
+
+  const numericFields: Array<{ name: string; frameIndex: number }> = [];
+  series.forEach((frame, frameIndex) => {
+    frame.fields.forEach((field) => {
+      if (field.type === FieldType.number) {
+        numericFields.push({ name: field.name, frameIndex });
+      }
+    });
+  });
+
+  targetIds.forEach((nodeId) => {
+    let match = numericFields.find((f) => f.name === nodeId);
+
+    if (!match) {
+      match = numericFields.find((f) => f.name.includes(nodeId));
+    }
+
+    if (!match) {
+      match = numericFields.find((f) => f.name.toLowerCase().includes(nodeId.toLowerCase()));
+    }
+
+    if (match) {
+      fieldMappings.push({
+        nodeId,
+        fieldName: match.name,
+        dataFrameIndex: match.frameIndex,
+      });
+      matchedIds.push(nodeId);
+    } else {
+      unmatchedIds.push(nodeId);
+    }
+  });
+
+  const matchPercentage = targetIds.length > 0 ? (matchedIds.length / targetIds.length) * 100 : 0;
+
+  if (matchedIds.length === 0) {
+    return undefined;
+  }
+
+  return {
+    fieldMappings,
+    matchPercentage,
+    matchedIds,
+    unmatchedIds,
+  };
+}
+
+export function processFieldMappingColors(
+  series: DataFrame[],
+  fieldMappings: FieldMapping[],
+  namedThresholds: NamedThreshold[],
+  thresholdId: string | undefined
+): Map<string, string> {
+  const colors = new Map<string, string>();
+
+  fieldMappings.forEach((fm) => {
+    const frameIndex = fm.dataFrameIndex || 0;
+    if (frameIndex >= series.length) {
+      return;
+    }
+
+    const frame = series[frameIndex];
+    const field = frame.fields.find((f) => f.name === fm.fieldName);
+
+    if (!field || field.type !== FieldType.number) {
+      return;
+    }
+
+    const latestValue = field.values[field.values.length - 1];
+    if (latestValue == null) {
+      return;
+    }
+
+    let color: string | undefined;
+
+    if (thresholdId) {
+      const threshold = namedThresholds.find((t) => t.id === thresholdId);
+      if (threshold) {
+        color = applyThresholdToValue(latestValue, threshold);
+      }
+    }
+
+    if (!color && field.display) {
+      const display = field.display(latestValue);
+      color = display.color;
+    }
+
+    if (color) {
+      colors.set(fm.nodeId, color);
+    }
+  });
+
+  return colors;
 }
