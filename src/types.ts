@@ -106,6 +106,7 @@ export interface NodeOverride {
   matchFieldName?: string;
   matchValue?: string;
   matchPattern?: string;
+  fieldMatchPattern?: string;
   fieldMappings?: FieldMapping[];
   rules: Rule[];
 }

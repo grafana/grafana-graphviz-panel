@@ -20,7 +20,16 @@ import {
   getFieldTypeIconName,
   Collapse,
 } from '@grafana/ui';
-import { NodeOverride, StrokeColorRule, FillColorRule, Rule, RuleKind, MatchMode, MappingStrategy } from '../types';
+import {
+  NodeOverride,
+  StrokeColorRule,
+  FillColorRule,
+  Rule,
+  RuleKind,
+  MatchMode,
+  MappingStrategy,
+  FieldMapping,
+} from '../types';
 import {
   autodetectMatchField,
   MatchDetectionResult,
@@ -218,18 +227,56 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
         const matchMode = mapping.matchMode || MatchMode.MANUAL;
         const fieldMappingResult = fieldMappingResults.get(mapping.id);
 
-        if (
-          mappingStrategy === MappingStrategy.FIELD &&
-          matchMode === MatchMode.AUTODETECT &&
-          fieldMappingResult &&
-          !mapping.fieldMappings
-        ) {
-          updatesToApply.push({
-            id: mapping.id,
-            updates: {
-              fieldMappings: fieldMappingResult.fieldMappings,
-            },
-          });
+        if (mappingStrategy === MappingStrategy.FIELD) {
+          if (matchMode === MatchMode.AUTODETECT && fieldMappingResult && !mapping.fieldMappings) {
+            updatesToApply.push({
+              id: mapping.id,
+              updates: {
+                fieldMappings: fieldMappingResult.fieldMappings,
+              },
+            });
+          } else if (
+            matchMode === MatchMode.MANUAL &&
+            mapping.fieldMatchPattern &&
+            mapping.targetNodeIds.length > 0 &&
+            context.data
+          ) {
+            const manualMappings: FieldMapping[] = [];
+            const numericFields: Array<{ name: string; frameIndex: number }> = [];
+
+            context.data.forEach((frame, frameIndex) => {
+              frame.fields.forEach((field) => {
+                if (field.type === 'number') {
+                  numericFields.push({ name: field.name, frameIndex });
+                }
+              });
+            });
+
+            mapping.targetNodeIds.forEach((nodeId) => {
+              const expectedFieldName = mapping.fieldMatchPattern!.replace(/\$\{id\}/g, nodeId);
+              const matchedField = numericFields.find((f) => f.name === expectedFieldName);
+
+              if (matchedField) {
+                manualMappings.push({
+                  nodeId,
+                  fieldName: matchedField.name,
+                  dataFrameIndex: matchedField.frameIndex,
+                });
+              }
+            });
+
+            const currentMappingsKey = mapping.fieldMappings?.map((fm) => `${fm.nodeId}:${fm.fieldName}`).join(',');
+            const newMappingsKey = manualMappings.map((fm) => `${fm.nodeId}:${fm.fieldName}`).join(',');
+
+            if (currentMappingsKey !== newMappingsKey) {
+              updatesToApply.push({
+                id: mapping.id,
+                updates: {
+                  fieldMappings: manualMappings.length > 0 ? manualMappings : undefined,
+                },
+              });
+            }
+          }
         }
       });
 
@@ -241,7 +288,7 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
         onChange(updatedMappings);
       }
     },
-    [mappings, fieldMappingResults, onChange]
+    [mappings, fieldMappingResults, context.data, onChange]
   );
 
   const mappingContainerStyle = css`
@@ -734,11 +781,180 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
                   })()}
 
                 {mapping.matchMode === MatchMode.MANUAL && (
-                  <div>
-                    <Alert severity="info" title="Manual field mapping">
-                      Manual field mapping UI coming soon. For now, use autodetect mode.
-                    </Alert>
-                  </div>
+                  <>
+                    <Field
+                      label="Field name pattern"
+                      description='Use "${id}" to match node ID. Example: "${id}-cpu" matches "server1-cpu" for node "server1"'
+                    >
+                      <CodeEditor
+                        value={mapping.fieldMatchPattern || '${id}'}
+                        language="plaintext"
+                        height="30px"
+                        showLineNumbers={false}
+                        showMiniMap={false}
+                        monacoOptions={SINGLE_LINE_MONACO_OPTIONS}
+                        onChange={(value) => {
+                          const cleanValue = value.replace(/\n/g, '');
+                          updateMapping(mapping.id, {
+                            fieldMatchPattern: cleanValue,
+                            fieldMappings: undefined,
+                          });
+                        }}
+                        onEditorDidMount={(editor: MonacoEditor, monaco: Monaco) => {
+                          registerMatchValueCompletion(monaco, 'node');
+                          registerSingleLineKeyCommands(editor, monaco);
+                        }}
+                      />
+                    </Field>
+
+                    {mapping.fieldMatchPattern &&
+                      mapping.targetNodeIds.length > 0 &&
+                      (() => {
+                        const matchedMappings: FieldMapping[] = [];
+                        const matchedIds: string[] = [];
+                        const unmatchedIds: string[] = [];
+
+                        const numericFields: Array<{ name: string; frameIndex: number }> = [];
+                        context.data?.forEach((frame, frameIndex) => {
+                          frame.fields.forEach((field) => {
+                            if (field.type === 'number') {
+                              numericFields.push({ name: field.name, frameIndex });
+                            }
+                          });
+                        });
+
+                        mapping.targetNodeIds.forEach((nodeId) => {
+                          const expectedFieldName = mapping.fieldMatchPattern!.replace(/\$\{id\}/g, nodeId);
+                          const matchedField = numericFields.find((f) => f.name === expectedFieldName);
+
+                          if (matchedField) {
+                            matchedMappings.push({
+                              nodeId,
+                              fieldName: matchedField.name,
+                              dataFrameIndex: matchedField.frameIndex,
+                            });
+                            matchedIds.push(nodeId);
+                          } else {
+                            unmatchedIds.push(nodeId);
+                          }
+                        });
+
+                        const matchPercentage =
+                          mapping.targetNodeIds.length > 0
+                            ? (matchedIds.length / mapping.targetNodeIds.length) * 100
+                            : 0;
+
+                        return (
+                          <>
+                            <Field label="Pattern matches">
+                              <div
+                                style={{
+                                  padding: '8px',
+                                  background: 'rgba(100, 100, 100, 0.1)',
+                                  borderRadius: '2px',
+                                }}
+                              >
+                                {matchedMappings.map((fm) => (
+                                  <div
+                                    key={fm.nodeId}
+                                    style={{
+                                      display: 'flex',
+                                      justifyContent: 'space-between',
+                                      padding: '4px 0',
+                                      borderBottom: '1px solid rgba(204, 204, 220, 0.15)',
+                                    }}
+                                  >
+                                    <span style={{ fontWeight: 500 }}>{fm.nodeId}</span>
+                                    <span style={{ color: 'rgba(204, 204, 220, 0.7)' }}>→</span>
+                                    <span>{fm.fieldName}</span>
+                                  </div>
+                                ))}
+                                {unmatchedIds.map((nodeId) => (
+                                  <div
+                                    key={nodeId}
+                                    style={{
+                                      display: 'flex',
+                                      justifyContent: 'space-between',
+                                      padding: '4px 0',
+                                      borderBottom: '1px solid rgba(204, 204, 220, 0.15)',
+                                      opacity: 0.5,
+                                    }}
+                                  >
+                                    <span style={{ fontWeight: 500 }}>{nodeId}</span>
+                                    <span style={{ color: 'rgba(204, 204, 220, 0.7)' }}>→</span>
+                                    <span style={{ fontStyle: 'italic' }}>
+                                      {mapping.fieldMatchPattern.replace(/\$\{id\}/g, nodeId)} (not found)
+                                    </span>
+                                  </div>
+                                ))}
+                                <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  {matchPercentage === 100 ? (
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                      <Icon name="check-circle" style={{ color: '#73BF69' }} />({matchedIds.length}/
+                                      {mapping.targetNodeIds.length})
+                                    </span>
+                                  ) : matchPercentage > 0 ? (
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                      <Icon name="exclamation-triangle" style={{ color: '#FF9830' }} />(
+                                      {matchedIds.length}/{mapping.targetNodeIds.length})
+                                    </span>
+                                  ) : (
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                      <Icon name="exclamation-circle" style={{ color: '#F2495C' }} />(
+                                      {matchedIds.length}/{mapping.targetNodeIds.length})
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </Field>
+
+                            {matchPercentage < 100 && matchPercentage > 0 && (
+                              <Alert severity="warning" title="Partial match">
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                  <span>
+                                    Could not match {unmatchedIds.length}/{mapping.targetNodeIds.length} nodes to fields
+                                  </span>
+                                  <IconButton
+                                    name="info-circle"
+                                    size="sm"
+                                    tooltip={
+                                      <div>
+                                        <div style={{ marginBottom: 4, fontWeight: 500 }}>Unmatched IDs:</div>
+                                        <ul style={{ margin: 0, paddingLeft: 20 }}>
+                                          {unmatchedIds.map((id) => (
+                                            <li key={id}>
+                                              {id} → {mapping.fieldMatchPattern!.replace(/\$\{id\}/g, id)}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    }
+                                  />
+                                </div>
+                                <div style={{ marginTop: 12 }}>
+                                  <Button
+                                    size="sm"
+                                    variant="primary"
+                                    icon="plus"
+                                    onClick={() => splitUnmatchedToNewOverride(mapping.id, unmatchedIds)}
+                                  >
+                                    Move {unmatchedIds.length} to new rule
+                                  </Button>
+                                </div>
+                              </Alert>
+                            )}
+
+                            {matchPercentage === 0 && (
+                              <Alert severity="error" title="No matching fields found">
+                                <div>
+                                  No fields match the pattern "{mapping.fieldMatchPattern}" for the selected nodes.
+                                </div>
+                              </Alert>
+                            )}
+                          </>
+                        );
+                      })()}
+                  </>
                 )}
               </>
             )}

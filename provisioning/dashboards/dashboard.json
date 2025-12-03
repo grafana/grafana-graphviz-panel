@@ -593,6 +593,82 @@
       ],
       "title": "FIELD Mapping Demo (Autodetect)",
       "type": "grafana-mesh-panel"
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "description": "Demo of manual field mapping with pattern - fields like 'X-cpu' map to node 'X' using pattern '${id}-cpu'",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 12,
+        "x": 12,
+        "y": 28
+      },
+      "id": 6,
+      "options": {
+        "dotDiagram": "digraph {\n  web;\n  api;\n  cache;\n  db;\n  \n  web -> api;\n  api -> cache;\n  api -> db;\n}",
+        "layoutEngine": "dot",
+        "nodeOverrides": [
+          {
+            "id": "manual-field-pattern-demo",
+            "targetNodeIds": [
+              "web",
+              "api",
+              "cache",
+              "db"
+            ],
+            "mappingStrategy": "field",
+            "matchMode": "manual",
+            "fieldMatchPattern": "${id}-cpu",
+            "rules": [
+              {
+                "kind": "fillColor"
+              }
+            ]
+          }
+        ],
+        "edgeOverrides": [],
+        "namedThresholds": []
+      },
+      "pluginVersion": "0.0.1-beta-rc1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "rawFrameContent": "[\n  {\n    \"name\": \"CPU Metrics\",\n    \"fields\": [\n      {\n        \"name\": \"Time\",\n        \"type\": \"time\",\n        \"values\": [1609459200000, 1609462800000, 1609466400000, 1609470000000, 1609473600000]\n      },\n      {\n        \"name\": \"web-cpu\",\n        \"type\": \"number\",\n        \"values\": [35, 38, 42, 46, 44]\n      },\n      {\n        \"name\": \"api-cpu\",\n        \"type\": \"number\",\n        \"values\": [75, 78, 82, 86, 84]\n      },\n      {\n        \"name\": \"cache-cpu\",\n        \"type\": \"number\",\n        \"values\": [25, 28, 32, 36, 34]\n      },\n      {\n        \"name\": \"db-cpu\",\n        \"type\": \"number\",\n        \"values\": [90, 92, 88, 91, 89]\n      }\n    ]\n  }\n]",
+          "refId": "A",
+          "scenarioId": "raw_frame"
+        }
+      ],
+      "title": "FIELD Mapping Manual Pattern Demo",
+      "type": "grafana-mesh-panel"
     }
   ],
   "preload": false,
