@@ -41,24 +41,24 @@ export const NodeFormModal: React.FC<NodeFormModalProps> = ({ isOpen, existingNo
 
   return (
     <Modal isOpen={isOpen} title="Add Node" onDismiss={handleDismiss}>
-      <Field label="Node ID" required invalid={!!error} error={error}>
+      <Field label="Node ID" required invalid={!!error} error={error} description="Used to identify the node when connecting edges, overrides, etc.">
         <Input
-          placeholder="Enter node ID"
+          placeholder="E.g 'server_1'"
           value={values.nodeId}
           onChange={(e) => handleChange('nodeId')(e.currentTarget.value)}
         />
       </Field>
-      <Field label="Label">
+      <Field label="Label (optional)" description="Text to display on the node. By default, it'll used the node ID">
         <Input
-          placeholder="Enter label (optional)"
+          placeholder="E.g 'Server 1'"
           value={values.nodeLabel}
           onChange={(e) => handleChange('nodeLabel')(e.currentTarget.value)}
         />
       </Field>
-      <Field label="Shape">
+      <Field label="Shape (optional)" description="Shape for the node. By default, it'll be rendered as a box">
         <Select
           options={shapeOptions}
-          placeholder="Select shape shifter (optional)"
+          placeholder="Select shape"
           value={values.nodeShape}
           onChange={(val) => handleChange('nodeShape')(val?.value)}
         />
