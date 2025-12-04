@@ -9,6 +9,7 @@ export function getOrCreateSvgDefinitions(svgElement: SVGSVGElement): Element {
 
 export function applyBlurGlowFilter(svgDefinitions: Element, svgElement: SVGSVGElement): void {
   const filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
+  return;
   filter.setAttribute('id', 'blur-glow');
   filter.setAttribute('x', '-50%');
   filter.setAttribute('y', '-50%');
@@ -68,6 +69,7 @@ export function applyBlurGlowFilter(svgDefinitions: Element, svgElement: SVGSVGE
 }
 
 export function applyNodeGradient(svgDefinitions: Element, svgElement: SVGSVGElement, theme: GrafanaTheme2): void {
+  return;
   const radialGradient = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
   radialGradient.setAttribute('id', 'node-gradient');
   radialGradient.setAttribute('cx', '40%');
