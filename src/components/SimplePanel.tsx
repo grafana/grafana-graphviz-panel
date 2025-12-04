@@ -7,6 +7,8 @@ import { PanelDataErrorView } from '@grafana/runtime';
 import { useThemedDotSvg, useFetchDotFromUrl } from '../hooks';
 import { ErrorDisplay } from './ErrorDisplay';
 import { BuilderModeOverlay } from './BuilderModeOverlay';
+import { EmptyDiagramDisplay } from './EmptyDiagramDisplay';
+import { isEmptyDiagram } from '../utils/graphvizDot';
 
 interface Props extends PanelProps<SimpleOptions> {}
 
@@ -53,10 +55,11 @@ export const SimplePanel: React.FC<Props> = ({
   );
 
   const effectiveDotDiagram = options.inputMode === InputMode.URL ? dotContent || '' : options.dotDiagram;
+  const isEmpty = isEmptyDiagram(effectiveDotDiagram);
 
   const renderError = useThemedDotSvg(
     svgRef,
-    effectiveDotDiagram,
+    isEmpty ? undefined : effectiveDotDiagram,
     options.layoutEngine,
     options.rankDirection,
     options.splineType,
@@ -93,7 +96,15 @@ export const SimplePanel: React.FC<Props> = ({
   }
 
   if (fetchError) {
-    return <ErrorDisplay errorMessage={fetchError} />;
+    return (
+      <ErrorDisplay
+        errorMessage={fetchError}
+        dotDiagram={effectiveDotDiagram}
+        layoutEngine={options.layoutEngine}
+        inputMode={options.inputMode || InputMode.CODE}
+        isEditMode={isEditMode}
+      />
+    );
   }
 
   if (isLoading) {
@@ -115,8 +126,29 @@ export const SimplePanel: React.FC<Props> = ({
     );
   }
 
+  if (isEmpty) {
+    return (
+      <EmptyDiagramDisplay
+        dotDiagram={effectiveDotDiagram}
+        layoutEngine={options.layoutEngine}
+        inputMode={options.inputMode || InputMode.CODE}
+        panelId={id}
+        isEditMode={isEditMode}
+      />
+    );
+  }
+
   if (renderError) {
-    return <ErrorDisplay errorMessage={renderError.message} errorInfo={renderError.errorInfo} />;
+    return (
+      <ErrorDisplay
+        errorMessage={renderError.message}
+        errorInfo={renderError.errorInfo}
+        dotDiagram={effectiveDotDiagram}
+        layoutEngine={options.layoutEngine}
+        inputMode={options.inputMode || InputMode.CODE}
+        isEditMode={isEditMode}
+      />
+    );
   }
 
   const isBuilderMode = options.inputMode === InputMode.BUILDER && isEditMode;

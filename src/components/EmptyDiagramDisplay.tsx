@@ -1,26 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Alert, Button, Input, Stack, Icon, Text, Box } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { Button, Input, Stack, Alert, Icon, Text, Box } from '@grafana/ui';
 import { isAssistantAvailable as checkAssistantAvailability } from '@grafana/assistant';
-import { ValidationErrorInfo } from '../validation';
 import { MeshAssistantService } from '../assistantService';
 import { LayoutEngine, InputMode } from '../types';
 
-interface ErrorDisplayProps {
-  errorMessage: string;
-  errorInfo?: ValidationErrorInfo;
+interface EmptyDiagramDisplayProps {
   dotDiagram: string;
   layoutEngine: LayoutEngine;
   inputMode: InputMode;
+  panelId: number;
   isEditMode: boolean;
 }
 
-export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
-  errorMessage,
-  errorInfo,
+export const EmptyDiagramDisplay: React.FC<EmptyDiagramDisplayProps> = ({
   dotDiagram,
   layoutEngine,
   inputMode,
+  panelId,
   isEditMode,
 }) => {
   const [isAssistantAvailable, setIsAssistantAvailable] = useState(false);
@@ -43,11 +39,6 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
       dotDiagram,
       layoutEngine,
       inputMode,
-      error: {
-        message: errorMessage,
-        lineNumber: errorInfo?.lineNumber,
-        lineContent: errorInfo?.lineContent,
-      },
     });
 
     setPrompt('');
@@ -59,25 +50,18 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
     }
   };
 
-  const codeStyle = css`
-    display: block;
-    margin-top: 8px;
-    font-family: monospace;
-    font-size: 0.9em;
-  `;
-
   return (
     <Box display="flex" direction="column" height="100%">
       <Box padding={2}>
         <Stack direction="row" justifyContent="center">
           <Box width="600px">
-            <Alert severity="error" title="Invalid DOT diagram definition">
+            <Alert title="This diagram is empty!" severity="info">
               <Stack direction="column" gap={2}>
-                <div>{errorMessage}</div>
-                {errorInfo && (
-                  <code className={codeStyle}>
-                    {errorInfo.lineNumber}: {errorInfo.lineContent}
-                  </code>
+                <div>Diagrams require at least one node, none have been added.</div>
+                {isEditMode && (
+                  <div>
+                    Update the Diagram in panel options <Icon name="arrow-right" />
+                  </div>
                 )}
               </Stack>
             </Alert>
@@ -85,7 +69,7 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
         </Stack>
       </Box>
 
-      {isEditMode && isAssistantAvailable && (
+      {isAssistantAvailable && (
         <Box display="flex" alignItems="center" justifyContent="center" padding={2} grow={1}>
           <Box width="600px">
             <Stack direction="column" gap={2}>
@@ -95,7 +79,7 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
               </Stack>
               <Stack direction="row" gap={1}>
                 <Input
-                  placeholder="example: &quot;How do I fix this DOT syntax error?&quot;"
+                  placeholder="example: &quot;Create a simple diagram with nodes representing my data.&quot;"
                   value={prompt}
                   onChange={(e) => setPrompt(e.currentTarget.value)}
                   onKeyDown={handleKeyDown}
