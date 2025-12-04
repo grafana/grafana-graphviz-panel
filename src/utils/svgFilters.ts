@@ -9,7 +9,6 @@ export function getOrCreateSvgDefinitions(svgElement: SVGSVGElement): Element {
 
 export function applyBlurGlowFilter(svgDefinitions: Element, svgElement: SVGSVGElement): void {
   const filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
-  return;
   filter.setAttribute('id', 'blur-glow');
   filter.setAttribute('x', '-50%');
   filter.setAttribute('y', '-50%');
@@ -17,9 +16,9 @@ export function applyBlurGlowFilter(svgDefinitions: Element, svgElement: SVGSVGE
   filter.setAttribute('height', '200%');
 
   const blur = document.createElementNS('http://www.w3.org/2000/svg', 'feGaussianBlur');
-  blur.setAttribute('in', 'SourceGraphic');
-  blur.setAttribute('stdDeviation', '3');
-  blur.setAttribute('result', 'blur');
+  // blur.setAttribute('in', 'SourceGraphic');
+  // blur.setAttribute('stdDeviation', '1');
+  // blur.setAttribute('result', 'blur');
 
   const luminance = document.createElementNS('http://www.w3.org/2000/svg', 'feColorMatrix');
   luminance.setAttribute('in', 'blur');
@@ -69,10 +68,9 @@ export function applyBlurGlowFilter(svgDefinitions: Element, svgElement: SVGSVGE
 }
 
 export function applyNodeGradient(svgDefinitions: Element, svgElement: SVGSVGElement, theme: GrafanaTheme2): void {
-  return;
   const radialGradient = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
   radialGradient.setAttribute('id', 'node-gradient');
-  radialGradient.setAttribute('cx', '40%');
+  radialGradient.setAttribute('cx', '10%');
   radialGradient.setAttribute('cy', '75%');
   radialGradient.setAttribute('r', '168.75%');
 
