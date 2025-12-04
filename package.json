@@ -1,6 +1,13 @@
 {
-  "name": "mesh",
-  "version": "0.0.1-beta-rc1",
+  "name": "grafana-mesh-panel",
+  "version": "0.0.1",
+  "private": true,
+  "author": "Grafana",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=24.11.0"
+  },
+  "packageManager": "npm@11.6.1",
   "scripts": {
     "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
     "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
@@ -14,8 +21,6 @@
     "sign": "npx --yes @grafana/sign-plugin@latest",
     "mock-server": "docker compose up dot-mock-server"
   },
-  "author": "Grafana",
-  "license": "Apache-2.0",
   "devDependencies": {
     "@grafana/eslint-config": "^8.2.0",
     "@grafana/plugin-e2e": "^2.1.13",
@@ -65,9 +70,6 @@
     "webpack-subresource-integrity": "^5.1.0",
     "webpack-virtual-modules": "^0.6.2"
   },
-  "engines": {
-    "node": ">=22"
-  },
   "dependencies": {
     "@emotion/css": "11.10.6",
     "@grafana/data": "^12.2.0",
@@ -81,6 +83,5 @@
     "graphlib-dot": "^0.6.4",
     "react": "18.2.0",
     "react-dom": "18.2.0"
-  },
-  "packageManager": "npm@10.9.2"
+  }
 }
