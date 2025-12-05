@@ -15,6 +15,12 @@ export enum RankDirection {
   RIGHT_TO_LEFT = 'RL',
 }
 
+export enum SplineType {
+  ORTHOGONAL = 'ortho',
+  POLYLINE = 'polyline',
+  CURVED = 'true',
+}
+
 export enum InputMode {
   CODE = 'code',
   BUILDER = 'builder',
@@ -107,6 +113,7 @@ export interface SimpleOptions {
   dotDiagram: string;
   dotDiagramUrl: string;
   layoutEngine: LayoutEngine;
+  splineType?: SplineType;
   rankDirection: RankDirection;
   namedThresholds: NamedThreshold[];
   edgeOverrides: EdgeOverride[];

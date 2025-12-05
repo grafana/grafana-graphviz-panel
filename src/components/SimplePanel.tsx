@@ -59,6 +59,7 @@ export const SimplePanel: React.FC<Props> = ({
     effectiveDotDiagram,
     options.layoutEngine,
     options.rankDirection,
+    options.splineType,
     options.edgeOverrides || [],
     options.nodeOverrides || [],
     options.namedThresholds || [],
