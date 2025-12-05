@@ -24,6 +24,12 @@ const NODE_ID_PREFIX = 'Node ID: ';
 const EDGE_ID_PREFIX = 'Edge ID: ';
 const EDGE_ID_SEPARATOR = '__to__';
 
+/**
+ * Graphviz uses a coordinate system where 1 unit = 1 inch = 72 points.
+ * SVG uses points as the default unit, so we need to convert.
+ */
+const POINTS_PER_INCH = 72;
+
 export function calculateNodePositions(
   svgRef: RefObject<HTMLDivElement>,
   dotDiagram: string,
@@ -173,4 +179,115 @@ export function calculateEdgePositions(svgRef: RefObject<HTMLDivElement>, dotDia
   });
 
   return edgePositions;
+}
+
+/**
+ * Converts container-relative coordinates to Graphviz coordinate space.
+ *
+ * Graphviz coordinate system:
+ * - Origin at bottom-left (Y increases upward)
+ * - Units in inches (1 inch = 72 points)
+ *
+ * Browser/SVG coordinate system:
+ * - Origin at top-left (Y increases downward)
+ * - Units in points/pixels
+ *
+ * This function is primarily used for delta calculations in drag operations.
+ *
+ * @param containerRelativeX - X coordinate relative to container element
+ * @param containerRelativeY - Y coordinate relative to container element
+ * @param svgElement - The SVG element containing the graph
+ * @returns Coordinates in Graphviz space (inches, Y-inverted)
+ */
+export function browserToGraphvizCoordinates(
+  containerRelativeX: number,
+  containerRelativeY: number,
+  svgElement: SVGSVGElement
+): { x: number; y: number } {
+  const svgRect = svgElement.getBoundingClientRect();
+  const viewBox = svgElement.viewBox.baseVal;
+
+  if (!viewBox || viewBox.width === 0 || viewBox.height === 0) {
+    return { x: 0, y: 0 };
+  }
+
+  const containerRect = svgElement.parentElement?.getBoundingClientRect();
+  if (!containerRect) {
+    return { x: 0, y: 0 };
+  }
+
+  const svgRelativeX = containerRelativeX + (containerRect.left - svgRect.left);
+  const svgRelativeY = containerRelativeY + (containerRect.top - svgRect.top);
+
+  const scaleX = viewBox.width / svgRect.width;
+  const scaleY = viewBox.height / svgRect.height;
+
+  const svgX = svgRelativeX * scaleX;
+  const svgY = svgRelativeY * scaleY;
+
+  const graphvizX = svgX / POINTS_PER_INCH;
+  const graphvizY = -svgY / POINTS_PER_INCH;
+
+  return { x: graphvizX, y: graphvizY };
+}
+
+/**
+ * Calculates the delta in Graphviz coordinates from a mouse movement.
+ * Converts the zero point to account for coordinate system offsets.
+ *
+ * @param startPosition - Starting mouse position (container-relative)
+ * @param endPosition - Ending mouse position (container-relative)
+ * @param svgElement - The SVG element containing the graph
+ * @returns Delta in Graphviz coordinate space
+ */
+export function calculateGraphvizDelta(
+  startPosition: { x: number; y: number },
+  endPosition: { x: number; y: number },
+  svgElement: SVGSVGElement
+): { x: number; y: number } {
+  const deltaX = endPosition.x - startPosition.x;
+  const deltaY = endPosition.y - startPosition.y;
+
+  const deltaSvg = browserToGraphvizCoordinates(deltaX, deltaY, svgElement);
+  const zeroOffset = browserToGraphvizCoordinates(0, 0, svgElement);
+
+  return {
+    x: deltaSvg.x - zeroOffset.x,
+    y: deltaSvg.y - zeroOffset.y,
+  };
+}
+
+export function graphvizToBrowserCoordinates(
+  graphvizX: number,
+  graphvizY: number,
+  svgElement: SVGSVGElement
+): { x: number; y: number } {
+  const viewBox = svgElement.viewBox.baseVal;
+  const hasViewBox = viewBox.width > 0 && viewBox.height > 0;
+
+  let svgHeight: number;
+  let svgX: number;
+  let svgY: number;
+
+  if (hasViewBox) {
+    svgHeight = viewBox.height;
+  } else {
+    svgHeight = svgElement.height.baseVal.value || svgElement.clientHeight;
+  }
+
+  svgX = graphvizX;
+  svgY = svgHeight - graphvizY;
+
+  if (hasViewBox) {
+    const rect = svgElement.getBoundingClientRect();
+    const scaleX = rect.width / viewBox.width;
+    const scaleY = rect.height / viewBox.height;
+
+    const browserX = (svgX - viewBox.x) * scaleX;
+    const browserY = (svgY - viewBox.y) * scaleY;
+
+    return { x: browserX, y: browserY };
+  }
+
+  return { x: svgX, y: svgY };
 }

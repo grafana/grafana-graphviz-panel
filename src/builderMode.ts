@@ -303,3 +303,71 @@ export function deleteEdgeFromDot(dotString: string, source: string, target: str
     return dotString;
   }
 }
+
+/**
+ * Updates the position of a node in the DOT diagram.
+ * Adds the position in Graphviz coordinates with the "!" suffix to prevent layout adjustment.
+ *
+ * @param dotString - The DOT diagram string
+ * @param nodeId - ID of the node to update
+ * @param x - X coordinate in Graphviz space (inches)
+ * @param y - Y coordinate in Graphviz space (inches)
+ * @returns Updated DOT diagram string
+ */
+export function updateNodePositionInDot(dotString: string, nodeId: string, x: number, y: number): string {
+  try {
+    const graph: Graph = graphlibDot.read(dotString);
+
+    const existingNode = graph.node(nodeId);
+    if (!existingNode) {
+      console.error(`Node ${nodeId} not found in graph`);
+      return dotString;
+    }
+
+    const nodeAttributes: Record<string, unknown> = { ...existingNode };
+    nodeAttributes.pos = `${x},${y}!`;
+
+    graph.setNode(nodeId, nodeAttributes);
+
+    return graphlibDot.write(graph);
+  } catch (error) {
+    console.error('Error updating node position in DOT:', error);
+    return dotString;
+  }
+}
+
+/**
+ * Retrieves the position of a node from the DOT diagram.
+ * Parses the "pos" attribute if present.
+ *
+ * @param dotString - The DOT diagram string
+ * @param nodeId - ID of the node to get position for
+ * @returns Position in Graphviz coordinates, or null if not set
+ */
+export function getNodePosition(dotString: string, nodeId: string): { x: number; y: number } | null {
+  try {
+    const graph: Graph = graphlibDot.read(dotString);
+
+    const nodeData = graph.node(nodeId);
+    if (!nodeData || !nodeData.pos) {
+      return null;
+    }
+
+    const posString = String(nodeData.pos).replace(/!$/, '');
+    const parts = posString.split(',');
+
+    if (parts.length >= 2) {
+      const x = parseFloat(parts[0]);
+      const y = parseFloat(parts[1]);
+
+      if (!isNaN(x) && !isNaN(y)) {
+        return { x, y };
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error getting node position from DOT:', error);
+    return null;
+  }
+}

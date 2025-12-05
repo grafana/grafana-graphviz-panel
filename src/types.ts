@@ -5,7 +5,6 @@ export enum LayoutEngine {
   NETWORK = 'neato',
   FORCE_DIRECTED = 'fdp',
   CIRCULAR = 'circo',
-  RADIAL = 'twopi',
 }
 
 export enum RankDirection {
@@ -15,10 +14,24 @@ export enum RankDirection {
   RIGHT_TO_LEFT = 'RL',
 }
 
+export enum SplineType {
+  ORTHOGONAL = 'ortho',
+  POLYLINE = 'polyline',
+  CURVED = 'true',
+}
+
 export enum InputMode {
   CODE = 'code',
   BUILDER = 'builder',
   URL = 'url',
+}
+
+export enum BuilderTool {
+  EDIT = 'edit',
+  DELETE = 'delete',
+  MOVE = 'move',
+  EDGE = 'edge',
+  NODE = 'node',
 }
 
 export enum RuleKind {
@@ -98,8 +111,8 @@ export interface NodeOverride {
 }
 
 export interface BuilderModeActions {
+  activeTool?: BuilderTool;
   addNodeTrigger?: number;
-  addEdgeTrigger?: number;
 }
 
 export interface SimpleOptions {
@@ -107,6 +120,7 @@ export interface SimpleOptions {
   dotDiagram: string;
   dotDiagramUrl: string;
   layoutEngine: LayoutEngine;
+  splineType?: SplineType;
   rankDirection: RankDirection;
   namedThresholds: NamedThreshold[];
   edgeOverrides: EdgeOverride[];

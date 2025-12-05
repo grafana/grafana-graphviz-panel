@@ -59,6 +59,7 @@ export const SimplePanel: React.FC<Props> = ({
     effectiveDotDiagram,
     options.layoutEngine,
     options.rankDirection,
+    options.splineType,
     options.edgeOverrides || [],
     options.nodeOverrides || [],
     options.namedThresholds || [],
@@ -83,7 +84,6 @@ export const SimplePanel: React.FC<Props> = ({
       ...options,
       builderModeActions: {
         addNodeTrigger: undefined,
-        addEdgeTrigger: undefined,
       },
     });
   }, [options, onOptionsChange]);
@@ -151,7 +151,8 @@ export const SimplePanel: React.FC<Props> = ({
           onChange={handleDotChange}
           onClearTriggers={handleClearTriggers}
           addNodeTrigger={options.builderModeActions?.addNodeTrigger}
-          addEdgeTrigger={options.builderModeActions?.addEdgeTrigger}
+          layoutEngine={options.layoutEngine}
+          activeTool={options.builderModeActions?.activeTool}
         />
       )}
     </div>

@@ -1,5 +1,5 @@
 import { PanelPlugin } from '@grafana/data';
-import { SimpleOptions, RankDirection, LayoutEngine, InputMode } from './types';
+import { SimpleOptions, RankDirection, LayoutEngine, InputMode, SplineType } from './types';
 import { SimplePanel } from './components/SimplePanel';
 import { DotDiagramEditor } from './components/DotDiagramEditor';
 import { BuilderModeEditor } from './components/BuilderModeEditor';
@@ -45,8 +45,8 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
     .addCustomEditor({
       id: 'builderModeActions',
       path: 'builderModeActions',
-      name: 'Builder actions',
-      description: 'Add nodes and edges to the diagram',
+      name: 'Tool palette',
+      description: 'Select a tool to interact with the diagram',
       defaultValue: {},
       editor: BuilderModeEditor,
       category: ['Diagram'],
@@ -89,12 +89,6 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
             label: 'Circular',
             icon: 'circle',
           },
-          {
-            value: LayoutEngine.RADIAL,
-            label: 'Radial',
-            // Can't find an icon for this, so using rocket as a placeholder
-            icon: 'rocket',
-          },
         ],
       },
     })
@@ -126,6 +120,32 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
             value: RankDirection.RIGHT_TO_LEFT,
             label: 'Right to Left',
             icon: 'arrow-left',
+          },
+        ],
+      },
+    })
+    .addSelect({
+      path: 'splineType',
+      name: 'Edge spline type',
+      description: 'Controls how edges are drawn between nodes',
+      defaultValue: SplineType.CURVED,
+      category: ['Diagram'],
+      settings: {
+        options: [
+          {
+            value: SplineType.CURVED,
+            label: 'Curved',
+            icon: 'gf-interpolation-smooth',
+          },
+          {
+            value: SplineType.ORTHOGONAL,
+            label: 'Orthogonal',
+            icon: 'gf-interpolation-step-before',
+          },
+          {
+            value: SplineType.POLYLINE,
+            label: 'Polyline',
+            icon: 'gf-interpolation-linear',
           },
         ],
       },

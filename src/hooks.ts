@@ -102,6 +102,7 @@ export function useThemedDotSvg(
   dotDiagram: string | undefined,
   layoutEngine: string,
   rankDirection: string,
+  splineType: string | undefined,
   edgeOverrides: EdgeOverride[],
   nodeOverrides: NodeOverride[],
   namedThresholds: NamedThreshold[],
@@ -150,7 +151,7 @@ export function useThemedDotSvg(
         const dotWithNodeLabels = applyDataDrivenNodeLabels(dotWithDataWidths, nodeOverrides, data);
         const dotWithAllLabels = applyDataDrivenEdgeLabels(dotWithNodeLabels, edgeOverrides, data);
 
-        const svg = await renderDotToSvg(dotWithAllLabels, layoutEngine, rankDirection);
+        const svg = await renderDotToSvg(dotWithAllLabels, layoutEngine, rankDirection, splineType);
 
         if (!svgRef.current) {
           return;
@@ -183,6 +184,7 @@ export function useThemedDotSvg(
     dotDiagram,
     layoutEngine,
     rankDirection,
+    splineType,
     edgeOverrides,
     nodeOverrides,
     namedThresholds,
