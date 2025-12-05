@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Alert, Button, Input, Stack, Icon, Text, Box } from '@grafana/ui';
+import { Alert, Input, Stack, Icon, Text, Box } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { isAssistantAvailable as checkAssistantAvailability } from '@grafana/assistant';
 import { ValidationErrorInfo } from '../validation';
 import { MeshAssistantService } from '../assistantService';
 import { LayoutEngine, InputMode } from '../types';
+import { AskButton } from './AskButton';
 
 interface ErrorDisplayProps {
   errorMessage: string;
@@ -95,14 +96,12 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
               </Stack>
               <Stack direction="row" gap={1}>
                 <Input
-                  placeholder="example: &quot;How do I fix this DOT syntax error?&quot;"
+                  placeholder='example: "How do I fix this DOT syntax error?"'
                   value={prompt}
                   onChange={(e) => setPrompt(e.currentTarget.value)}
                   onKeyDown={handleKeyDown}
                 />
-                <Button onClick={handleAsk} disabled={!prompt.trim()}>
-                  Ask
-                </Button>
+                <AskButton onClick={handleAsk} disabled={!prompt.trim()} />
               </Stack>
             </Stack>
           </Box>

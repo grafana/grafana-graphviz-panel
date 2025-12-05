@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Input, Stack, Alert, Icon, Text, Box } from '@grafana/ui';
+import { Input, Stack, Alert, Icon, Text, Box } from '@grafana/ui';
 import { isAssistantAvailable as checkAssistantAvailability } from '@grafana/assistant';
 import { MeshAssistantService } from '../assistantService';
 import { LayoutEngine, InputMode } from '../types';
+import { AskButton } from './AskButton';
 
 interface EmptyDiagramDisplayProps {
   dotDiagram: string;
@@ -79,14 +80,12 @@ export const EmptyDiagramDisplay: React.FC<EmptyDiagramDisplayProps> = ({
               </Stack>
               <Stack direction="row" gap={1}>
                 <Input
-                  placeholder="example: &quot;Create a simple diagram with nodes representing my data.&quot;"
+                  placeholder='example: "Create a simple diagram with nodes representing my data."'
                   value={prompt}
                   onChange={(e) => setPrompt(e.currentTarget.value)}
                   onKeyDown={handleKeyDown}
                 />
-                <Button onClick={handleAsk} disabled={!prompt.trim()}>
-                  Ask
-                </Button>
+                <AskButton onClick={handleAsk} disabled={!prompt.trim()} />
               </Stack>
             </Stack>
           </Box>

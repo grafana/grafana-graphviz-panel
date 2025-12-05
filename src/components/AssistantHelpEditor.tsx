@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { StandardEditorProps } from '@grafana/data';
-import { Button, Input, Stack, Icon, Text, LinkButton } from '@grafana/ui';
+import { Input, Stack, Icon, Text, LinkButton } from '@grafana/ui';
 import { isAssistantAvailable as checkAssistantAvailability } from '@grafana/assistant';
 import { SimpleOptions } from '../types';
 import { MeshAssistantService } from '../assistantService';
+import { AskButton } from './AskButton';
 
 export const AssistantHelpEditor: React.FC<StandardEditorProps<string, any, SimpleOptions>> = ({ context }) => {
   const [isAssistantAvailable, setIsAssistantAvailable] = useState(false);
@@ -73,9 +74,7 @@ export const AssistantHelpEditor: React.FC<StandardEditorProps<string, any, Simp
           onChange={(e) => setPrompt(e.currentTarget.value)}
           onKeyDown={handleKeyDown}
         />
-        <Button onClick={handleAsk} disabled={!prompt.trim()}>
-          Ask
-        </Button>
+        <AskButton onClick={handleAsk} disabled={!prompt.trim()} />
       </Stack>
     </Stack>
   );
