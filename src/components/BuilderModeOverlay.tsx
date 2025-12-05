@@ -11,6 +11,8 @@ import {
   parseEdgesFromDot,
   getExistingEdgeIds,
   isDirectedGraph,
+  updateNodePositionInDot,
+  getNodePosition,
 } from '../builderMode';
 import { NodeFormModal } from './NodeFormModal';
 import { EdgeFormModal } from './EdgeFormModal';
@@ -18,12 +20,16 @@ import { NodeEditModal } from './NodeEditModal';
 import { EdgeEditModal } from './EdgeEditModal';
 import { useConfirmation } from '../hooks/useConfirmation';
 import { useDragEdge } from '../hooks/useDragEdge';
+import { useDragNode } from '../hooks/useDragNode';
 import {
   calculateNodePositions,
   calculateEdgePositions,
   NodePosition,
   EdgePosition,
+  browserToGraphvizCoordinates,
+  calculateGraphvizDelta,
 } from '../utils/svgPositionCalculator';
+import { LayoutEngine } from '../types';
 
 const MENU_POSITION_X_RATIO = 0.75;
 const MENU_POSITION_Y_RATIO = 0.25;
@@ -37,6 +43,37 @@ const BUTTON_CONTAINER_STYLE: React.CSSProperties = {
   transform: 'translate(-50%, -50%)',
 };
 
+/**
+ * Pure function to calculate the final Graphviz position after a drag operation.
+ * Uses delta-based positioning to add movement to existing position.
+ *
+ * @param startPosition - Starting mouse position
+ * @param endPosition - Ending mouse position
+ * @param offset - Offset from mouse to node center
+ * @param existingPosition - Existing Graphviz position (if any)
+ * @param svgElement - SVG element for coordinate transformation
+ * @returns Final position in Graphviz coordinates
+ */
+function calculateFinalNodePosition(
+  startPosition: { x: number; y: number },
+  endPosition: { x: number; y: number },
+  offset: { x: number; y: number },
+  existingPosition: { x: number; y: number } | null,
+  svgElement: SVGSVGElement
+): { x: number; y: number } {
+  const graphvizDelta = calculateGraphvizDelta(startPosition, endPosition, svgElement);
+
+  return existingPosition
+    ? {
+        x: existingPosition.x + graphvizDelta.x,
+        y: existingPosition.y + graphvizDelta.y,
+      }
+    : {
+        x: browserToGraphvizCoordinates(endPosition.x - offset.x, endPosition.y - offset.y, svgElement).x,
+        y: browserToGraphvizCoordinates(endPosition.x - offset.x, endPosition.y - offset.y, svgElement).y,
+      };
+}
+
 export interface BuilderModeOverlayProps {
   svgRef: RefObject<HTMLDivElement>;
   dotDiagram: string;
@@ -44,6 +81,8 @@ export interface BuilderModeOverlayProps {
   onClearTriggers?: () => void;
   addNodeTrigger?: number;
   addEdgeTrigger?: number;
+  layoutEngine: LayoutEngine;
+  enableManualPositioning?: boolean;
 }
 
 export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
@@ -53,6 +92,8 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
   onClearTriggers,
   addNodeTrigger,
   addEdgeTrigger,
+  layoutEngine,
+  enableManualPositioning = false,
 }) => {
   const theme = useTheme2();
   const [nodePositions, setNodePositions] = useState<NodePosition[]>([]);
@@ -77,6 +118,16 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
   });
 
   const { dragState, startDrag, updateDragPosition, endDrag, cancelDrag } = useDragEdge();
+  const {
+    dragState: nodeDragState,
+    startDrag: startNodeDrag,
+    updateDragPosition: updateNodeDragPosition,
+    endDrag: endNodeDrag,
+    cancelDrag: cancelNodeDrag,
+  } = useDragNode();
+
+  const canPositionNodes =
+    enableManualPositioning && (layoutEngine === LayoutEngine.NETWORK || layoutEngine === LayoutEngine.FORCE_DIRECTED);
 
   const [showNodeForm, setShowNodeForm] = useState(false);
   const [showEdgeForm, setShowEdgeForm] = useState(false);
@@ -242,8 +293,93 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
     [svgRef, startDrag]
   );
 
+  const handleNodeDragStart = useCallback(
+    (nodeId: string, event: React.MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const containerRect = svgRef.current?.getBoundingClientRect();
+      if (!containerRect) {
+        return;
+      }
+
+      const mousePosition = {
+        x: event.clientX - containerRect.left,
+        y: event.clientY - containerRect.top,
+      };
+
+      const nodePos = nodePositions.find((n) => n.id === nodeId);
+      if (!nodePos) {
+        return;
+      }
+
+      const nodeCenter = {
+        x: nodePos.centerX,
+        y: nodePos.centerY,
+      };
+
+      startNodeDrag(nodeId, mousePosition, nodeCenter);
+    },
+    [svgRef, nodePositions, startNodeDrag]
+  );
+
+  const handleNodeDragMove = useCallback(
+    (event: React.MouseEvent) => {
+      if (!nodeDragState.isDragging) {
+        return;
+      }
+
+      const containerRect = svgRef.current?.getBoundingClientRect();
+      if (!containerRect) {
+        return;
+      }
+
+      const mousePosition = {
+        x: event.clientX - containerRect.left,
+        y: event.clientY - containerRect.top,
+      };
+
+      updateNodeDragPosition(mousePosition);
+    },
+    [nodeDragState.isDragging, svgRef, updateNodeDragPosition]
+  );
+
+  const handleNodeDragEnd = useCallback(() => {
+    if (!nodeDragState.isDragging || !nodeDragState.startPosition || !nodeDragState.offset) {
+      return;
+    }
+
+    const { nodeId, position } = endNodeDrag();
+
+    if (!nodeId || !position) {
+      return;
+    }
+
+    const svgElement = svgRef.current?.querySelector('svg');
+    if (!svgElement) {
+      return;
+    }
+
+    const existingPosition = getNodePosition(dotDiagramRef.current, nodeId);
+    const finalPosition = calculateFinalNodePosition(
+      nodeDragState.startPosition,
+      position,
+      nodeDragState.offset,
+      existingPosition,
+      svgElement as SVGSVGElement
+    );
+
+    const newDot = updateNodePositionInDot(dotDiagramRef.current, nodeId, finalPosition.x, finalPosition.y);
+    onChangeRef.current(newDot);
+  }, [nodeDragState.isDragging, nodeDragState.offset, nodeDragState.startPosition, svgRef, endNodeDrag]);
+
   const handleMouseMove = useCallback(
     (event: React.MouseEvent) => {
+      if (nodeDragState.isDragging) {
+        handleNodeDragMove(event);
+        return;
+      }
+
       if (!dragState.isDragging) {
         return;
       }
@@ -281,10 +417,23 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
 
       updateDragPosition(position, targetNodeId);
     },
-    [dragState.isDragging, dragState.sourceNodeId, svgRef, nodePositions, updateDragPosition]
+    [
+      dragState.isDragging,
+      dragState.sourceNodeId,
+      nodeDragState.isDragging,
+      svgRef,
+      nodePositions,
+      updateDragPosition,
+      handleNodeDragMove,
+    ]
   );
 
   const handleMouseUp = useCallback(() => {
+    if (nodeDragState.isDragging) {
+      handleNodeDragEnd();
+      return;
+    }
+
     if (!dragState.isDragging) {
       return;
     }
@@ -296,10 +445,10 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
       setEdgeTargetNodeId(targetNodeId);
       setShowEdgeForm(true);
     }
-  }, [dragState.isDragging, endDrag]);
+  }, [dragState.isDragging, nodeDragState.isDragging, endDrag, handleNodeDragEnd]);
 
   useEffect(() => {
-    if (!dragState.isDragging) {
+    if (!dragState.isDragging && !nodeDragState.isDragging) {
       return;
     }
 
@@ -307,11 +456,14 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
       if (dragState.isDragging) {
         cancelDrag();
       }
+      if (nodeDragState.isDragging) {
+        cancelNodeDrag();
+      }
     };
 
     window.addEventListener('mouseup', handleGlobalMouseUp);
     return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
-  }, [dragState.isDragging, cancelDrag]);
+  }, [dragState.isDragging, nodeDragState.isDragging, cancelDrag, cancelNodeDrag]);
 
   const existingNodeIds = useMemo(() => parseNodesFromDot(dotDiagram).map((node) => node.id), [dotDiagram]);
   const existingEdgeIds = useMemo(() => getExistingEdgeIds(dotDiagram), [dotDiagram]);
@@ -327,7 +479,8 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
         left: 0,
         width: '100%',
         height: '100%',
-        pointerEvents: dragState.isDragging ? 'auto' : 'none',
+        pointerEvents: dragState.isDragging || nodeDragState.isDragging ? 'auto' : 'none',
+        cursor: nodeDragState.isDragging ? 'grabbing' : undefined,
       }}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
@@ -373,6 +526,30 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
         </svg>
       )}
 
+      {nodeDragState.isDragging && nodeDragState.currentPosition && nodeDragState.offset && (
+        <div
+          style={{
+            position: 'absolute',
+            left: nodeDragState.currentPosition.x - nodeDragState.offset.x,
+            top: nodeDragState.currentPosition.y - nodeDragState.offset.y,
+            transform: 'translate(-50%, -50%)',
+            pointerEvents: 'none',
+            opacity: 0.5,
+            zIndex: DRAG_OVERLAY_Z_INDEX,
+          }}
+        >
+          <div
+            style={{
+              width: '20px',
+              height: '20px',
+              borderRadius: '50%',
+              backgroundColor: theme.colors.primary.main,
+              border: `2px solid ${theme.colors.primary.border}`,
+            }}
+          />
+        </div>
+      )}
+
       {nodePositions.map((pos) => {
         const isTargetCandidate = dragState.isDragging && dragState.sourceNodeId !== pos.id;
         const isHoveredTarget = isTargetCandidate && dragState.targetNodeId === pos.id;
@@ -392,7 +569,7 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
               onMouseLeave={() => setHoveredNodeId(null)}
             />
 
-            {hoveredNodeId === pos.id && !dragState.isDragging && (
+            {hoveredNodeId === pos.id && !dragState.isDragging && !nodeDragState.isDragging && (
               <div
                 style={{
                   position: 'absolute',
@@ -404,7 +581,26 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
                 onMouseEnter={() => setHoveredNodeId(pos.id)}
                 onMouseLeave={() => setHoveredNodeId(null)}
               >
-                <Box backgroundColor="canvas" padding={0.5} borderRadius="default" boxShadow="z1">
+                <Box
+                  backgroundColor="canvas"
+                  padding={0.5}
+                  borderRadius="default"
+                  boxShadow="z1"
+                  display="flex"
+                  gap={0.5}
+                >
+                  {canPositionNodes && (
+                    <div onMouseDown={(e) => handleNodeDragStart(pos.id, e)}>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        icon="apps"
+                        aria-label={`Drag to move ${pos.id}`}
+                        title="Drag to move node"
+                        style={{ cursor: 'grab' }}
+                      />
+                    </div>
+                  )}
                   <div onMouseDown={(e) => handleDragIconMouseDown(pos.id, e)}>
                     <Button
                       variant="secondary"
@@ -418,7 +614,7 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
               </div>
             )}
 
-            {!dragState.isDragging && (
+            {!dragState.isDragging && !nodeDragState.isDragging && (
               <div
                 style={{
                   ...BUTTON_CONTAINER_STYLE,

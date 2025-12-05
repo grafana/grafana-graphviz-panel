@@ -153,6 +153,8 @@ export const SimplePanel: React.FC<Props> = ({
           onClearTriggers={handleClearTriggers}
           addNodeTrigger={options.builderModeActions?.addNodeTrigger}
           addEdgeTrigger={options.builderModeActions?.addEdgeTrigger}
+          layoutEngine={options.layoutEngine}
+          enableManualPositioning={options.enableManualPositioning}
         />
       )}
     </div>

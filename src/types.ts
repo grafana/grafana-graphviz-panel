@@ -114,6 +114,7 @@ export interface SimpleOptions {
   layoutEngine: LayoutEngine;
   splineType?: SplineType;
   rankDirection: RankDirection;
+  enableManualPositioning?: boolean;
   namedThresholds: NamedThreshold[];
   edgeOverrides: EdgeOverride[];
   nodeOverrides: NodeOverride[];
