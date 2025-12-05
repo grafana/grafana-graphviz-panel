@@ -1,5 +1,5 @@
 import React, { RefObject, useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import { Button, ConfirmModal, Box, Dropdown, Menu, useTheme2 } from '@grafana/ui';
+import { Button, ConfirmModal, Box, useTheme2 } from '@grafana/ui';
 import {
   deleteNodeFromDot,
   deleteEdgeFromDot,
@@ -29,19 +29,13 @@ import {
   browserToGraphvizCoordinates,
   calculateGraphvizDelta,
 } from '../utils/svgPositionCalculator';
-import { LayoutEngine } from '../types';
+import { LayoutEngine, BuilderTool } from '../types';
 
 const MENU_POSITION_X_RATIO = 0.75;
 const MENU_POSITION_Y_RATIO = 0.25;
 const POSITION_CALCULATION_DELAY_MS = 100;
-const MENU_FADE_DURATION_S = 0.15;
 const DRAG_LINE_STROKE_WIDTH = 2;
 const DRAG_OVERLAY_Z_INDEX = 1000;
-
-const BUTTON_CONTAINER_STYLE: React.CSSProperties = {
-  pointerEvents: 'auto',
-  transform: 'translate(-50%, -50%)',
-};
 
 /**
  * Pure function to calculate the final Graphviz position after a drag operation.
@@ -80,9 +74,8 @@ export interface BuilderModeOverlayProps {
   onChange: (newDotDiagram: string) => void;
   onClearTriggers?: () => void;
   addNodeTrigger?: number;
-  addEdgeTrigger?: number;
   layoutEngine: LayoutEngine;
-  enableManualPositioning?: boolean;
+  activeTool?: BuilderTool;
 }
 
 export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
@@ -91,9 +84,8 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
   onChange,
   onClearTriggers,
   addNodeTrigger,
-  addEdgeTrigger,
   layoutEngine,
-  enableManualPositioning = false,
+  activeTool = BuilderTool.EDIT,
 }) => {
   const theme = useTheme2();
   const [nodePositions, setNodePositions] = useState<NodePosition[]>([]);
@@ -126,8 +118,7 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
     cancelDrag: cancelNodeDrag,
   } = useDragNode();
 
-  const canPositionNodes =
-    enableManualPositioning && (layoutEngine === LayoutEngine.NETWORK || layoutEngine === LayoutEngine.FORCE_DIRECTED);
+  const canPositionNodes = layoutEngine === LayoutEngine.NETWORK || layoutEngine === LayoutEngine.FORCE_DIRECTED;
 
   const [showNodeForm, setShowNodeForm] = useState(false);
   const [showEdgeForm, setShowEdgeForm] = useState(false);
@@ -151,14 +142,6 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
       onClearTriggers?.();
     }
   }, [addNodeTrigger, onClearTriggers]);
-
-  useEffect(() => {
-    if (addEdgeTrigger) {
-      setEdgeSourceNodeId(null);
-      setShowEdgeForm(true);
-      onClearTriggers?.();
-    }
-  }, [addEdgeTrigger, onClearTriggers]);
 
   useEffect(() => {
     if (!svgRef.current) {
@@ -553,6 +536,7 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
       {nodePositions.map((pos) => {
         const isTargetCandidate = dragState.isDragging && dragState.sourceNodeId !== pos.id;
         const isHoveredTarget = isTargetCandidate && dragState.targetNodeId === pos.id;
+        const isInvalidTarget = isTargetCandidate && !isHoveredTarget && hoveredNodeId === pos.id;
 
         return (
           <React.Fragment key={pos.id}>
@@ -564,103 +548,154 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
                 width: pos.width,
                 height: pos.height,
                 pointerEvents: 'auto',
+                cursor: isInvalidTarget ? 'not-allowed' : undefined,
               }}
               onMouseEnter={() => setHoveredNodeId(pos.id)}
               onMouseLeave={() => setHoveredNodeId(null)}
             />
 
-            {hoveredNodeId === pos.id && !dragState.isDragging && !nodeDragState.isDragging && (
-              <div
-                style={{
-                  position: 'absolute',
-                  left: pos.centerX,
-                  top: pos.centerY,
-                  transform: 'translate(-50%, -50%)',
-                  pointerEvents: 'auto',
-                }}
-                onMouseEnter={() => setHoveredNodeId(pos.id)}
-                onMouseLeave={() => setHoveredNodeId(null)}
-              >
-                <Box
-                  backgroundColor="canvas"
-                  padding={0.5}
-                  borderRadius="default"
-                  boxShadow="z1"
-                  display="flex"
-                  gap={0.5}
+            {hoveredNodeId === pos.id &&
+              !dragState.isDragging &&
+              !nodeDragState.isDragging &&
+              activeTool === BuilderTool.MOVE &&
+              canPositionNodes && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: pos.centerX,
+                    top: pos.centerY,
+                    transform: 'translate(-50%, -50%)',
+                    pointerEvents: 'auto',
+                    cursor: 'grab',
+                  }}
+                  onMouseEnter={() => setHoveredNodeId(pos.id)}
+                  onMouseLeave={() => setHoveredNodeId(null)}
+                  onMouseDown={(e) => handleNodeDragStart(pos.id, e)}
                 >
-                  {canPositionNodes && (
-                    <div onMouseDown={(e) => handleNodeDragStart(pos.id, e)}>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        icon="apps"
-                        aria-label={`Drag to move ${pos.id}`}
-                        title="Drag to move node"
-                        style={{ cursor: 'grab' }}
-                      />
-                    </div>
-                  )}
-                  <div onMouseDown={(e) => handleDragIconMouseDown(pos.id, e)}>
+                  <Box
+                    backgroundColor="canvas"
+                    padding={0.5}
+                    borderRadius="default"
+                    boxShadow="z1"
+                    display="flex"
+                    gap={0.5}
+                  >
                     <Button
                       variant="secondary"
                       size="sm"
-                      icon="gf-interpolation-step-after"
+                      icon="expand-arrows-alt"
+                      aria-label={`Drag to move ${pos.id}`}
+                      title="Drag to move node"
+                      style={{ cursor: 'grab' }}
+                    />
+                  </Box>
+                </div>
+              )}
+
+            {hoveredNodeId === pos.id &&
+              !dragState.isDragging &&
+              !nodeDragState.isDragging &&
+              activeTool === BuilderTool.EDGE && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: pos.centerX,
+                    top: pos.centerY,
+                    transform: 'translate(-50%, -50%)',
+                    pointerEvents: 'auto',
+                  }}
+                  onMouseEnter={() => setHoveredNodeId(pos.id)}
+                  onMouseLeave={() => setHoveredNodeId(null)}
+                  onMouseDown={(e) => handleDragIconMouseDown(pos.id, e)}
+                >
+                  <Box
+                    backgroundColor="canvas"
+                    padding={0.5}
+                    borderRadius="default"
+                    boxShadow="z1"
+                    display="flex"
+                    gap={0.5}
+                  >
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      icon="arrow-from-right"
                       aria-label={`Drag to create edge from ${pos.id}`}
                       title="Drag to create edge"
                     />
-                  </div>
-                </Box>
-              </div>
-            )}
+                  </Box>
+                </div>
+              )}
 
-            {!dragState.isDragging && !nodeDragState.isDragging && (
-              <div
-                style={{
-                  ...BUTTON_CONTAINER_STYLE,
-                  position: 'absolute',
-                  left: pos.x,
-                  top: pos.y,
-                  opacity: hoveredNodeId === pos.id ? 1 : 0,
-                  transition: `opacity ${MENU_FADE_DURATION_S}s ease-in-out`,
-                }}
-                onMouseEnter={() => setHoveredNodeId(pos.id)}
-                onMouseLeave={() => setHoveredNodeId(null)}
-              >
-                <Box
-                  backgroundColor="canvas"
-                  padding={0.5}
-                  borderRadius="default"
-                  boxShadow="z1"
-                  display="flex"
-                  gap={0.5}
+            {hoveredNodeId === pos.id &&
+              !dragState.isDragging &&
+              !nodeDragState.isDragging &&
+              activeTool === BuilderTool.EDIT && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: pos.centerX,
+                    top: pos.centerY,
+                    transform: 'translate(-50%, -50%)',
+                    pointerEvents: 'auto',
+                  }}
+                  onMouseEnter={() => setHoveredNodeId(pos.id)}
+                  onMouseLeave={() => setHoveredNodeId(null)}
                 >
-                  <Dropdown
-                    key={`node-dropdown-${pos.id}-${dotDiagram.length}`}
-                    overlay={
-                      <Menu>
-                        <Menu.Item
-                          label="Edit node"
-                          description="Update label and shape"
-                          icon="pen"
-                          onClick={() => handleEditNodeClick(pos.id)}
-                        />
-                        <Menu.Divider />
-                        <Menu.Item
-                          label="Delete node"
-                          description="Remove node and edges"
-                          icon="trash-alt"
-                          destructive
-                          onClick={() => handleDeleteNodeClick(pos.id)}
-                        />
-                      </Menu>
-                    }
+                  <Box
+                    backgroundColor="canvas"
+                    padding={0.5}
+                    borderRadius="default"
+                    boxShadow="z1"
+                    display="flex"
+                    gap={0.5}
                   >
-                    <Button variant="secondary" size="sm" icon="ellipsis-v" aria-label={`Node ${pos.id} actions`} />
-                  </Dropdown>
-                </Box>
-              </div>
-            )}
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      icon="pen"
+                      aria-label={`Edit ${pos.id}`}
+                      title="Edit node"
+                      onClick={() => handleEditNodeClick(pos.id)}
+                    />
+                  </Box>
+                </div>
+              )}
+
+            {hoveredNodeId === pos.id &&
+              !dragState.isDragging &&
+              !nodeDragState.isDragging &&
+              activeTool === BuilderTool.DELETE && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: pos.centerX,
+                    top: pos.centerY,
+                    transform: 'translate(-50%, -50%)',
+                    pointerEvents: 'auto',
+                  }}
+                  onMouseEnter={() => setHoveredNodeId(pos.id)}
+                  onMouseLeave={() => setHoveredNodeId(null)}
+                >
+                  <Box
+                    backgroundColor="canvas"
+                    padding={0.5}
+                    borderRadius="default"
+                    boxShadow="z1"
+                    display="flex"
+                    gap={0.5}
+                  >
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      icon="trash-alt"
+                      aria-label={`Delete ${pos.id}`}
+                      title="Delete node"
+                      onClick={() => handleDeleteNodeClick(pos.id)}
+                    />
+                  </Box>
+                </div>
+              )}
 
             {isHoveredTarget && (
               <div
@@ -676,7 +711,7 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
                   <Button
                     variant="secondary"
                     size="sm"
-                    icon="download-alt"
+                    icon="arrow-to-right"
                     aria-label={`Drop to connect to ${pos.id}`}
                   />
                 </Box>
@@ -688,51 +723,99 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
 
       {edgePositions.map((edge) => {
         const edgeKey = `${edge.source}-${edge.target}`;
+        const showEditButton =
+          hoveredEdgeKey === edgeKey &&
+          !dragState.isDragging &&
+          !nodeDragState.isDragging &&
+          activeTool === BuilderTool.EDIT;
+        const showDeleteButton =
+          hoveredEdgeKey === edgeKey &&
+          !dragState.isDragging &&
+          !nodeDragState.isDragging &&
+          activeTool === BuilderTool.DELETE;
+
         return (
-          <div
-            key={edgeKey}
-            style={{
-              ...BUTTON_CONTAINER_STYLE,
-              position: 'absolute',
-              left: edge.x,
-              top: edge.y,
-              opacity: hoveredEdgeKey === edgeKey ? 1 : 0,
-              transition: `opacity ${MENU_FADE_DURATION_S}s ease-in-out`,
-            }}
-            onMouseEnter={() => setHoveredEdgeKey(edgeKey)}
-            onMouseLeave={() => setHoveredEdgeKey(null)}
-          >
-            <Box backgroundColor="canvas" padding={0.5} borderRadius="default" boxShadow="z1" display="flex">
-              <Dropdown
-                key={`edge-dropdown-${edge.source}-${edge.target}-${dotDiagram.length}`}
-                overlay={
-                  <Menu>
-                    <Menu.Item
-                      label="Edit edge"
-                      description="Update label"
-                      icon="pen"
-                      onClick={() => handleEditEdgeClick(edge.source, edge.target)}
-                    />
-                    <Menu.Divider />
-                    <Menu.Item
-                      label="Delete edge"
-                      description="Remove connection"
-                      icon="trash-alt"
-                      destructive
-                      onClick={() => handleDeleteEdgeClick(edge.source, edge.target)}
-                    />
-                  </Menu>
-                }
+          <React.Fragment key={edgeKey}>
+            {!showEditButton && !showDeleteButton && (
+              <div
+                style={{
+                  position: 'absolute',
+                  left: edge.x,
+                  top: edge.y,
+                  transform: 'translate(-50%, -50%)',
+                  width: 20,
+                  height: 20,
+                  pointerEvents: 'auto',
+                }}
+                onMouseEnter={() => setHoveredEdgeKey(edgeKey)}
+                onMouseLeave={() => setHoveredEdgeKey(null)}
+              />
+            )}
+
+            {showEditButton && (
+              <div
+                style={{
+                  position: 'absolute',
+                  left: edge.x,
+                  top: edge.y,
+                  transform: 'translate(-50%, -50%)',
+                  pointerEvents: 'auto',
+                }}
+                onMouseEnter={() => setHoveredEdgeKey(edgeKey)}
+                onMouseLeave={() => setHoveredEdgeKey(null)}
               >
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  icon="ellipsis-v"
-                  aria-label={`Edge ${edge.source} → ${edge.target} actions`}
-                />
-              </Dropdown>
-            </Box>
-          </div>
+                <Box
+                  backgroundColor="canvas"
+                  padding={0.5}
+                  borderRadius="default"
+                  boxShadow="z1"
+                  display="flex"
+                  gap={0.5}
+                >
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    icon="pen"
+                    aria-label={`Edit edge ${edge.source} → ${edge.target}`}
+                    title="Edit edge"
+                    onClick={() => handleEditEdgeClick(edge.source, edge.target)}
+                  />
+                </Box>
+              </div>
+            )}
+
+            {showDeleteButton && (
+              <div
+                style={{
+                  position: 'absolute',
+                  left: edge.x,
+                  top: edge.y,
+                  transform: 'translate(-50%, -50%)',
+                  pointerEvents: 'auto',
+                }}
+                onMouseEnter={() => setHoveredEdgeKey(edgeKey)}
+                onMouseLeave={() => setHoveredEdgeKey(null)}
+              >
+                <Box
+                  backgroundColor="canvas"
+                  padding={0.5}
+                  borderRadius="default"
+                  boxShadow="z1"
+                  display="flex"
+                  gap={0.5}
+                >
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    icon="trash-alt"
+                    aria-label={`Delete edge ${edge.source} → ${edge.target}`}
+                    title="Delete edge"
+                    onClick={() => handleDeleteEdgeClick(edge.source, edge.target)}
+                  />
+                </Box>
+              </div>
+            )}
+          </React.Fragment>
         );
       })}
 

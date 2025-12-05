@@ -45,22 +45,12 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
     .addCustomEditor({
       id: 'builderModeActions',
       path: 'builderModeActions',
-      name: 'Builder actions',
-      description: 'Add nodes and edges to the diagram',
+      name: 'Tool palette',
+      description: 'Select a tool to interact with the diagram',
       defaultValue: {},
       editor: BuilderModeEditor,
       category: ['Diagram'],
       showIf: (options) => options.inputMode === InputMode.BUILDER,
-    })
-    .addBooleanSwitch({
-      path: 'enableManualPositioning',
-      name: 'Enable manual node positioning',
-      description: 'Allow dragging nodes to manually set their position (Network and Force Directed layouts only)',
-      defaultValue: false,
-      category: ['Diagram'],
-      showIf: (options) =>
-        options.inputMode === InputMode.BUILDER &&
-        (options.layoutEngine === LayoutEngine.NETWORK || options.layoutEngine === LayoutEngine.FORCE_DIRECTED),
     })
     .addTextInput({
       path: 'dotDiagramUrl',

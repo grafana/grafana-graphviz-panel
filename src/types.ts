@@ -26,6 +26,14 @@ export enum InputMode {
   URL = 'url',
 }
 
+export enum BuilderTool {
+  EDIT = 'edit',
+  DELETE = 'delete',
+  MOVE = 'move',
+  EDGE = 'edge',
+  NODE = 'node',
+}
+
 export enum RuleKind {
   STROKE_COLOR = 'strokeColor',
   FILL_COLOR = 'fillColor',
@@ -103,8 +111,8 @@ export interface NodeOverride {
 }
 
 export interface BuilderModeActions {
+  activeTool?: BuilderTool;
   addNodeTrigger?: number;
-  addEdgeTrigger?: number;
 }
 
 export interface SimpleOptions {
@@ -114,7 +122,6 @@ export interface SimpleOptions {
   layoutEngine: LayoutEngine;
   splineType?: SplineType;
   rankDirection: RankDirection;
-  enableManualPositioning?: boolean;
   namedThresholds: NamedThreshold[];
   edgeOverrides: EdgeOverride[];
   nodeOverrides: NodeOverride[];

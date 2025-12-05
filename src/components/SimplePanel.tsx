@@ -84,7 +84,6 @@ export const SimplePanel: React.FC<Props> = ({
       ...options,
       builderModeActions: {
         addNodeTrigger: undefined,
-        addEdgeTrigger: undefined,
       },
     });
   }, [options, onOptionsChange]);
@@ -152,9 +151,8 @@ export const SimplePanel: React.FC<Props> = ({
           onChange={handleDotChange}
           onClearTriggers={handleClearTriggers}
           addNodeTrigger={options.builderModeActions?.addNodeTrigger}
-          addEdgeTrigger={options.builderModeActions?.addEdgeTrigger}
           layoutEngine={options.layoutEngine}
-          enableManualPositioning={options.enableManualPositioning}
+          activeTool={options.builderModeActions?.activeTool}
         />
       )}
     </div>
