@@ -94,21 +94,21 @@ export const EdgeFormModal: React.FC<EdgeFormModalProps> = ({
           disabled={!!targetNodeId}
         />
       </Field>
-      <Field label="Edge ID" description="Leave empty to auto-generate">
+      <Field label="Edge ID" description="Leave empty to auto-generate. Used to identify the edge when defining overrides E.g. 'server1_to_server2'.">
         <Input
           autoFocus
           placeholder={
             values.targetNodeId && effectiveSourceId
               ? formatEdgeId(effectiveSourceId, values.targetNodeId)
-              : 'Auto-generated'
+              : 'Auto'
           }
           value={values.edgeId}
           onChange={(e) => handleChange('edgeId')(e.currentTarget.value)}
         />
       </Field>
-      <Field label="Edge Label">
+      <Field label="Edge Label (optional)" description="Text to display on the edge.">
         <Input
-          placeholder="Enter edge label (optional)"
+          placeholder="E.g. 'Server 1 to Server 2'"
           value={values.edgeLabel}
           onChange={(e) => handleChange('edgeLabel')(e.currentTarget.value)}
         />

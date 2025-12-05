@@ -46,14 +46,14 @@ export const NodeEditModal: React.FC<NodeEditModalProps> = ({
       <Field label="Node ID" description="Cannot be changed">
         <Input value={nodeId} disabled />
       </Field>
-      <Field label="Label">
+      <Field label="Label" description="Text to display on the node. E.g. 'Server 1'. By default, it'll used the node ID">
         <Input
           placeholder="Enter label (optional)"
           value={values.nodeLabel}
           onChange={(e) => handleChange('nodeLabel')(e.currentTarget.value)}
         />
       </Field>
-      <Field label="Shape">
+      <Field label="Shape" description="Shape for the node.">
         <Select
           options={shapeOptions}
           placeholder="Select shape (optional)"
