@@ -89,12 +89,6 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
             label: 'Circular',
             icon: 'circle',
           },
-          {
-            value: LayoutEngine.RADIAL,
-            label: 'Radial',
-            // Can't find an icon for this, so using rocket as a placeholder
-            icon: 'rocket',
-          },
         ],
       },
     })

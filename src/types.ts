@@ -5,7 +5,6 @@ export enum LayoutEngine {
   NETWORK = 'neato',
   FORCE_DIRECTED = 'fdp',
   CIRCULAR = 'circo',
-  RADIAL = 'twopi',
 }
 
 export enum RankDirection {
