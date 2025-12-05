@@ -33,10 +33,10 @@ function applyThemeDefaults(graph: Graph, theme: GrafanaTheme2): void {
     fontsize: theme.typography.fontSize.toString(),
     fontcolor: theme.colors.primary.contrastText,
     color: theme.colors.primary.border,
-    fillcolor: theme.colors.primary.main,
+    fillcolor: `${theme.colors.primary.main}60`, // 50% transparency
     style: 'rounded,filled',
     shape: 'box',
-    penwidth: '2.0',
+    penwidth: '1.0',
     margin: '0.2',
   };
 
@@ -45,7 +45,7 @@ function applyThemeDefaults(graph: Graph, theme: GrafanaTheme2): void {
     fontsize: theme.typography.fontSize.toString(),
     fontcolor: theme.colors.primary.contrastText,
     color: theme.colors.primary.border,
-    penwidth: '1.5',
+    penwidth: '1.0',
   };
 
   // Iterate over all nodes. graphlib-dot automatically creates nodes for any identifier found in edges.
