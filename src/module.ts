@@ -6,6 +6,7 @@ import { BuilderModeEditor } from './components/BuilderModeEditor';
 import { NamedThresholdsEditor } from './components/NamedThresholdsEditor';
 import { EdgeOverridesEditor } from './components/EdgeOverridesEditor';
 import { NodeOverridesEditor } from './components/NodeOverridesEditor';
+import { AssistantHelpEditor } from './components/AssistantHelpEditor';
 
 export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig().setPanelOptions((builder) => {
   return builder
@@ -149,6 +150,15 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
           },
         ],
       },
+    })
+    .addCustomEditor({
+      id: 'assistantHelp',
+      path: '_assistantHelp',
+      name: 'Need help?',
+      description: '',
+      defaultValue: '',
+      editor: AssistantHelpEditor,
+      category: ['Diagram'],
     })
     .addCustomEditor({
       id: 'edgeOverrides',
