@@ -159,7 +159,7 @@
         }
       ],
       "title": "TIMESERIES Data (labels on fields)",
-      "type": "grafana-mesh-panel"
+      "type": "grafana-graphviz-panel"
     },
     {
       "datasource": {
@@ -286,7 +286,7 @@
         }
       ],
       "title": "WIDE Data (table rows)",
-      "type": "grafana-mesh-panel"
+      "type": "grafana-graphviz-panel"
     },
     {
       "datasource": {
@@ -413,7 +413,7 @@
         }
       ],
       "title": "MIXED Data (timeseries + wide)",
-      "type": "grafana-mesh-panel"
+      "type": "grafana-graphviz-panel"
     },
     {
       "datasource": {
@@ -491,7 +491,7 @@
         }
       ],
       "title": "Partial Match Demo (Autodetect)",
-      "type": "grafana-mesh-panel"
+      "type": "grafana-graphviz-panel"
     }
   ],
   "preload": false,
@@ -507,7 +507,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Provisioned mesh dashboard",
+  "title": "Provisioned graphviz dashboard",
   "uid": "a538aeff-5a8a-42a5-901c-938d896fdd6f",
   "version": 7
 }
