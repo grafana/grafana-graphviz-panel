@@ -19,7 +19,10 @@
     "e2e": "docker compose --profile playwright up --abort-on-container-exit",
     "server": "docker compose up --build",
     "sign": "npx --yes @grafana/sign-plugin@latest",
-    "mock-server": "docker compose up dot-mock-server"
+    "mock-server": "docker compose up dot-mock-server",
+    "coverage": "npm run coverage:clean && npm run e2e && npm run test:ci && npm run coverage:merge-reports",
+    "coverage:clean": "rm -rf coverage && rm -rf coverage-merged",
+    "coverage:merge-reports": "node scripts/merge-coverage.js"
   },
   "devDependencies": {
     "@grafana/eslint-config": "^8.2.0",
