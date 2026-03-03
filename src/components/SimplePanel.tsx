@@ -162,12 +162,12 @@ export const SimplePanel: React.FC<Props> = ({
           height: ${height}px;
         `
       )}
-      data-testid="mesh-panel"
+      data-testid="graphviz-panel"
     >
       <div
         ref={svgRef}
         className={styles.svg}
-        data-testid="mesh-panel-svg"
+        data-testid="graphviz-panel-svg"
         style={{
           width,
           height,

@@ -1,12 +1,6 @@
-# Grafana panel plugin template
+# Grafana Graphviz Panel
 
-This template is a starting point for building a panel plugin for Grafana.
-
-## What are Grafana panel plugins?
-
-Panel plugins allow you to add new types of visualizations to your dashboard, such as maps, clocks, pie charts, lists, and more.
-
-Use panel plugins when you want to do things like visualize data returned by data source queries, navigate between dashboards, or control external systems (such as smart home devices).
+Define flowcharts and diagrams as code using Graphviz DOT language, connect your metrics, and visualize them in your choice of layouts—no manual drawing needed. Perfect for technical architectures, business processes, and organizational structures. Diagrams update automatically with live data.
 
 ## Getting started
 

@@ -1,7 +1,7 @@
 services:
   grafana:
     user: root
-    container_name: 'grafana-mesh-panel'
+    container_name: 'grafana-graphviz-panel'
 
     build:
       context: .
@@ -13,13 +13,13 @@ services:
     ports:
       - 3000:3000/tcp
     volumes:
-      - ../dist:/var/lib/grafana/plugins/grafana-mesh-panel
+      - ../dist:/var/lib/grafana/plugins/grafana-graphviz-panel
       - ../provisioning:/etc/grafana/provisioning
-      - ..:/root/grafana-mesh-panel
+      - ..:/root/grafana-graphviz-panel
 
     environment:
       NODE_ENV: development
-      GF_LOG_FILTERS: plugin.grafana-mesh-panel:debug
+      GF_LOG_FILTERS: plugin.grafana-graphviz-panel:debug
       GF_LOG_LEVEL: debug
       GF_DATAPROXY_LOGGING: 1
-      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: grafana-mesh-panel
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: grafana-graphviz-panel

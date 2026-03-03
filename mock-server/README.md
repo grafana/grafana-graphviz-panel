@@ -1,6 +1,6 @@
 # DOT File Mock Server
 
-A simple Fastify-based file server for uploading and serving DOT diagram files. This is designed for local testing and demos of the Grafana Mesh Panel plugin.
+A simple Fastify-based file server for uploading and serving DOT diagram files. This is designed for local testing and demos of the Grafana Graphviz Panel plugin.
 
 ## Features
 
@@ -39,19 +39,23 @@ npm run dev
 ## API Endpoints
 
 ### POST /dot
+
 Upload a DOT diagram file.
 
 **Example with curl:**
+
 ```bash
 curl -X POST -F "file=@diagram.dot" http://localhost:3001/dot
 ```
 
 **Example with httpie:**
+
 ```bash
 http -f POST localhost:3001/dot file@diagram.dot
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -62,14 +66,17 @@ http -f POST localhost:3001/dot file@diagram.dot
 ```
 
 ### GET /dot
+
 Retrieve the uploaded DOT diagram file as plain text.
 
 **Example:**
+
 ```bash
 curl http://localhost:3001/dot
 ```
 
 **Response:**
+
 ```
 digraph {
   A -> B;
@@ -78,21 +85,24 @@ digraph {
 ```
 
 ### GET /health
+
 Health check endpoint.
 
 **Example:**
+
 ```bash
 curl http://localhost:3001/health
 ```
 
 **Response:**
+
 ```json
 {
   "status": "ok"
 }
 ```
 
-## Using with Grafana Mesh Panel
+## Using with Grafana Graphviz Panel
 
 1. Start the mock server (see Quick Start above)
 2. Upload a DOT file to the server:
@@ -107,12 +117,13 @@ curl http://localhost:3001/health
 ## Example DOT Files
 
 Create a test file (`test.dot`):
+
 ```dot
 digraph G {
   rankdir=LR;
-  
+
   node [shape=box, style=filled, fillcolor=lightblue];
-  
+
   Start -> Process1;
   Process1 -> Decision;
   Decision -> Process2 [label="Yes"];
@@ -122,6 +133,7 @@ digraph G {
 ```
 
 Upload it:
+
 ```bash
 curl -X POST -F "file=@test.dot" http://localhost:3001/dot
 ```
@@ -142,4 +154,3 @@ Uploaded files are stored in the `uploads/` directory as `diagram.dot`. Each new
 - No authentication or authorization
 - Single file storage (latest upload overwrites previous)
 - CORS is enabled for all origins
-

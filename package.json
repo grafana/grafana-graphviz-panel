@@ -1,5 +1,5 @@
 {
-  "name": "grafana-mesh-panel",
+  "name": "grafana-graphviz-panel",
   "version": "0.0.1",
   "private": true,
   "author": "Grafana",
