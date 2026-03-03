@@ -16,7 +16,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint --cache --ignore-path ./.gitignore --ext .js,.jsx,.ts,.tsx .",
     "lint:fix": "npm run lint -- --fix && prettier --write --list-different .",
-    "e2e": "playwright test",
+    "e2e": "docker compose --profile playwright up --abort-on-container-exit",
     "server": "docker compose up --build",
     "sign": "npx --yes @grafana/sign-plugin@latest",
     "mock-server": "docker compose up dot-mock-server"
@@ -54,6 +54,7 @@
     "imports-loader": "^5.0.0",
     "jest": "^29.5.0",
     "jest-environment-jsdom": "^29.5.0",
+    "monocart-reporter": "^2.10.0",
     "prettier": "^2.8.7",
     "replace-in-file-webpack-plugin": "^1.0.6",
     "sass": "1.63.2",

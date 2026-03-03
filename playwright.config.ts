@@ -3,6 +3,8 @@ import { defineConfig, devices } from '@playwright/test';
 import { dirname } from 'node:path';
 
 const pluginE2eAuth = `${dirname(require.resolve('@grafana/plugin-e2e'))}/auth`;
+const { name: PACKAGE_NAME } = require('./package.json');
+const { createSourcePath, createSourceFilterConfig } = require('./scripts/utils/coverage');
 
 /**
  * Read environment variables from file.
@@ -14,7 +16,7 @@ const pluginE2eAuth = `${dirname(require.resolve('@grafana/plugin-e2e'))}/auth`;
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig<PluginOptions>({
-  testDir: './tests',
+  testDir: './e2e/specs',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -22,7 +24,28 @@ export default defineConfig<PluginOptions>({
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  reporter: [
+    ['html'],
+    [
+      'monocart-reporter',
+      {
+        name: 'Graphviz panel E2E tests',
+        outputDir: './playwright-report/monocart',
+        coverage: {
+          outputDir: 'coverage/e2e/',
+          reports: [['v8'], ['html'], ['json'], ['text-summary'], ['lcov'], ['raw']],
+          all: './src',
+          baseDir: './',
+          sourceFilter: createSourceFilterConfig({
+            packageName: PACKAGE_NAME,
+            includeTypescriptOnly: true,
+            excludeTypes: true,
+          }),
+          sourcePath: createSourcePath({ packageName: PACKAGE_NAME }),
+        },
+      },
+    ],
+  ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -43,6 +66,8 @@ export default defineConfig<PluginOptions>({
     // 2. Run tests in Google Chrome. Every test will start authenticated as admin user.
     {
       name: 'chromium',
+      testDir: './e2e/specs',
+      testMatch: '**/*.spec.ts',
       use: {
         ...devices['Desktop Chrome'],
         storageState: 'playwright/.auth/admin.json',

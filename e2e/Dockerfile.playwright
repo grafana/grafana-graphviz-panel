@@ -1,0 +1,7 @@
+FROM mcr.microsoft.com/playwright:v1.58.2-noble
+
+WORKDIR /app
+
+RUN npm install "@playwright/test@1.58.2" "dotenv@^16.3.1" "@grafana/plugin-e2e" "monocart-reporter"
+
+CMD ["npx", "playwright", "test", "-c", "playwright.config.ts"]
