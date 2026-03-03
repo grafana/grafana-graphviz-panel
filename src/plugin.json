@@ -1,13 +1,33 @@
 {
   "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
   "type": "panel",
-  "name": "Mesh",
-  "id": "grafana-mesh-panel",
+  "name": "Graphviz",
+  "id": "grafana-graphviz-panel",
   "info": {
     "keywords": [
-      "panel"
+      "architecture",
+      "as-code",
+      "business process",
+      "data-driven",
+      "dependency graph",
+      "diagram",
+      "digraph",
+      "dot",
+      "edges",
+      "flowchart",
+      "graph",
+      "graphviz",
+      "hierarchy",
+      "layout",
+      "network",
+      "nodes",
+      "org chart",
+      "technical architecture",
+      "topology",
+      "visualization",
+      "workflow"
     ],
-    "description": "",
+    "description": "Define flowcharts and diagrams as code with Graphviz DOT, connect your metrics, and visualize them in your choice of layouts without manual drawing! Perfect for technical architectures, business processes, flowcharts, and organizational structures. Diagrams update automatically with live data.",
     "author": {
       "name": "Grafana"
     },
