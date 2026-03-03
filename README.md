@@ -30,7 +30,7 @@ Define flowcharts and diagrams as code using Graphviz DOT language, connect your
    # Runs the tests and watches for changes, requires git init first
    npm run test
 
-   # Exits after running all the tests
+   # Exits after running all the tests, generates a coverage report
    npm run test:ci
    ```
 
@@ -43,17 +43,18 @@ Define flowcharts and diagrams as code using Graphviz DOT language, connect your
 6. Run the E2E tests (using Playwright)
 
    ```bash
-   # Spins up a Grafana instance first that we tests against
-   npm run server
-
-   # If you wish to start a certain Grafana version. If not specified will use latest by default
-   GRAFANA_VERSION=11.3.0 npm run server
-
-   # Starts the tests
+   # Runs in a Docker container for consistency, generates a coverage report
    npm run e2e
    ```
 
-7. Run the linter
+7. Run all tests and generate merged coverage report
+
+   ```bash
+   # Runs E2E tests, unit tests, and merges coverage reports
+   npm run coverage
+   ```
+
+8. Run the linter
 
    ```bash
    npm run lint
