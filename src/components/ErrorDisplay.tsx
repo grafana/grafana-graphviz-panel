@@ -3,7 +3,7 @@ import { Alert, Input, Stack, Icon, Text, Box } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { isAssistantAvailable as checkAssistantAvailability } from '@grafana/assistant';
 import { ValidationErrorInfo } from '../validation';
-import { MeshAssistantService } from '../assistantService';
+import { GraphvizAssistantService } from '../assistantService';
 import { LayoutEngine, InputMode } from '../types';
 import { AskButton } from './AskButton';
 
@@ -40,7 +40,7 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
       return;
     }
 
-    MeshAssistantService.openWithContext(prompt, {
+    GraphvizAssistantService.openWithContext(prompt, {
       dotDiagram,
       layoutEngine,
       inputMode,

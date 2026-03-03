@@ -12,11 +12,11 @@ export interface AssistantContext {
   };
 }
 
-export class MeshAssistantService {
+export class GraphvizAssistantService {
   static openWithContext(prompt: string, context: AssistantContext) {
     const contextItems = [
       createAssistantContextItem('structured', {
-        title: 'Mesh Panel Context',
+        title: 'Graphviz Panel Context',
         data: {
           dotDiagram: context.dotDiagram,
           layoutEngine: context.layoutEngine,
@@ -32,13 +32,13 @@ export class MeshAssistantService {
           ],
           instructions: context.error
             ? 'Help the user fix the DOT diagram error. Analyze the syntax issue and suggest corrections.'
-            : 'Help the user with their mesh panel diagram.',
+            : 'Help the user with their Graphviz panel diagram.',
         },
       }),
     ];
 
     openAssistant({
-      origin: 'grafana-mesh-panel',
+      origin: 'grafana-graphviz-panel',
       prompt,
       context: contextItems,
       autoSend: true,

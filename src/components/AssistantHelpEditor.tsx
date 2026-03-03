@@ -3,7 +3,7 @@ import { StandardEditorProps } from '@grafana/data';
 import { Input, Stack, Icon, Text, LinkButton } from '@grafana/ui';
 import { isAssistantAvailable as checkAssistantAvailability } from '@grafana/assistant';
 import { SimpleOptions } from '../types';
-import { MeshAssistantService } from '../assistantService';
+import { GraphvizAssistantService } from '../assistantService';
 import { AskButton } from './AskButton';
 
 export const AssistantHelpEditor: React.FC<StandardEditorProps<string, any, SimpleOptions>> = ({ context }) => {
@@ -24,7 +24,7 @@ export const AssistantHelpEditor: React.FC<StandardEditorProps<string, any, Simp
       return;
     }
 
-    MeshAssistantService.openWithContext(prompt, {
+    GraphvizAssistantService.openWithContext(prompt, {
       dotDiagram: options.dotDiagram,
       layoutEngine: options.layoutEngine,
       inputMode: options.inputMode || 'code',
@@ -49,7 +49,7 @@ export const AssistantHelpEditor: React.FC<StandardEditorProps<string, any, Simp
         <LinkButton
           variant="secondary"
           size="sm"
-          href="https://github.com/grafana/grafana-mesh-panel/blob/main/README.md"
+          href="https://github.com/grafana/grafana-graphviz-panel/blob/main/README.md"
           target="_blank"
           rel="noopener noreferrer"
         >

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Input, Stack, Alert, Icon, Text, Box } from '@grafana/ui';
 import { isAssistantAvailable as checkAssistantAvailability } from '@grafana/assistant';
-import { MeshAssistantService } from '../assistantService';
+import { GraphvizAssistantService } from '../assistantService';
 import { LayoutEngine, InputMode } from '../types';
 import { AskButton } from './AskButton';
 
@@ -36,7 +36,7 @@ export const EmptyDiagramDisplay: React.FC<EmptyDiagramDisplayProps> = ({
       return;
     }
 
-    MeshAssistantService.openWithContext(prompt, {
+    GraphvizAssistantService.openWithContext(prompt, {
       dotDiagram,
       layoutEngine,
       inputMode,
