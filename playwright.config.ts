@@ -66,7 +66,7 @@ export default defineConfig<PluginOptions>({
     // 2. Run tests in Google Chrome. Every test will start authenticated as admin user.
     {
       name: 'chromium',
-      testDir: './e2e/specs',
+      testDir: '/app/e2e/specs',
       testMatch: '**/*.spec.ts',
       use: {
         ...devices['Desktop Chrome'],
