@@ -44,3 +44,7 @@ ci/
 .idea
 
 .eslintcache
+
+monocart-report/
+
+coverage-merged/

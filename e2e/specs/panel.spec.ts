@@ -1,4 +1,4 @@
-import { test, expect } from '@grafana/plugin-e2e';
+import { test, expect } from '../fixtures/coverage';
 
 test('should render graphviz panel with DOT diagram', async ({ gotoPanelEditPage, readProvisionedDashboard, page }) => {
   const dashboard = await readProvisionedDashboard({ fileName: 'dashboard.json' });
