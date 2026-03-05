@@ -1,0 +1,270 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "title": "Valid Diagram - Simple Network",
+      "type": "grafana-graphviz-panel",
+      "options": {
+        "inputMode": "code",
+        "dotDiagram": "digraph G { A -> B -> C; }",
+        "layoutEngine": "dot",
+        "rankDirection": "LR",
+        "edgeOverrides": [],
+        "nodeOverrides": [],
+        "namedThresholds": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "refId": "A",
+          "scenarioId": "csv_content",
+          "csvContent": "time,value\n1,1"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "title": "Empty Diagram - No Nodes",
+      "type": "grafana-graphviz-panel",
+      "options": {
+        "inputMode": "code",
+        "dotDiagram": "digraph G {}",
+        "layoutEngine": "dot",
+        "rankDirection": "LR",
+        "edgeOverrides": [],
+        "nodeOverrides": [],
+        "namedThresholds": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "refId": "A",
+          "scenarioId": "csv_content",
+          "csvContent": "time,value\n1,1"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "title": "Invalid DOT Syntax",
+      "type": "grafana-graphviz-panel",
+      "options": {
+        "inputMode": "code",
+        "dotDiagram": "digraph G { A -> }",
+        "layoutEngine": "dot",
+        "rankDirection": "LR",
+        "edgeOverrides": [],
+        "nodeOverrides": [],
+        "namedThresholds": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "refId": "A",
+          "scenarioId": "csv_content",
+          "csvContent": "time,value\n1,1"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 4,
+      "title": "Builder Mode - Empty",
+      "type": "grafana-graphviz-panel",
+      "options": {
+        "inputMode": "builder",
+        "dotDiagram": "",
+        "layoutEngine": "dot",
+        "rankDirection": "LR",
+        "edgeOverrides": [],
+        "nodeOverrides": [],
+        "namedThresholds": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "refId": "A",
+          "scenarioId": "csv_content",
+          "csvContent": "time,value\n1,1"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 5,
+      "title": "Builder Mode - With Diagram",
+      "type": "grafana-graphviz-panel",
+      "options": {
+        "inputMode": "builder",
+        "dotDiagram": "digraph G { X -> Y; Y -> Z; }",
+        "layoutEngine": "dot",
+        "rankDirection": "TB",
+        "edgeOverrides": [],
+        "nodeOverrides": [],
+        "namedThresholds": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "refId": "A",
+          "scenarioId": "csv_content",
+          "csvContent": "time,value\n1,1"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 6,
+      "title": "Different Layout Engines",
+      "type": "grafana-graphviz-panel",
+      "options": {
+        "inputMode": "code",
+        "dotDiagram": "digraph G { A -> B; B -> C; C -> D; D -> A; }",
+        "layoutEngine": "neato",
+        "rankDirection": "LR",
+        "edgeOverrides": [],
+        "nodeOverrides": [],
+        "namedThresholds": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "refId": "A",
+          "scenarioId": "csv_content",
+          "csvContent": "time,value\n1,1"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "id": 7,
+      "title": "Whitespace Only Diagram",
+      "type": "grafana-graphviz-panel",
+      "options": {
+        "inputMode": "code",
+        "dotDiagram": "   \n\t  ",
+        "layoutEngine": "dot",
+        "rankDirection": "LR",
+        "edgeOverrides": [],
+        "nodeOverrides": [],
+        "namedThresholds": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "refId": "A",
+          "scenarioId": "csv_content",
+          "csvContent": "time,value\n1,1"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 42,
+  "tags": ["test", "e2e"],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timezone": "",
+  "title": "Test - SimplePanel States",
+  "uid": "test-simple-panel-states",
+  "version": 1
+}

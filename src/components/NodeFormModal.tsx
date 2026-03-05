@@ -41,8 +41,15 @@ export const NodeFormModal: React.FC<NodeFormModalProps> = ({ isOpen, existingNo
 
   return (
     <Modal isOpen={isOpen} title="Add Node" onDismiss={handleDismiss}>
-      <Field label="Node ID" required invalid={!!error} error={error} description="Used to identify the node when connecting edges, overrides, etc.">
+      <Field
+        label="Node ID"
+        required
+        invalid={!!error}
+        error={error}
+        description="Used to identify the node when connecting edges, overrides, etc."
+      >
         <Input
+          data-testid="node-form-id-input"
           placeholder="E.g 'server_1'"
           value={values.nodeId}
           onChange={(e) => handleChange('nodeId')(e.currentTarget.value)}
@@ -50,6 +57,7 @@ export const NodeFormModal: React.FC<NodeFormModalProps> = ({ isOpen, existingNo
       </Field>
       <Field label="Label (optional)" description="Text to display on the node. By default, it'll used the node ID">
         <Input
+          data-testid="node-form-label-input"
           placeholder="E.g 'Server 1'"
           value={values.nodeLabel}
           onChange={(e) => handleChange('nodeLabel')(e.currentTarget.value)}
