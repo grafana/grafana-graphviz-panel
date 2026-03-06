@@ -17,9 +17,9 @@ const PANEL_IDS = {
 } as const;
 
 const TEST_IDS = {
-  GRAPHVIZ_PANEL: 'graphviz-panel',
-  GRAPHVIZ_PANEL_SVG: 'graphviz-panel-svg',
-  MESH_PANEL: 'mesh-panel',
+  GRAPHVIZ_PANEL_RENDERED: 'graphviz-panel-rendered',
+  GRAPHVIZ_PANEL_RENDERED_SVG: 'graphviz-panel-rendered-svg',
+  GRAPHVIZ_PANEL_BUILDER_EMPTY: 'graphviz-panel-builder-empty',
   OPTIONS_GROUP_DIAGRAM: 'data-testid Options group Diagram',
   PORTAL_CONTAINER: 'data-testid portal-container',
   NODE_FORM_ID_INPUT: 'node-form-id-input',
@@ -46,18 +46,18 @@ test.describe('Panel rendering', () => {
     const panelEditPage = await gotoPanelEditPage({ dashboard, id: PANEL_IDS.DEFAULT_PANEL });
 
     await expect(panelEditPage.panel.locator).toBeVisible();
-    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL)).toBeVisible();
-    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_SVG).locator('svg')).toBeVisible();
+    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_RENDERED)).toBeVisible();
+    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_RENDERED_SVG).locator('svg')).toBeVisible();
   });
 
   test('renders SVG for valid diagram', async ({ gotoPanelEditPage, readProvisionedDashboard, page }) => {
     const dashboard = await readProvisionedDashboard({ fileName: DASHBOARD_FILES.PANEL_STATES });
     await gotoPanelEditPage({ dashboard, id: PANEL_IDS.VALID_DIAGRAM });
 
-    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL)).toBeVisible();
-    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_SVG).locator('svg')).toBeVisible();
+    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_RENDERED)).toBeVisible();
+    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_RENDERED_SVG).locator('svg')).toBeVisible();
 
-    const svg = page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_SVG).locator('svg');
+    const svg = page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_RENDERED_SVG).locator('svg');
     await expect(svg.locator('text').filter({ hasText: 'A' })).toBeVisible();
     await expect(svg.locator('text').filter({ hasText: 'B' })).toBeVisible();
     await expect(svg.locator('text').filter({ hasText: 'C' })).toBeVisible();
@@ -72,7 +72,7 @@ test.describe('Panel rendering', () => {
     await gotoPanelEditPage({ dashboard, id: PANEL_IDS.EMPTY_DIAGRAM_NO_NODES });
 
     await expect(page.getByText(TEXT_PATTERNS.EMPTY_DIAGRAM)).toBeVisible();
-    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_SVG)).not.toBeVisible();
+    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_RENDERED_SVG)).not.toBeVisible();
   });
 
   test('renders error display for invalid DOT syntax', async ({
@@ -84,7 +84,7 @@ test.describe('Panel rendering', () => {
     await gotoPanelEditPage({ dashboard, id: PANEL_IDS.INVALID_DOT_SYNTAX });
 
     await expect(page.getByText(TEXT_PATTERNS.INVALID_DOT_DEFINITION)).toBeVisible();
-    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_SVG).locator('svg')).not.toBeVisible();
+    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_RENDERED_SVG).locator('svg')).not.toBeVisible();
   });
 
   test('renders empty diagram display for whitespace-only diagram', async ({
@@ -96,17 +96,17 @@ test.describe('Panel rendering', () => {
     await gotoPanelEditPage({ dashboard, id: PANEL_IDS.WHITESPACE_ONLY });
 
     await expect(page.getByText(TEXT_PATTERNS.EMPTY_DIAGRAM)).toBeVisible();
-    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_SVG)).not.toBeVisible();
+    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_RENDERED_SVG)).not.toBeVisible();
   });
 
   test('renders with different layout engines', async ({ gotoPanelEditPage, readProvisionedDashboard, page }) => {
     const dashboard = await readProvisionedDashboard({ fileName: DASHBOARD_FILES.PANEL_STATES });
     await gotoPanelEditPage({ dashboard, id: PANEL_IDS.DIFFERENT_LAYOUT_ENGINES });
 
-    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL)).toBeVisible();
-    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_SVG).locator('svg')).toBeVisible();
+    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_RENDERED)).toBeVisible();
+    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_RENDERED_SVG).locator('svg')).toBeVisible();
 
-    const svg = page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_SVG).locator('svg');
+    const svg = page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_RENDERED_SVG).locator('svg');
     await expect(svg.locator('text').filter({ hasText: 'A' })).toBeVisible();
     await expect(svg.locator('text').filter({ hasText: 'D' })).toBeVisible();
   });
@@ -121,7 +121,7 @@ test.describe('Builder mode', () => {
     const dashboard = await readProvisionedDashboard({ fileName: DASHBOARD_FILES.PANEL_STATES });
     await gotoPanelEditPage({ dashboard, id: PANEL_IDS.BUILDER_MODE_EMPTY });
 
-    await expect(page.getByTestId(TEST_IDS.MESH_PANEL)).toBeVisible();
+    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_BUILDER_EMPTY)).toBeVisible();
     await expect(page.getByText(TEXT_PATTERNS.EMPTY_DIAGRAM)).toBeVisible();
   });
 
@@ -133,10 +133,10 @@ test.describe('Builder mode', () => {
     const dashboard = await readProvisionedDashboard({ fileName: DASHBOARD_FILES.PANEL_STATES });
     await gotoPanelEditPage({ dashboard, id: PANEL_IDS.BUILDER_MODE_WITH_DIAGRAM });
 
-    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL)).toBeVisible();
-    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_SVG).locator('svg')).toBeVisible();
+    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_RENDERED)).toBeVisible();
+    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_RENDERED_SVG).locator('svg')).toBeVisible();
 
-    const svg = page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_SVG).locator('svg');
+    const svg = page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_RENDERED_SVG).locator('svg');
     await expect(svg.locator('text').filter({ hasText: 'X' })).toBeVisible();
     await expect(svg.locator('text').filter({ hasText: 'Y' })).toBeVisible();
     await expect(svg.locator('text').filter({ hasText: 'Z' })).toBeVisible();
@@ -150,7 +150,7 @@ test.describe('Builder mode', () => {
     const dashboard = await readProvisionedDashboard({ fileName: DASHBOARD_FILES.PANEL_STATES });
     await gotoPanelEditPage({ dashboard, id: PANEL_IDS.BUILDER_MODE_EMPTY });
 
-    await expect(page.getByTestId(TEST_IDS.MESH_PANEL)).toBeVisible();
+    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_BUILDER_EMPTY)).toBeVisible();
     await expect(page.getByText(TEXT_PATTERNS.EMPTY_DIAGRAM)).toBeVisible();
 
     const diagramOptions = page.getByTestId(TEST_IDS.OPTIONS_GROUP_DIAGRAM);
@@ -169,9 +169,9 @@ test.describe('Builder mode', () => {
 
     await expect(page.getByText(TEXT_PATTERNS.EMPTY_DIAGRAM)).not.toBeVisible();
 
-    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL)).toBeVisible();
+    await expect(page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_RENDERED)).toBeVisible();
 
-    const svg = page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_SVG).locator('svg');
+    const svg = page.getByTestId(TEST_IDS.GRAPHVIZ_PANEL_RENDERED_SVG).locator('svg');
     await expect(svg).toBeVisible({ timeout: 5000 });
 
     await expect(svg.locator('text').filter({ hasText: 'My First Node' })).toBeVisible({ timeout: 5000 });

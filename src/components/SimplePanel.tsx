@@ -136,7 +136,7 @@ export const SimplePanel: React.FC<Props> = ({
             width: `${width}px`,
             height: `${height}px`,
           }}
-          data-testid="mesh-panel"
+          data-testid="graphviz-panel-builder-empty"
         >
           <div style={{ position: 'absolute', width: '100%', height: '100%' }}>
             <EmptyDiagramDisplay
@@ -193,12 +193,12 @@ export const SimplePanel: React.FC<Props> = ({
           height: ${height}px;
         `
       )}
-      data-testid="graphviz-panel"
+      data-testid="graphviz-panel-rendered"
     >
       <div
         ref={svgRef}
         className={styles.svg}
-        data-testid="graphviz-panel-svg"
+        data-testid="graphviz-panel-rendered-svg"
         style={{
           width,
           height,
