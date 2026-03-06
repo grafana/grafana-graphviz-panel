@@ -56,6 +56,7 @@ export const SimplePanel: React.FC<Props> = ({
 
   const effectiveDotDiagram = options.inputMode === InputMode.URL ? dotContent || '' : options.dotDiagram;
   const isEmpty = isEmptyDiagram(effectiveDotDiagram);
+  const isBuilderMode = options.inputMode === InputMode.BUILDER && isEditMode;
 
   const renderError = useThemedDotSvg(
     svgRef,
@@ -127,6 +128,38 @@ export const SimplePanel: React.FC<Props> = ({
   }
 
   if (isEmpty) {
+    if (isBuilderMode) {
+      return (
+        <div
+          style={{
+            position: 'relative',
+            width: `${width}px`,
+            height: `${height}px`,
+          }}
+          data-testid="graphviz-panel-builder-empty"
+        >
+          <div style={{ position: 'absolute', width: '100%', height: '100%' }}>
+            <EmptyDiagramDisplay
+              dotDiagram={effectiveDotDiagram}
+              layoutEngine={options.layoutEngine}
+              inputMode={options.inputMode || InputMode.CODE}
+              panelId={id}
+              isEditMode={isEditMode}
+            />
+          </div>
+          <BuilderModeOverlay
+            svgRef={svgRef}
+            dotDiagram={options.dotDiagram}
+            onChange={handleDotChange}
+            onClearTriggers={handleClearTriggers}
+            addNodeTrigger={options.builderModeActions?.addNodeTrigger}
+            layoutEngine={options.layoutEngine}
+            activeTool={options.builderModeActions?.activeTool}
+          />
+        </div>
+      );
+    }
+
     return (
       <EmptyDiagramDisplay
         dotDiagram={effectiveDotDiagram}
@@ -138,7 +171,7 @@ export const SimplePanel: React.FC<Props> = ({
     );
   }
 
-  if (renderError) {
+  if (renderError && !isEmpty) {
     return (
       <ErrorDisplay
         errorMessage={renderError.message}
@@ -151,8 +184,6 @@ export const SimplePanel: React.FC<Props> = ({
     );
   }
 
-  const isBuilderMode = options.inputMode === InputMode.BUILDER && isEditMode;
-
   return (
     <div
       className={cx(
@@ -162,12 +193,12 @@ export const SimplePanel: React.FC<Props> = ({
           height: ${height}px;
         `
       )}
-      data-testid="graphviz-panel"
+      data-testid="graphviz-panel-rendered"
     >
       <div
         ref={svgRef}
         className={styles.svg}
-        data-testid="graphviz-panel-svg"
+        data-testid="graphviz-panel-rendered-svg"
         style={{
           width,
           height,
@@ -176,6 +207,7 @@ export const SimplePanel: React.FC<Props> = ({
           alignItems: 'center',
         }}
       />
+
       {isBuilderMode && (
         <BuilderModeOverlay
           svgRef={svgRef}
