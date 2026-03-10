@@ -21,7 +21,7 @@
     "sign": "npx --yes @grafana/sign-plugin@latest",
     "mock-server": "docker compose up dot-mock-server",
     "coverage": "npm run coverage:clean && npm run e2e && npm run test:ci && npm run coverage:merge-reports",
-    "coverage:clean": "rm -rf coverage && rm -rf coverage-merged",
+    "coverage:clean": "rm -rf coverage && rm -rf coverage-merged && rm -rf monocart-report && rm -rf playwright-report",
     "coverage:merge-reports": "node scripts/merge-coverage.js"
   },
   "devDependencies": {
@@ -58,7 +58,7 @@
     "jest": "^29.5.0",
     "jest-environment-jsdom": "^29.5.0",
     "jest-monocart-coverage": "^1.1.1",
-    "monocart-reporter": "^2.10.0",
+    "monocart-reporter": "2.9.21",
     "prettier": "^2.8.7",
     "replace-in-file-webpack-plugin": "^1.0.6",
     "sass": "1.63.2",
