@@ -36,6 +36,7 @@ export default defineConfig<PluginOptions>({
           reports: [['v8'], ['html'], ['json'], ['text-summary'], ['lcov'], ['raw']],
           all: './src',
           baseDir: './',
+          sourceMap: true,
           sourceFilter: createSourceFilterConfig({
             packageName: PACKAGE_NAME,
             includeTypescriptOnly: true,
