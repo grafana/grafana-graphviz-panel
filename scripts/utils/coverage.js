@@ -3,12 +3,25 @@ function createSourcePath(options = {}) {
 
   return (filePath) => {
     const { packageName } = sanitizedOptions;
+    const pathWithoutQuery = filePath.split('?')[0];
 
-    if (filePath.includes(`${packageName}/`)) {
-      return filePath.replace(new RegExp(`.*${packageName}/`), 'src/');
+    const isWebpackInternal = pathWithoutQuery.startsWith('webpack-internal:///./');
+    if (isWebpackInternal) {
+      return pathWithoutQuery.replace('webpack-internal:///./', 'src/');
     }
 
-    return filePath.startsWith('src/') ? filePath : `src/${filePath}`;
+    const isWebpackProtocolWithDotSlash = pathWithoutQuery.includes(`${packageName}/./`);
+    if (isWebpackProtocolWithDotSlash) {
+      return pathWithoutQuery.replace(new RegExp(`.*${packageName}/\\.\/`), 'src/');
+    }
+
+    const isPackagePath = pathWithoutQuery.includes(`${packageName}/`);
+    if (isPackagePath) {
+      return pathWithoutQuery.replace(new RegExp(`.*${packageName}/`), 'src/');
+    }
+
+    const alreadyHasSrcPrefix = pathWithoutQuery.startsWith('src/');
+    return alreadyHasSrcPrefix ? pathWithoutQuery : `src/${pathWithoutQuery}`;
   };
 }
 
