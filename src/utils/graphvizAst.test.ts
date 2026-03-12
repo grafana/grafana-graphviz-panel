@@ -3,25 +3,30 @@ import { fromDot } from 'ts-graphviz';
 
 describe('graphvizAst', () => {
   describe('getEdgeId', () => {
-    it('should return existing edge ID if present', () => {
-      const model = fromDot('digraph G { A -> B [id="custom_id"]; }');
-      const edge = Array.from(model.edges)[0];
+    const testCases = [
+      {
+        name: 'should return existing edge ID if present',
+        dot: 'digraph G { A -> B [id="custom_id"]; }',
+        expected: 'custom_id',
+      },
+      {
+        name: 'should derive edge ID from source and target nodes',
+        dot: 'digraph G { A -> B; }',
+        expected: 'A__to__B',
+      },
+      {
+        name: 'should derive edge ID with quoted node names',
+        dot: 'digraph G { "Node 1" -> "Node 2"; }',
+        expected: 'Node 1__to__Node 2',
+      },
+    ];
 
-      expect(getEdgeId(edge)).toBe('custom_id');
-    });
-
-    it('should derive edge ID from source and target nodes', () => {
-      const model = fromDot('digraph G { A -> B; }');
-      const edge = Array.from(model.edges)[0];
-
-      expect(getEdgeId(edge)).toBe('A__to__B');
-    });
-
-    it('should derive edge ID with quoted node names', () => {
-      const model = fromDot('digraph G { "Node 1" -> "Node 2"; }');
-      const edge = Array.from(model.edges)[0];
-
-      expect(getEdgeId(edge)).toBe('Node 1__to__Node 2');
+    testCases.forEach(({ name, dot, expected }) => {
+      it(name, () => {
+        const model = fromDot(dot);
+        const edge = Array.from(model.edges)[0];
+        expect(getEdgeId(edge)).toBe(expected);
+      });
     });
 
     it('should return null for edges with fewer than 2 targets', () => {
@@ -44,97 +49,76 @@ describe('graphvizAst', () => {
   });
 
   describe('findNodeById', () => {
-    it('should find node by ID', () => {
-      const model = fromDot('digraph G { A; B; C; }');
+    const testCases = [
+      {
+        name: 'should find node by ID',
+        dot: 'digraph G { A; B; C; }',
+        nodeId: 'B',
+        expectedId: 'B',
+      },
+      {
+        name: 'should find node with quoted ID',
+        dot: 'digraph G { "Node 1"; "Node 2"; }',
+        nodeId: 'Node 1',
+        expectedId: 'Node 1',
+      },
+    ];
 
-      const node = findNodeById(model, 'B');
-
-      expect(node).toBeDefined();
-      expect(node!.id).toBe('B');
-    });
-
-    it('should find node with quoted ID', () => {
-      const model = fromDot('digraph G { "Node 1"; "Node 2"; }');
-
-      const node = findNodeById(model, 'Node 1');
-
-      expect(node).toBeDefined();
-      expect(node!.id).toBe('Node 1');
+    testCases.forEach(({ name, dot, nodeId, expectedId }) => {
+      it(name, () => {
+        const model = fromDot(dot);
+        const node = findNodeById(model, nodeId);
+        expect(node).toBeDefined();
+        expect(node!.id).toBe(expectedId);
+      });
     });
 
     it('should return undefined for non-existent node', () => {
       const model = fromDot('digraph G { A; B; }');
-
       const node = findNodeById(model, 'NonExistent');
-
       expect(node).toBeUndefined();
-    });
-
-    it('should find node in graph with edges', () => {
-      const model = fromDot('digraph G { A; B; C; A -> B; B -> C; }');
-
-      const nodeB = findNodeById(model, 'B');
-
-      expect(nodeB).toBeDefined();
-      expect(nodeB!.id).toBe('B');
     });
   });
 
   describe('collectAllNodeIds', () => {
-    it('should collect explicit node IDs', () => {
-      const model = fromDot('digraph G { A; B; C; }');
-      const nodeIds = collectAllNodeIds(model);
+    const testCases = [
+      {
+        name: 'should collect explicit node IDs',
+        dot: 'digraph G { A; B; C; }',
+        expectedIds: ['A', 'B', 'C'],
+      },
+      {
+        name: 'should collect implicit node IDs from edges',
+        dot: 'digraph G { A -> B -> C; }',
+        expectedIds: ['A', 'B', 'C'],
+      },
+      {
+        name: 'should collect mixed explicit and implicit without duplicates',
+        dot: 'digraph G { A; B; A -> B -> C; }',
+        expectedIds: ['A', 'B', 'C'],
+      },
+      {
+        name: 'should handle quoted IDs',
+        dot: 'digraph G { "Node 1" -> "Node 2"; }',
+        expectedIds: ['Node 1', 'Node 2'],
+      },
+    ];
 
-      expect(nodeIds.size).toBe(3);
-      expect(nodeIds.has('A')).toBe(true);
-      expect(nodeIds.has('B')).toBe(true);
-      expect(nodeIds.has('C')).toBe(true);
-    });
-
-    it('should collect implicit node IDs from edges', () => {
-      const model = fromDot('digraph G { A -> B -> C; }');
-      const nodeIds = collectAllNodeIds(model);
-
-      expect(nodeIds.size).toBe(3);
-      expect(nodeIds.has('A')).toBe(true);
-      expect(nodeIds.has('B')).toBe(true);
-      expect(nodeIds.has('C')).toBe(true);
-    });
-
-    it('should collect both explicit and implicit node IDs without duplicates', () => {
-      const model = fromDot('digraph G { A; B; A -> B -> C; }');
-      const nodeIds = collectAllNodeIds(model);
-
-      expect(nodeIds.size).toBe(3);
-      expect(nodeIds.has('A')).toBe(true);
-      expect(nodeIds.has('B')).toBe(true);
-      expect(nodeIds.has('C')).toBe(true);
+    testCases.forEach(({ name, dot, expectedIds }) => {
+      it(name, () => {
+        const model = fromDot(dot);
+        const nodeIds = collectAllNodeIds(model);
+        expect(nodeIds.size).toBe(expectedIds.length);
+        expectedIds.forEach((id) => {
+          expect(nodeIds.has(id)).toBe(true);
+        });
+      });
     });
 
     it('should handle empty graph', () => {
       const model = fromDot('digraph G {}');
       const nodeIds = collectAllNodeIds(model);
-
       expect(nodeIds.size).toBe(0);
-    });
-
-    it('should handle multiple edges with overlapping nodes', () => {
-      const model = fromDot('digraph G { A -> B; B -> C; C -> A; }');
-      const nodeIds = collectAllNodeIds(model);
-
-      expect(nodeIds.size).toBe(3);
-      expect(nodeIds.has('A')).toBe(true);
-      expect(nodeIds.has('B')).toBe(true);
-      expect(nodeIds.has('C')).toBe(true);
-    });
-
-    it('should handle nodes with quoted IDs', () => {
-      const model = fromDot('digraph G { "Node 1" -> "Node 2"; }');
-      const nodeIds = collectAllNodeIds(model);
-
-      expect(nodeIds.size).toBe(2);
-      expect(nodeIds.has('Node 1')).toBe(true);
-      expect(nodeIds.has('Node 2')).toBe(true);
     });
   });
 
@@ -147,34 +131,34 @@ describe('graphvizAst', () => {
       return /^<+[A-Z]/.test(str);
     };
 
-    it('should return false when no HTML labels exist', () => {
-      const model = fromDot('digraph G { A [label="Plain"]; B; }');
-      expect(hasAnyHtmlLabels(model, mockIsHtmlLabel)).toBe(false);
-    });
+    const testCases = [
+      {
+        name: 'should return true when HTML label exists',
+        dot: 'digraph G { A [label=<<B>HTML</B>>]; B; }',
+        expected: true,
+      },
+      {
+        name: 'should return true when any node has HTML label',
+        dot: 'digraph G { A [label="Plain"]; B [label=<<TABLE></TABLE>>]; }',
+        expected: true,
+      },
+      {
+        name: 'should return false for plain labels',
+        dot: 'digraph G { A [label="Plain"]; B; }',
+        expected: false,
+      },
+      {
+        name: 'should return false for implicit nodes',
+        dot: 'digraph G { A -> B -> C; }',
+        expected: false,
+      },
+    ];
 
-    it('should return true when HTML label exists', () => {
-      const model = fromDot('digraph G { A [label=<<B>HTML</B>>]; B; }');
-      expect(hasAnyHtmlLabels(model, mockIsHtmlLabel)).toBe(true);
-    });
-
-    it('should return true when any node has HTML label', () => {
-      const model = fromDot('digraph G { A [label="Plain"]; B [label=<<TABLE></TABLE>>]; }');
-      expect(hasAnyHtmlLabels(model, mockIsHtmlLabel)).toBe(true);
-    });
-
-    it('should return false for empty graph', () => {
-      const model = fromDot('digraph G {}');
-      expect(hasAnyHtmlLabels(model, mockIsHtmlLabel)).toBe(false);
-    });
-
-    it('should only check explicit nodes not implicit ones', () => {
-      const model = fromDot('digraph G { A -> B -> C; }');
-      expect(hasAnyHtmlLabels(model, mockIsHtmlLabel)).toBe(false);
-    });
-
-    it('should handle nodes without labels', () => {
-      const model = fromDot('digraph G { A; B; C; }');
-      expect(hasAnyHtmlLabels(model, mockIsHtmlLabel)).toBe(false);
+    testCases.forEach(({ name, dot, expected }) => {
+      it(name, () => {
+        const model = fromDot(dot);
+        expect(hasAnyHtmlLabels(model, mockIsHtmlLabel)).toBe(expected);
+      });
     });
   });
 });

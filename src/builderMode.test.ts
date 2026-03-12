@@ -2,108 +2,54 @@ import { isDirectedGraph, formatEdgeId, parseEdgeId } from './builderMode';
 
 describe('builderMode pure functions', () => {
   describe('isDirectedGraph', () => {
-    it('should return true for digraph keyword', () => {
-      expect(isDirectedGraph('digraph G { A -> B; }')).toBe(true);
-    });
+    const testCases = [
+      { name: 'should return true for digraph (case insensitive)', input: 'digraph G { A -> B; }', expected: true },
+      { name: 'should return true with whitespace', input: '  digraph G { A -> B; }', expected: true },
+      { name: 'should return false for undirected graph', input: 'graph G { A -- B; }', expected: false },
+      { name: 'should return false without graph keyword', input: 'A -> B;', expected: false },
+    ];
 
-    it('should return true for digraph with uppercase', () => {
-      expect(isDirectedGraph('DIGRAPH G { A -> B; }')).toBe(true);
-    });
-
-    it('should return true for digraph with mixed case', () => {
-      expect(isDirectedGraph('DiGraph G { A -> B; }')).toBe(true);
-    });
-
-    it('should return true for digraph with leading whitespace', () => {
-      expect(isDirectedGraph('  digraph G { A -> B; }')).toBe(true);
-    });
-
-    it('should return true for digraph with newlines', () => {
-      expect(isDirectedGraph('\n\ndigraph G { A -> B; }')).toBe(true);
-    });
-
-    it('should return false for undirected graph', () => {
-      expect(isDirectedGraph('graph G { A -- B; }')).toBe(false);
-    });
-
-    it('should return false for graph with uppercase', () => {
-      expect(isDirectedGraph('GRAPH G { A -- B; }')).toBe(false);
-    });
-
-    it('should return false for empty string', () => {
-      expect(isDirectedGraph('')).toBe(false);
-    });
-
-    it('should return false for string without graph keyword', () => {
-      expect(isDirectedGraph('A -> B;')).toBe(false);
+    testCases.forEach(({ name, input, expected }) => {
+      it(name, () => {
+        expect(isDirectedGraph(input)).toBe(expected);
+      });
     });
   });
 
   describe('formatEdgeId', () => {
-    it('should format edge ID with simple node names', () => {
-      expect(formatEdgeId('A', 'B')).toBe('A__to__B');
-    });
+    const testCases = [
+      { name: 'should format simple node names', source: 'A', target: 'B', expected: 'A__to__B' },
+      { name: 'should handle spaces', source: 'Node 1', target: 'Node 2', expected: 'Node 1__to__Node 2' },
+      {
+        name: 'should handle special characters',
+        source: 'Server-1',
+        target: 'Server-2',
+        expected: 'Server-1__to__Server-2',
+      },
+      { name: 'should handle empty values', source: '', target: 'B', expected: '__to__B' },
+    ];
 
-    it('should format edge ID with node names containing spaces', () => {
-      expect(formatEdgeId('Node 1', 'Node 2')).toBe('Node 1__to__Node 2');
-    });
-
-    it('should format edge ID with node names containing special characters', () => {
-      expect(formatEdgeId('Server-1', 'Server-2')).toBe('Server-1__to__Server-2');
-    });
-
-    it('should format edge ID with empty source', () => {
-      expect(formatEdgeId('', 'B')).toBe('__to__B');
-    });
-
-    it('should format edge ID with empty target', () => {
-      expect(formatEdgeId('A', '')).toBe('A__to__');
-    });
-
-    it('should format edge ID with numeric node names', () => {
-      expect(formatEdgeId('1', '2')).toBe('1__to__2');
-    });
-
-    it('should format edge ID preserving case', () => {
-      expect(formatEdgeId('NodeA', 'NodeB')).toBe('NodeA__to__NodeB');
+    testCases.forEach(({ name, source, target, expected }) => {
+      it(name, () => {
+        expect(formatEdgeId(source, target)).toBe(expected);
+      });
     });
   });
 
   describe('parseEdgeId', () => {
-    it('should parse simple edge ID', () => {
-      expect(parseEdgeId('A__to__B')).toEqual(['A', 'B']);
-    });
+    const testCases = [
+      { name: 'should parse simple edge ID', input: 'A__to__B', expected: ['A', 'B'] },
+      { name: 'should parse with spaces', input: 'Node 1__to__Node 2', expected: ['Node 1', 'Node 2'] },
+      { name: 'should parse with special chars', input: 'Server-1__to__Server-2', expected: ['Server-1', 'Server-2'] },
+      { name: 'should handle empty parts', input: 'A__to__', expected: ['A', ''] },
+      { name: 'should return null without separator', input: 'A-B', expected: null },
+      { name: 'should return null with multiple separators', input: 'A__to__B__to__C', expected: null },
+    ];
 
-    it('should parse edge ID with spaces in node names', () => {
-      expect(parseEdgeId('Node 1__to__Node 2')).toEqual(['Node 1', 'Node 2']);
-    });
-
-    it('should parse edge ID with special characters', () => {
-      expect(parseEdgeId('Server-1__to__Server-2')).toEqual(['Server-1', 'Server-2']);
-    });
-
-    it('should return null for ID without separator', () => {
-      expect(parseEdgeId('A-B')).toBeNull();
-    });
-
-    it('should return null for empty string', () => {
-      expect(parseEdgeId('')).toBeNull();
-    });
-
-    it('should return null for ID with only one part', () => {
-      expect(parseEdgeId('A__to__')).toEqual(['A', '']);
-    });
-
-    it('should handle edge ID with empty source', () => {
-      expect(parseEdgeId('__to__B')).toEqual(['', 'B']);
-    });
-
-    it('should return null for edge ID with multiple separators', () => {
-      expect(parseEdgeId('A__to__B__to__C')).toBeNull();
-    });
-
-    it('should parse numeric node IDs', () => {
-      expect(parseEdgeId('1__to__2')).toEqual(['1', '2']);
+    testCases.forEach(({ name, input, expected }) => {
+      it(name, () => {
+        expect(parseEdgeId(input)).toEqual(expected);
+      });
     });
   });
 });

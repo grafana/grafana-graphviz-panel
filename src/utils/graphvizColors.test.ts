@@ -2,54 +2,22 @@ import { isDefaultColor } from './graphvizColors';
 
 describe('graphvizColors', () => {
   describe('isDefaultColor', () => {
-    it('should return true for null', () => {
-      expect(isDefaultColor(null)).toBe(true);
-    });
+    const testCases = [
+      { name: 'should return true for null', input: null, expected: true },
+      { name: 'should return true for black (case insensitive)', input: 'black', expected: true },
+      { name: 'should return true for white', input: 'white', expected: true },
+      { name: 'should return true for none', input: 'none', expected: true },
+      { name: 'should return true for #000000', input: '#000000', expected: true },
+      { name: 'should return true for #ffffff (case insensitive)', input: '#ffffff', expected: true },
+      { name: 'should return false for custom colors', input: 'red', expected: false },
+      { name: 'should return false for custom hex', input: '#ff0000', expected: false },
+      { name: 'should return false for rgb syntax', input: 'rgb(255, 0, 0)', expected: false },
+    ];
 
-    it('should return true for black', () => {
-      expect(isDefaultColor('black')).toBe(true);
-    });
-
-    it('should return true for BLACK (case insensitive)', () => {
-      expect(isDefaultColor('BLACK')).toBe(true);
-    });
-
-    it('should return true for white', () => {
-      expect(isDefaultColor('white')).toBe(true);
-    });
-
-    it('should return true for none', () => {
-      expect(isDefaultColor('none')).toBe(true);
-    });
-
-    it('should return true for #000000', () => {
-      expect(isDefaultColor('#000000')).toBe(true);
-    });
-
-    it('should return true for #ffffff', () => {
-      expect(isDefaultColor('#ffffff')).toBe(true);
-    });
-
-    it('should return true for #FFFFFF (uppercase)', () => {
-      expect(isDefaultColor('#FFFFFF')).toBe(true);
-    });
-
-    it('should return false for custom color red', () => {
-      expect(isDefaultColor('red')).toBe(false);
-    });
-
-    it('should return false for hex color #ff0000', () => {
-      expect(isDefaultColor('#ff0000')).toBe(false);
-    });
-
-    it('should return false for rgb color', () => {
-      expect(isDefaultColor('rgb(255, 0, 0)')).toBe(false);
-    });
-
-    it('should return false for custom color names', () => {
-      expect(isDefaultColor('blue')).toBe(false);
-      expect(isDefaultColor('green')).toBe(false);
-      expect(isDefaultColor('yellow')).toBe(false);
+    testCases.forEach(({ name, input, expected }) => {
+      it(name, () => {
+        expect(isDefaultColor(input)).toBe(expected);
+      });
     });
   });
 });

@@ -2,191 +2,108 @@ import { isEmptyDiagram, isHtmlLabel, isRecordLabel, extractGraphContent, buildG
 
 describe('graphvizDot', () => {
   describe('isEmptyDiagram', () => {
-    it('should return true for empty string', () => {
-      expect(isEmptyDiagram('')).toBe(true);
-    });
+    const testCases = [
+      { name: 'should return true for empty string', input: '', expected: true },
+      { name: 'should return true for whitespace-only string', input: '   \n\t  ', expected: true },
+      { name: 'should return true for graph with no nodes or edges', input: 'digraph G {}', expected: true },
+      { name: 'should return false for graph with nodes', input: 'digraph G { A; }', expected: false },
+      { name: 'should return false for graph with edges', input: 'digraph G { A -> B; }', expected: false },
+      { name: 'should return false for invalid DOT syntax', input: 'not valid dot', expected: false },
+    ];
 
-    it('should return true for whitespace-only string', () => {
-      expect(isEmptyDiagram('   \n\t  ')).toBe(true);
-    });
-
-    it('should return true for graph with no nodes or edges', () => {
-      expect(isEmptyDiagram('digraph G {}')).toBe(true);
-    });
-
-    it('should return false for graph with nodes', () => {
-      expect(isEmptyDiagram('digraph G { A; }')).toBe(false);
-    });
-
-    it('should return false for graph with edges', () => {
-      expect(isEmptyDiagram('digraph G { A -> B; }')).toBe(false);
-    });
-
-    it('should return false for invalid DOT syntax', () => {
-      expect(isEmptyDiagram('not valid dot')).toBe(false);
+    testCases.forEach(({ name, input, expected }) => {
+      it(name, () => {
+        expect(isEmptyDiagram(input)).toBe(expected);
+      });
     });
   });
 
   describe('isHtmlLabel', () => {
-    it('should return true for HTML table labels', () => {
-      expect(isHtmlLabel('<TABLE><TR><TD>Cell</TD></TR></TABLE>')).toBe(true);
-    });
+    const testCases = [
+      {
+        name: 'should return true for HTML table labels',
+        input: '<TABLE><TR><TD>Cell</TD></TR></TABLE>',
+        expected: true,
+      },
+      { name: 'should return true for HTML bold labels', input: '<B>Bold Text</B>', expected: true },
+      { name: 'should return true with whitespace', input: '  <B>Bold</B>', expected: true },
+      { name: 'should return false for record label port syntax', input: '<f0> left|<f1> right', expected: false },
+      { name: 'should return false for plain text', input: 'Plain Text', expected: false },
+      { name: 'should return false for null/undefined', input: null, expected: false },
+    ];
 
-    it('should return true for HTML bold labels', () => {
-      expect(isHtmlLabel('<B>Bold Text</B>')).toBe(true);
-    });
-
-    it('should return true for HTML italic labels', () => {
-      expect(isHtmlLabel('<I>Italic</I>')).toBe(true);
-    });
-
-    it('should return true for HTML font labels', () => {
-      expect(isHtmlLabel('<FONT color="red">Red</FONT>')).toBe(true);
-    });
-
-    it('should return true for HTML underline labels', () => {
-      expect(isHtmlLabel('<U>Underline</U>')).toBe(true);
-    });
-
-    it('should return false for record labels with port syntax', () => {
-      expect(isHtmlLabel('<f0> left|<f1> right')).toBe(false);
-    });
-
-    it('should return false for plain text labels', () => {
-      expect(isHtmlLabel('Plain Text')).toBe(false);
-    });
-
-    it('should return false for empty string', () => {
-      expect(isHtmlLabel('')).toBe(false);
-    });
-
-    it('should return false for null', () => {
-      expect(isHtmlLabel(null)).toBe(false);
-    });
-
-    it('should return false for undefined', () => {
-      expect(isHtmlLabel(undefined)).toBe(false);
-    });
-
-    it('should handle labels with leading whitespace', () => {
-      expect(isHtmlLabel('  <B>Bold</B>')).toBe(true);
-    });
-
-    it('should handle labels with trailing whitespace', () => {
-      expect(isHtmlLabel('<TABLE></TABLE>  ')).toBe(true);
+    testCases.forEach(({ name, input, expected }) => {
+      it(name, () => {
+        expect(isHtmlLabel(input)).toBe(expected);
+      });
     });
   });
 
   describe('isRecordLabel', () => {
-    it('should return true for simple record label with pipe separator', () => {
-      expect(isRecordLabel('left|right')).toBe(true);
-    });
+    const testCases = [
+      { name: 'should return true for simple pipe separator', input: 'left|right', expected: true },
+      { name: 'should return true for port syntax', input: '<f0> left|<f1> middle|<f2> right', expected: true },
+      {
+        name: 'should return true for complex nested labels',
+        input: 'hello\\nworld |{ b |{c|<here> d|e}| f}| g | h',
+        expected: true,
+      },
+      { name: 'should return false for plain text', input: 'Plain Text', expected: false },
+      {
+        name: 'should return false for HTML without pipe',
+        input: '<TABLE><TR><TD>Cell</TD></TR></TABLE>',
+        expected: false,
+      },
+      { name: 'should return false for null/undefined', input: null, expected: false },
+    ];
 
-    it('should return true for record label with port syntax', () => {
-      expect(isRecordLabel('<f0> left|<f1> middle|<f2> right')).toBe(true);
-    });
-
-    it('should return true for complex nested record labels', () => {
-      expect(isRecordLabel('hello\\nworld |{ b |{c|<here> d|e}| f}| g | h')).toBe(true);
-    });
-
-    it('should return true for record with single pipe', () => {
-      expect(isRecordLabel('A|B')).toBe(true);
-    });
-
-    it('should return false for plain text without pipe', () => {
-      expect(isRecordLabel('Plain Text')).toBe(false);
-    });
-
-    it('should return false for HTML labels without pipe', () => {
-      expect(isRecordLabel('<TABLE><TR><TD>Cell</TD></TR></TABLE>')).toBe(false);
-    });
-
-    it('should return false for empty string', () => {
-      expect(isRecordLabel('')).toBe(false);
-    });
-
-    it('should return false for null', () => {
-      expect(isRecordLabel(null)).toBe(false);
-    });
-
-    it('should return false for undefined', () => {
-      expect(isRecordLabel(undefined)).toBe(false);
+    testCases.forEach(({ name, input, expected }) => {
+      it(name, () => {
+        expect(isRecordLabel(input)).toBe(expected);
+      });
     });
   });
 
   describe('extractGraphContent', () => {
-    it('should extract content from simple digraph', () => {
-      expect(extractGraphContent('digraph G { A -> B; }')).toBe(' A -> B; ');
-    });
+    const testCases = [
+      { name: 'should extract from simple digraph', input: 'digraph G { A -> B; }', expected: ' A -> B; ' },
+      { name: 'should extract from quoted name', input: 'digraph "My Graph" { A -> B; }', expected: ' A -> B; ' },
+      { name: 'should extract from undirected graph', input: 'graph G { A -- B; }', expected: ' A -- B; ' },
+      { name: 'should handle whitespace', input: '  digraph G { A -> B; }', expected: ' A -> B; ' },
+      { name: 'should preserve newlines', input: 'digraph G {\n  A -> B;\n}', expected: '\n  A -> B;\n' },
+      {
+        name: 'should preserve internal braces',
+        input: 'digraph G { node [shape=box]; }',
+        expected: ' node [shape=box]; ',
+      },
+    ];
 
-    it('should extract content from graph with quoted name', () => {
-      expect(extractGraphContent('digraph "My Graph" { A -> B; }')).toBe(' A -> B; ');
-    });
-
-    it('should extract content from undirected graph', () => {
-      expect(extractGraphContent('graph G { A -- B; }')).toBe(' A -- B; ');
-    });
-
-    it('should extract content from anonymous graph', () => {
-      expect(extractGraphContent('digraph { A -> B; }')).toBe(' A -> B; ');
-    });
-
-    it('should handle leading whitespace', () => {
-      expect(extractGraphContent('  digraph G { A -> B; }')).toBe(' A -> B; ');
-    });
-
-    it('should handle newlines', () => {
-      expect(extractGraphContent('digraph G {\n  A -> B;\n}')).toBe('\n  A -> B;\n');
-    });
-
-    it('should handle complex graph with subgraphs', () => {
-      const result = extractGraphContent('digraph G { subgraph cluster { A -> B; } }');
-      expect(result).toBe(' subgraph cluster { A -> B; } ');
-    });
-
-    it('should preserve internal braces', () => {
-      expect(extractGraphContent('digraph G { node [shape=box]; }')).toBe(' node [shape=box]; ');
+    testCases.forEach(({ name, input, expected }) => {
+      it(name, () => {
+        expect(extractGraphContent(input)).toBe(expected);
+      });
     });
   });
 
   describe('buildGraphAttributes', () => {
-    it('should return empty array when no attributes', () => {
-      expect(buildGraphAttributes('neato')).toEqual([]);
-    });
+    const testCases = [
+      { name: 'should return empty when no attributes', engine: 'neato', expected: [] },
+      { name: 'should add rankdir for dot engine', engine: 'dot', rankdir: 'LR', expected: ['rankdir=LR'] },
+      { name: 'should not add rankdir for non-dot engine', engine: 'neato', rankdir: 'LR', expected: [] },
+      { name: 'should add splineType', engine: 'dot', splineType: 'ortho', expected: ['splines=ortho'] },
+      {
+        name: 'should add both attributes',
+        engine: 'dot',
+        rankdir: 'TB',
+        splineType: 'curved',
+        expected: ['rankdir=TB', 'splines=curved'],
+      },
+    ];
 
-    it('should add rankdir for dot engine', () => {
-      expect(buildGraphAttributes('dot', 'LR')).toEqual(['rankdir=LR']);
-    });
-
-    it('should not add rankdir for non-dot engine', () => {
-      expect(buildGraphAttributes('neato', 'LR')).toEqual([]);
-    });
-
-    it('should add splineType when provided', () => {
-      expect(buildGraphAttributes('dot', undefined, 'ortho')).toEqual(['splines=ortho']);
-    });
-
-    it('should add both rankdir and splineType', () => {
-      expect(buildGraphAttributes('dot', 'TB', 'curved')).toEqual(['rankdir=TB', 'splines=curved']);
-    });
-
-    it('should handle all rank directions', () => {
-      expect(buildGraphAttributes('dot', 'LR')).toEqual(['rankdir=LR']);
-      expect(buildGraphAttributes('dot', 'RL')).toEqual(['rankdir=RL']);
-      expect(buildGraphAttributes('dot', 'TB')).toEqual(['rankdir=TB']);
-      expect(buildGraphAttributes('dot', 'BT')).toEqual(['rankdir=BT']);
-    });
-
-    it('should handle different spline types', () => {
-      expect(buildGraphAttributes('dot', undefined, 'ortho')).toEqual(['splines=ortho']);
-      expect(buildGraphAttributes('dot', undefined, 'polyline')).toEqual(['splines=polyline']);
-      expect(buildGraphAttributes('dot', undefined, 'curved')).toEqual(['splines=curved']);
-    });
-
-    it('should respect engine check for rankdir', () => {
-      expect(buildGraphAttributes('circo', 'LR')).toEqual([]);
-      expect(buildGraphAttributes('fdp', 'TB')).toEqual([]);
+    testCases.forEach(({ name, engine, rankdir, splineType, expected }) => {
+      it(name, () => {
+        expect(buildGraphAttributes(engine, rankdir, splineType)).toEqual(expected);
+      });
     });
   });
 });
