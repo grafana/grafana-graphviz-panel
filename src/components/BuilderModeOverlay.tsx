@@ -69,7 +69,7 @@ function calculateFinalNodePosition(
 }
 
 export interface BuilderModeOverlayProps {
-  svgRef: RefObject<HTMLDivElement>;
+  svgRef: RefObject<HTMLDivElement | null>;
   dotDiagram: string;
   onChange: (newDotDiagram: string) => void;
   onClearTriggers?: () => void;

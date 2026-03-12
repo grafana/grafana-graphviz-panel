@@ -128,7 +128,7 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
 
     onChange(updated);
     setOpenSections((prev) => ({ ...prev, [newMapping.id]: true }));
-    
+
     // Scroll to the new override after it's rendered
     setTimeout(() => {
       const element = sectionRefs.current[newMapping.id];
@@ -218,7 +218,12 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
   return (
     <div>
       {mappings.map((mapping, index) => (
-        <div key={mapping.id} ref={(el) => (sectionRefs.current[mapping.id] = el)}>
+        <div
+          key={mapping.id}
+          ref={(el) => {
+            sectionRefs.current[mapping.id] = el;
+          }}
+        >
           <Collapse
             className={mappingContainerStyle}
             label={
@@ -239,459 +244,462 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
             collapsible={true}
           >
             <Field label="Select Nodes by ID" description="Defines which nodes the override will be applied to">
-            <div style={{ display: 'flex', gap: '4px', alignItems: 'flex-start' }}>
-              <div style={{ flex: 1 }}>
-                <MultiSelect
-                  value={mapping.targetNodeIds}
-                  options={availableNodeIds.map((id) => ({ label: id, value: id }))}
-                  onChange={(selections) => {
-                    const selectedIds = selections.map((s) => s.value!);
-                    updateMapping(mapping.id, { targetNodeIds: selectedIds });
-                  }}
-                  placeholder="Select nodes..."
-                />
+              <div style={{ display: 'flex', gap: '4px', alignItems: 'flex-start' }}>
+                <div style={{ flex: 1 }}>
+                  <MultiSelect
+                    value={mapping.targetNodeIds}
+                    options={availableNodeIds.map((id) => ({ label: id, value: id }))}
+                    onChange={(selections) => {
+                      const selectedIds = selections.map((s) => s.value!);
+                      updateMapping(mapping.id, { targetNodeIds: selectedIds });
+                    }}
+                    placeholder="Select nodes..."
+                  />
+                </div>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  onClick={() => updateMapping(mapping.id, { targetNodeIds: availableNodeIds })}
+                  tooltip="Select all nodes"
+                >
+                  All
+                </Button>
               </div>
-              <Button
-                variant="secondary"
-                size="md"
-                onClick={() => updateMapping(mapping.id, { targetNodeIds: availableNodeIds })}
-                tooltip="Select all nodes"
-              >
-                All
-              </Button>
-            </div>
-          </Field>
+            </Field>
 
-          <Field label="Match mode" description="Allows you to match the node override to the value of a specific row in the data. By default, it will be matched based on the node ID">
-            <RadioButtonGroup
-              value={mapping.matchMode || MatchMode.MANUAL}
-              options={[
-                { label: 'Autodetect', value: MatchMode.AUTODETECT },
-                { label: 'Manual', value: MatchMode.MANUAL },
-              ]}
-              onChange={(value) => {
-                if (value === MatchMode.AUTODETECT) {
-                  updateMapping(mapping.id, {
-                    matchMode: value,
-                    matchFieldName: undefined,
-                    matchPattern: '${id}',
-                    matchValue: undefined,
-                  });
-                } else {
-                  updateMapping(mapping.id, {
-                    matchMode: value,
-                  });
-                }
-              }}
-            />
-          </Field>
+            <Field
+              label="Match mode"
+              description="Allows you to match the node override to the value of a specific row in the data. By default, it will be matched based on the node ID"
+            >
+              <RadioButtonGroup
+                value={mapping.matchMode || MatchMode.MANUAL}
+                options={[
+                  { label: 'Autodetect', value: MatchMode.AUTODETECT },
+                  { label: 'Manual', value: MatchMode.MANUAL },
+                ]}
+                onChange={(value) => {
+                  if (value === MatchMode.AUTODETECT) {
+                    updateMapping(mapping.id, {
+                      matchMode: value,
+                      matchFieldName: undefined,
+                      matchPattern: '${id}',
+                      matchValue: undefined,
+                    });
+                  } else {
+                    updateMapping(mapping.id, {
+                      matchMode: value,
+                    });
+                  }
+                }}
+              />
+            </Field>
 
-          {mapping.matchMode === MatchMode.AUTODETECT &&
-            mapping.targetNodeIds.length > 0 &&
-            (() => {
-              const detectionResult = detectionResults.get(mapping.id);
+            {mapping.matchMode === MatchMode.AUTODETECT &&
+              mapping.targetNodeIds.length > 0 &&
+              (() => {
+                const detectionResult = detectionResults.get(mapping.id);
 
-              if (!detectionResult) {
-                return (
-                  <Alert severity="error" title="No matching fields found">
-                    <div>No fields in the data match the selected node IDs.</div>
-                    <div style={{ marginTop: 12 }}>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => updateMapping(mapping.id, { matchMode: MatchMode.MANUAL })}
-                      >
-                        Switch to Manual Mode
-                      </Button>
-                    </div>
-                  </Alert>
-                );
-              }
-
-              return (
-                <>
-                  <Field label="Autodetect matched row where:">
-                    <div
-                      style={{
-                        padding: '6px 8px',
-                        background: 'rgba(100, 100, 100, 0.1)',
-                        borderRadius: '2px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                      }}
-                    >
-                      <span>
-                        {detectionResult.matchFieldName} = {'"${id}"'}
-                      </span>
-                      {detectionResult.matchPercentage === 100 ? (
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <Icon name="check-circle" style={{ color: '#73BF69' }} />({detectionResult.matchedIds.length}/
-                          {mapping.targetNodeIds.length})
-                        </span>
-                      ) : (
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <Icon name="exclamation-triangle" style={{ color: '#FF9830' }} />(
-                          {detectionResult.matchedIds.length}/{mapping.targetNodeIds.length})
-                        </span>
-                      )}
-                    </div>
-                  </Field>
-
-                  {detectionResult.matchPercentage < 100 && (
-                    <Alert severity="warning" title="Partial match ...">
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <span>
-                          Could not match {detectionResult.unmatchedIds.length}/{mapping.targetNodeIds.length} nodes
-                          with this rule
-                        </span>
-                        <IconButton
-                          name="info-circle"
-                          size="sm"
-                          tooltip={
-                            <div>
-                              <div style={{ marginBottom: 4, fontWeight: 500 }}>Unmatched IDs:</div>
-                              <ul style={{ margin: 0, paddingLeft: 20 }}>
-                                {detectionResult.unmatchedIds.map((id) => (
-                                  <li key={id}>{id}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          }
-                        />
-                      </div>
+                if (!detectionResult) {
+                  return (
+                    <Alert severity="error" title="No matching fields found">
+                      <div>No fields in the data match the selected node IDs.</div>
                       <div style={{ marginTop: 12 }}>
                         <Button
                           size="sm"
-                          variant="primary"
-                          icon="plus"
-                          onClick={() => splitUnmatchedToNewOverride(mapping.id, detectionResult.unmatchedIds)}
+                          variant="secondary"
+                          onClick={() => updateMapping(mapping.id, { matchMode: MatchMode.MANUAL })}
                         >
-                          Move {detectionResult.unmatchedIds.length} to new rule
+                          Switch to Manual Mode
                         </Button>
                       </div>
                     </Alert>
-                  )}
-                </>
-              );
-            })()}
+                  );
+                }
 
-          {mapping.matchMode === MatchMode.MANUAL && (
-            <>
-              <Field label="Match field (optional)">
-                <Combobox
-                  value={mapping.matchFieldName}
-                  options={stringFields as any}
-                  onChange={(selection: any) =>
-                    updateMapping(mapping.id, {
-                      matchFieldName: selection?.value as string | undefined,
-                      matchValue: undefined,
-                      matchPattern: selection?.value ? '${id}' : undefined,
-                      rules: mapping.rules.map((rule) => ({
-                        ...rule,
-                        colorFieldName: undefined,
-                        thresholdId: undefined,
-                      })),
-                    })
-                  }
-                  placeholder="Select match field..."
-                  isClearable
-                />
-              </Field>
+                return (
+                  <>
+                    <Field label="Autodetect matched row where:">
+                      <div
+                        style={{
+                          padding: '6px 8px',
+                          background: 'rgba(100, 100, 100, 0.1)',
+                          borderRadius: '2px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                        }}
+                      >
+                        <span>
+                          {detectionResult.matchFieldName} = {'"${id}"'}
+                        </span>
+                        {detectionResult.matchPercentage === 100 ? (
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Icon name="check-circle" style={{ color: '#73BF69' }} />(
+                            {detectionResult.matchedIds.length}/{mapping.targetNodeIds.length})
+                          </span>
+                        ) : (
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Icon name="exclamation-triangle" style={{ color: '#FF9830' }} />(
+                            {detectionResult.matchedIds.length}/{mapping.targetNodeIds.length})
+                          </span>
+                        )}
+                      </div>
+                    </Field>
 
-              {mapping.matchFieldName && (
-                <Field label="Match value" description='Use "${id}" to match node ID, or select specific value'>
-                  <CodeEditor
-                    value={mapping.matchPattern || mapping.matchValue || ''}
-                    language="plaintext"
-                    height="30px"
-                    showLineNumbers={false}
-                    showMiniMap={false}
-                    monacoOptions={SINGLE_LINE_MONACO_OPTIONS}
-                    onChange={(value) => {
-                      const cleanValue = value.replace(/\n/g, '');
-                      if (cleanValue.includes('${id}')) {
-                        updateMapping(mapping.id, { matchPattern: cleanValue, matchValue: undefined });
-                      } else {
-                        updateMapping(mapping.id, { matchValue: cleanValue, matchPattern: undefined });
-                      }
-                    }}
-                    onEditorDidMount={(editor: MonacoEditor, monaco: Monaco) => {
-                      registerMatchValueCompletion(monaco, 'node');
-                      registerSingleLineKeyCommands(editor, monaco);
-                    }}
+                    {detectionResult.matchPercentage < 100 && (
+                      <Alert severity="warning" title="Partial match ...">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <span>
+                            Could not match {detectionResult.unmatchedIds.length}/{mapping.targetNodeIds.length} nodes
+                            with this rule
+                          </span>
+                          <IconButton
+                            name="info-circle"
+                            size="sm"
+                            tooltip={
+                              <div>
+                                <div style={{ marginBottom: 4, fontWeight: 500 }}>Unmatched IDs:</div>
+                                <ul style={{ margin: 0, paddingLeft: 20 }}>
+                                  {detectionResult.unmatchedIds.map((id) => (
+                                    <li key={id}>{id}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            }
+                          />
+                        </div>
+                        <div style={{ marginTop: 12 }}>
+                          <Button
+                            size="sm"
+                            variant="primary"
+                            icon="plus"
+                            onClick={() => splitUnmatchedToNewOverride(mapping.id, detectionResult.unmatchedIds)}
+                          >
+                            Move {detectionResult.unmatchedIds.length} to new rule
+                          </Button>
+                        </div>
+                      </Alert>
+                    )}
+                  </>
+                );
+              })()}
+
+            {mapping.matchMode === MatchMode.MANUAL && (
+              <>
+                <Field label="Match field (optional)">
+                  <Combobox
+                    value={mapping.matchFieldName}
+                    options={stringFields as any}
+                    onChange={(selection: any) =>
+                      updateMapping(mapping.id, {
+                        matchFieldName: selection?.value as string | undefined,
+                        matchValue: undefined,
+                        matchPattern: selection?.value ? '${id}' : undefined,
+                        rules: mapping.rules.map((rule) => ({
+                          ...rule,
+                          colorFieldName: undefined,
+                          thresholdId: undefined,
+                        })),
+                      })
+                    }
+                    placeholder="Select match field..."
+                    isClearable
                   />
                 </Field>
-              )}
 
-              {mapping.matchFieldName && (mapping.matchPattern || mapping.matchValue) && (
-                <Field label="Manually matched row where:">
-                  {(() => {
-                    const matchedIds: string[] = [];
-                    const unmatchedIds: string[] = [];
+                {mapping.matchFieldName && (
+                  <Field label="Match value" description='Use "${id}" to match node ID, or select specific value'>
+                    <CodeEditor
+                      value={mapping.matchPattern || mapping.matchValue || ''}
+                      language="plaintext"
+                      height="30px"
+                      showLineNumbers={false}
+                      showMiniMap={false}
+                      monacoOptions={SINGLE_LINE_MONACO_OPTIONS}
+                      onChange={(value) => {
+                        const cleanValue = value.replace(/\n/g, '');
+                        if (cleanValue.includes('${id}')) {
+                          updateMapping(mapping.id, { matchPattern: cleanValue, matchValue: undefined });
+                        } else {
+                          updateMapping(mapping.id, { matchValue: cleanValue, matchPattern: undefined });
+                        }
+                      }}
+                      onEditorDidMount={(editor: MonacoEditor, monaco: Monaco) => {
+                        registerMatchValueCompletion(monaco, 'node');
+                        registerSingleLineKeyCommands(editor, monaco);
+                      }}
+                    />
+                  </Field>
+                )}
 
-                    mapping.targetNodeIds.forEach((nodeId) => {
-                      const matchValue = mapping.matchPattern
-                        ? mapping.matchPattern.replace(/\$\{id\}/g, nodeId)
-                        : mapping.matchValue;
+                {mapping.matchFieldName && (mapping.matchPattern || mapping.matchValue) && (
+                  <Field label="Manually matched row where:">
+                    {(() => {
+                      const matchedIds: string[] = [];
+                      const unmatchedIds: string[] = [];
 
-                      if (matchValue && context.data) {
-                        const dataRow = findMatchedRow(context.data, mapping.matchFieldName!, matchValue);
-                        if (dataRow) {
-                          matchedIds.push(nodeId);
+                      mapping.targetNodeIds.forEach((nodeId) => {
+                        const matchValue = mapping.matchPattern
+                          ? mapping.matchPattern.replace(/\$\{id\}/g, nodeId)
+                          : mapping.matchValue;
+
+                        if (matchValue && context.data) {
+                          const dataRow = findMatchedRow(context.data, mapping.matchFieldName!, matchValue);
+                          if (dataRow) {
+                            matchedIds.push(nodeId);
+                          } else {
+                            unmatchedIds.push(nodeId);
+                          }
                         } else {
                           unmatchedIds.push(nodeId);
                         }
-                      } else {
-                        unmatchedIds.push(nodeId);
-                      }
-                    });
+                      });
 
-                    const matchPercentage =
-                      mapping.targetNodeIds.length > 0 ? (matchedIds.length / mapping.targetNodeIds.length) * 100 : 0;
+                      const matchPercentage =
+                        mapping.targetNodeIds.length > 0 ? (matchedIds.length / mapping.targetNodeIds.length) * 100 : 0;
+
+                      return (
+                        <>
+                          <div
+                            style={{
+                              padding: '6px 8px',
+                              background: 'rgba(100, 100, 100, 0.1)',
+                              borderRadius: '2px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                            }}
+                          >
+                            <span>
+                              {mapping.matchFieldName} = &quot;
+                              {mapping.matchPattern ? mapping.matchPattern : mapping.matchValue}&quot;
+                            </span>
+                            {matchPercentage === 100 ? (
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <Icon name="check-circle" style={{ color: '#73BF69' }} />({matchedIds.length}/
+                                {mapping.targetNodeIds.length})
+                              </span>
+                            ) : matchPercentage > 0 ? (
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <Icon name="exclamation-triangle" style={{ color: '#FF9830' }} />({matchedIds.length}/
+                                {mapping.targetNodeIds.length})
+                              </span>
+                            ) : (
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <Icon name="exclamation-circle" style={{ color: '#F2495C' }} />({matchedIds.length}/
+                                {mapping.targetNodeIds.length})
+                              </span>
+                            )}
+                          </div>
+
+                          {matchPercentage < 100 && matchPercentage > 0 && (
+                            <Alert severity="warning" title="Partial match ...">
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <span>
+                                  Could not match {unmatchedIds.length}/{mapping.targetNodeIds.length} nodes with this
+                                  rule
+                                </span>
+                                <IconButton
+                                  name="info-circle"
+                                  size="sm"
+                                  tooltip={
+                                    <div>
+                                      <div style={{ marginBottom: 4, fontWeight: 500 }}>Unmatched IDs:</div>
+                                      <ul style={{ margin: 0, paddingLeft: 20 }}>
+                                        {unmatchedIds.map((id) => (
+                                          <li key={id}>{id}</li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  }
+                                />
+                              </div>
+                              <div style={{ marginTop: 12 }}>
+                                <Button
+                                  size="sm"
+                                  variant="primary"
+                                  icon="plus"
+                                  onClick={() => splitUnmatchedToNewOverride(mapping.id, unmatchedIds)}
+                                >
+                                  Move {unmatchedIds.length} to new rule
+                                </Button>
+                              </div>
+                            </Alert>
+                          )}
+
+                          {matchPercentage === 0 && (
+                            <Alert severity="error" title="No matching data found">
+                              <div>No data rows match the selected nodes with this configuration.</div>
+                            </Alert>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </Field>
+                )}
+              </>
+            )}
+
+            {mapping.rules.map((rule, ruleIndex) => (
+              <div key={ruleIndex} className={ruleContainerStyle}>
+                <div className={headerStyle}>
+                  <strong>
+                    {rule.kind === RuleKind.STROKE_COLOR && 'Stroke Color Override'}
+                    {rule.kind === RuleKind.FILL_COLOR && 'Fill Color Override'}
+                    {rule.kind === RuleKind.LABEL && 'Label Override'}
+                  </strong>
+                  <IconButton
+                    name="trash-alt"
+                    onClick={() => removeRule(mapping.id, ruleIndex)}
+                    tooltip="Remove override"
+                    size="sm"
+                  />
+                </div>
+
+                {(rule.kind === RuleKind.STROKE_COLOR || rule.kind === RuleKind.FILL_COLOR) &&
+                  (() => {
+                    const sampleNodeId = mapping.targetNodeIds[0];
+                    const matchValue = mapping.matchPattern
+                      ? mapping.matchPattern.replace(/\$\{id\}/g, sampleNodeId)
+                      : mapping.matchValue;
+
+                    const availableFields =
+                      mapping.matchFieldName && matchValue
+                        ? extractAllFieldsForMatchedRow(context.data, mapping.matchFieldName, matchValue)
+                        : numericFields;
 
                     return (
                       <>
-                        <div
-                          style={{
-                            padding: '6px 8px',
-                            background: 'rgba(100, 100, 100, 0.1)',
-                            borderRadius: '2px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                          }}
-                        >
-                          <span>
-                            {mapping.matchFieldName} = &quot;
-                            {mapping.matchPattern ? mapping.matchPattern : mapping.matchValue}&quot;
-                          </span>
-                          {matchPercentage === 100 ? (
-                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <Icon name="check-circle" style={{ color: '#73BF69' }} />({matchedIds.length}/
-                              {mapping.targetNodeIds.length})
-                            </span>
-                          ) : matchPercentage > 0 ? (
-                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <Icon name="exclamation-triangle" style={{ color: '#FF9830' }} />({matchedIds.length}/
-                              {mapping.targetNodeIds.length})
-                            </span>
-                          ) : (
-                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <Icon name="exclamation-circle" style={{ color: '#F2495C' }} />({matchedIds.length}/
-                              {mapping.targetNodeIds.length})
-                            </span>
-                          )}
-                        </div>
-
-                        {matchPercentage < 100 && matchPercentage > 0 && (
-                          <Alert severity="warning" title="Partial match ...">
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                              <span>
-                                Could not match {unmatchedIds.length}/{mapping.targetNodeIds.length} nodes with this
-                                rule
-                              </span>
-                              <IconButton
-                                name="info-circle"
-                                size="sm"
-                                tooltip={
-                                  <div>
-                                    <div style={{ marginBottom: 4, fontWeight: 500 }}>Unmatched IDs:</div>
-                                    <ul style={{ margin: 0, paddingLeft: 20 }}>
-                                      {unmatchedIds.map((id) => (
-                                        <li key={id}>{id}</li>
-                                      ))}
-                                    </ul>
+                        {mapping.matchFieldName ? (
+                          <>
+                            <Field label="Color field">
+                              <Select
+                                value={rule.colorFieldName}
+                                options={availableFields}
+                                onChange={(selection) => {
+                                  updateRule(mapping.id, ruleIndex, { colorFieldName: selection?.value });
+                                }}
+                                placeholder="Select color field..."
+                                isOptionDisabled={(option) => option.isDisabled === true}
+                                formatOptionLabel={(option) => (
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <Icon name={getFieldTypeIconName(option.fieldType as any)} />
+                                    <span>{option.label}</span>
                                   </div>
-                                }
+                                )}
                               />
-                            </div>
-                            <div style={{ marginTop: 12 }}>
-                              <Button
-                                size="sm"
-                                variant="primary"
-                                icon="plus"
-                                onClick={() => splitUnmatchedToNewOverride(mapping.id, unmatchedIds)}
-                              >
-                                Move {unmatchedIds.length} to new rule
-                              </Button>
-                            </div>
-                          </Alert>
-                        )}
+                            </Field>
 
-                        {matchPercentage === 0 && (
-                          <Alert severity="error" title="No matching data found">
-                            <div>No data rows match the selected nodes with this configuration.</div>
-                          </Alert>
+                            <Field
+                              label="Threshold set"
+                              description="Optional: Use a named threshold set instead of field config thresholds"
+                            >
+                              <Combobox
+                                value={rule.thresholdId}
+                                options={
+                                  [
+                                    ...(context.options?.namedThresholds || []).map((t: any) => ({
+                                      label: t.name,
+                                      value: t.id,
+                                    })),
+                                  ] as any
+                                }
+                                onChange={(selection: any) =>
+                                  updateRule(mapping.id, ruleIndex, { thresholdId: selection?.value })
+                                }
+                                placeholder="Field config thresholds"
+                                isClearable
+                              />
+                            </Field>
+                          </>
+                        ) : (
+                          <Field label="Static color">
+                            <ColorPicker
+                              color={rule.staticColor || '#FF0000'}
+                              onChange={(color) => updateRule(mapping.id, ruleIndex, { staticColor: color })}
+                            />
+                          </Field>
                         )}
                       </>
                     );
                   })()}
-                </Field>
-              )}
-            </>
-          )}
 
-          {mapping.rules.map((rule, ruleIndex) => (
-            <div key={ruleIndex} className={ruleContainerStyle}>
-              <div className={headerStyle}>
-                <strong>
-                  {rule.kind === RuleKind.STROKE_COLOR && 'Stroke Color Override'}
-                  {rule.kind === RuleKind.FILL_COLOR && 'Fill Color Override'}
-                  {rule.kind === RuleKind.LABEL && 'Label Override'}
-                </strong>
-                <IconButton
-                  name="trash-alt"
-                  onClick={() => removeRule(mapping.id, ruleIndex)}
-                  tooltip="Remove override"
-                  size="sm"
-                />
+                {rule.kind === RuleKind.LABEL && (
+                  <Field
+                    label="Label template"
+                    description="Use ${fieldName} to insert field values. Press Ctrl+Space to see available fields."
+                  >
+                    <CodeEditor
+                      value={rule.labelTemplate || ''}
+                      language="plaintext"
+                      height="60px"
+                      showLineNumbers={false}
+                      showMiniMap={false}
+                      monacoOptions={{
+                        quickSuggestions: true,
+                        suggestOnTriggerCharacters: true,
+                      }}
+                      onChange={(value) => updateRule(mapping.id, ruleIndex, { labelTemplate: value })}
+                      onEditorDidMount={(editor: MonacoEditor, monaco: Monaco) => {
+                        registerNodeLabelCompletion(monaco, context.data, mapping);
+                      }}
+                    />
+                  </Field>
+                )}
               </div>
+            ))}
 
-              {(rule.kind === RuleKind.STROKE_COLOR || rule.kind === RuleKind.FILL_COLOR) &&
-                (() => {
-                  const sampleNodeId = mapping.targetNodeIds[0];
-                  const matchValue = mapping.matchPattern
-                    ? mapping.matchPattern.replace(/\$\{id\}/g, sampleNodeId)
-                    : mapping.matchValue;
+            <Box marginTop={1.5}>
+              {(() => {
+                const detectionResult = detectionResults.get(mapping.id);
+                const matchMode = mapping.matchMode || MatchMode.MANUAL;
 
-                  const availableFields =
-                    mapping.matchFieldName && matchValue
-                      ? extractAllFieldsForMatchedRow(context.data, mapping.matchFieldName, matchValue)
-                      : numericFields;
+                let hasMatchedNodes;
+                if (matchMode === MatchMode.AUTODETECT) {
+                  hasMatchedNodes = detectionResult && detectionResult.matchedIds.length > 0;
+                } else {
+                  hasMatchedNodes = mapping.targetNodeIds.length > 0;
+                }
 
-                  return (
-                    <>
-                      {mapping.matchFieldName ? (
-                        <>
-                          <Field label="Color field">
-                            <Select
-                              value={rule.colorFieldName}
-                              options={availableFields}
-                              onChange={(selection) => {
-                                updateRule(mapping.id, ruleIndex, { colorFieldName: selection?.value });
-                              }}
-                              placeholder="Select color field..."
-                              isOptionDisabled={(option) => option.isDisabled === true}
-                              formatOptionLabel={(option) => (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  <Icon name={getFieldTypeIconName(option.fieldType as any)} />
-                                  <span>{option.label}</span>
-                                </div>
-                              )}
-                            />
-                          </Field>
+                const hasStrokeColor = mapping.rules.some((r) => r.kind === RuleKind.STROKE_COLOR);
+                const hasFillColor = mapping.rules.some((r) => r.kind === RuleKind.FILL_COLOR);
+                const hasLabel = mapping.rules.some((r) => r.kind === RuleKind.LABEL);
+                const allRulesAdded = hasStrokeColor && hasFillColor && hasLabel;
 
-                          <Field
-                            label="Threshold set"
-                            description="Optional: Use a named threshold set instead of field config thresholds"
-                          >
-                            <Combobox
-                              value={rule.thresholdId}
-                              options={
-                                [
-                                  ...(context.options?.namedThresholds || []).map((t: any) => ({
-                                    label: t.name,
-                                    value: t.id,
-                                  })),
-                                ] as any
-                              }
-                              onChange={(selection: any) =>
-                                updateRule(mapping.id, ruleIndex, { thresholdId: selection?.value })
-                              }
-                              placeholder="Field config thresholds"
-                              isClearable
-                            />
-                          </Field>
-                        </>
-                      ) : (
-                        <Field label="Static color">
-                          <ColorPicker
-                            color={rule.staticColor || '#FF0000'}
-                            onChange={(color) => updateRule(mapping.id, ruleIndex, { staticColor: color })}
-                          />
-                        </Field>
-                      )}
-                    </>
-                  );
-                })()}
+                const isButtonDisabled = !hasMatchedNodes || allRulesAdded;
 
-              {rule.kind === RuleKind.LABEL && (
-                <Field
-                  label="Label template"
-                  description="Use ${fieldName} to insert field values. Press Ctrl+Space to see available fields."
-                >
-                  <CodeEditor
-                    value={rule.labelTemplate || ''}
-                    language="plaintext"
-                    height="60px"
-                    showLineNumbers={false}
-                    showMiniMap={false}
-                    monacoOptions={{
-                      quickSuggestions: true,
-                      suggestOnTriggerCharacters: true,
-                    }}
-                    onChange={(value) => updateRule(mapping.id, ruleIndex, { labelTemplate: value })}
-                    onEditorDidMount={(editor: MonacoEditor, monaco: Monaco) => {
-                      registerNodeLabelCompletion(monaco, context.data, mapping);
-                    }}
-                  />
-                </Field>
-              )}
-            </div>
-          ))}
-
-          <Box marginTop={1.5}>
-            {(() => {
-              const detectionResult = detectionResults.get(mapping.id);
-              const matchMode = mapping.matchMode || MatchMode.MANUAL;
-
-              let hasMatchedNodes;
-              if (matchMode === MatchMode.AUTODETECT) {
-                hasMatchedNodes = detectionResult && detectionResult.matchedIds.length > 0;
-              } else {
-                hasMatchedNodes = mapping.targetNodeIds.length > 0;
-              }
-
-              const hasStrokeColor = mapping.rules.some((r) => r.kind === RuleKind.STROKE_COLOR);
-              const hasFillColor = mapping.rules.some((r) => r.kind === RuleKind.FILL_COLOR);
-              const hasLabel = mapping.rules.some((r) => r.kind === RuleKind.LABEL);
-              const allRulesAdded = hasStrokeColor && hasFillColor && hasLabel;
-
-              const isButtonDisabled = !hasMatchedNodes || allRulesAdded;
-
-              return (
-                <Dropdown
-                  overlay={
-                    <Menu>
-                      <Menu.Item
-                        label="Stroke Color"
-                        icon="circle"
-                        onClick={() => addBorderColorRule(mapping.id)}
-                        disabled={hasStrokeColor}
-                      />
-                      <Menu.Item
-                        label="Fill Color"
-                        icon="circle-mono"
-                        onClick={() => addFillColorRule(mapping.id)}
-                        disabled={hasFillColor}
-                      />
-                      <Menu.Item
-                        label="Label"
-                        icon="font"
-                        onClick={() => addLabelRule(mapping.id)}
-                        disabled={hasLabel}
-                      />
-                    </Menu>
-                  }
-                >
-                  <Button icon="plus" variant="secondary" size="sm" disabled={isButtonDisabled}>
-                    Override node property
-                  </Button>
-                </Dropdown>
-              );
-            })()}
-          </Box>
+                return (
+                  <Dropdown
+                    overlay={
+                      <Menu>
+                        <Menu.Item
+                          label="Stroke Color"
+                          icon="circle"
+                          onClick={() => addBorderColorRule(mapping.id)}
+                          disabled={hasStrokeColor}
+                        />
+                        <Menu.Item
+                          label="Fill Color"
+                          icon="circle-mono"
+                          onClick={() => addFillColorRule(mapping.id)}
+                          disabled={hasFillColor}
+                        />
+                        <Menu.Item
+                          label="Label"
+                          icon="font"
+                          onClick={() => addLabelRule(mapping.id)}
+                          disabled={hasLabel}
+                        />
+                      </Menu>
+                    }
+                  >
+                    <Button icon="plus" variant="secondary" size="sm" disabled={isButtonDisabled}>
+                      Override node property
+                    </Button>
+                  </Dropdown>
+                );
+              })()}
+            </Box>
           </Collapse>
         </div>
       ))}

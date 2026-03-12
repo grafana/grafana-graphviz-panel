@@ -31,7 +31,7 @@ const EDGE_ID_SEPARATOR = '__to__';
 const POINTS_PER_INCH = 72;
 
 export function calculateNodePositions(
-  svgRef: RefObject<HTMLDivElement>,
+  svgRef: RefObject<HTMLDivElement | null>,
   dotDiagram: string,
   menuXRatio: number,
   menuYRatio: number
@@ -105,7 +105,7 @@ export function calculateNodePositions(
   return positions;
 }
 
-export function calculateEdgePositions(svgRef: RefObject<HTMLDivElement>, dotDiagram: string): EdgePosition[] {
+export function calculateEdgePositions(svgRef: RefObject<HTMLDivElement | null>, dotDiagram: string): EdgePosition[] {
   const svgElement = svgRef.current?.querySelector('svg');
 
   if (!svgElement || !dotDiagram || dotDiagram.trim() === '') {
