@@ -1,0 +1,225 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "description": "HTML text formatting with Unicode characters, bold, italic, emojis, and HTML escape sequences using TABLE for proper spacing",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "dotDiagram": "digraph G {\nGrafanaLink [label=<<U>\ud83d\udd17 Grafana</U>>, URL=\"https://grafana.com\", target=\"_blank\"];\n  Energy [label=<E=mc\u00b2 \u26a1>];\n  Mixed [label=<<TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLSPACING=\"0\" CELLPADDING=\"8\"><TR><TD><B>Bold</B></TD><TD><I>Italic</I></TD><TD><U>Under</U></TD></TR><TR><TD><S>Strike</S></TD><TD><O>Over</O></TD><TD><FONT FACE=\"monospace\">Code</FONT></TD></TR></TABLE>>];\n  \n  GrafanaLink -> Energy -> Mixed;\n}",
+        "layoutEngine": "dot",
+        "rankDirection": "TB"
+      },
+      "pluginVersion": "0.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "HTML Text Styles & Links",
+      "type": "grafana-graphviz-panel"
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "description": "Network diagram with HTML tables showing status indicators",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "dotDiagram": "digraph G {\n  Server1 [label=<<TABLE CELLSPACING=\"0\" CELLPADDING=\"8\">\n    <TR><TD>\ud83d\udfe2 Server 1</TD></TR>\n    <TR><TD ALIGN=\"LEFT\">Status: <B>Online</B></TD></TR>\n    <TR><TD ALIGN=\"LEFT\">Load: 45%</TD></TR>\n    <TR><TD ALIGN=\"LEFT\">Uptime: 99.9%</TD></TR>\n  </TABLE>>];\n  \n  Server2 [label=<<TABLE CELLSPACING=\"0\" CELLPADDING=\"8\">\n    <TR><TD>\ud83d\udfe1 Server 2</TD></TR>\n    <TR><TD ALIGN=\"LEFT\">Status: <B>Warning</B></TD></TR>\n    <TR><TD ALIGN=\"LEFT\">Load: 87%</TD></TR>\n    <TR><TD ALIGN=\"LEFT\">Uptime: 98.2%</TD></TR>\n  </TABLE>>];\n  \n  Server3 [label=<<TABLE CELLSPACING=\"0\" CELLPADDING=\"8\">\n    <TR><TD>\ud83d\udd34 Server 3</TD></TR>\n    <TR><TD ALIGN=\"LEFT\">Status: <B>Down</B></TD></TR>\n    <TR><TD ALIGN=\"LEFT\">Load: N/A</TD></TR>\n    <TR><TD ALIGN=\"LEFT\">Uptime: 0%</TD></TR>\n  </TABLE>>];\n  \n  LoadBalancer [label=<<TABLE CELLSPACING=\"0\" CELLPADDING=\"8\">\n    <TR><TD COLSPAN=\"2\"><B>Load Balancer</B></TD></TR>\n    <TR><TD>Active<BR/>Connections</TD><TD ALIGN=\"RIGHT\">1,234</TD></TR>\n    <TR><TD>Requests<BR/>per second</TD><TD ALIGN=\"RIGHT\">856</TD></TR>\n  </TABLE>>];\n  \n  LoadBalancer -> Server1 [label=<50%<BR/><FONT POINT-SIZE=\"10\">traffic</FONT>>];\n  LoadBalancer -> Server2 [label=<50%<BR/><FONT POINT-SIZE=\"10\">traffic</FONT>>];\n  LoadBalancer -> Server3 [style=dashed, color=red, label=\"offline\"];\n}",
+        "layoutEngine": "dot",
+        "rankDirection": "LR"
+      },
+      "pluginVersion": "0.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "HTML Tables with Status",
+      "type": "grafana-graphviz-panel"
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "description": "Complex HTML table structure with nested elements and styling",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      },
+      "id": 4,
+      "options": {
+        "dotDiagram": "digraph G {\n  Database [label=<<TABLE CELLSPACING=\"0\" CELLPADDING=\"8\">\n    <TR><TD COLSPAN=\"2\"><B>Database</B></TD></TR>\n    <TR><TD>\ud83d\udc65 Users</TD><TD ALIGN=\"RIGHT\">1,234</TD></TR>\n    <TR><TD>\ud83d\udce6 Orders</TD><TD ALIGN=\"RIGHT\">567</TD></TR>\n    <TR><TD>\ud83d\udecd\ufe0f Products</TD><TD ALIGN=\"RIGHT\">89</TD></TR>\n  </TABLE>>];\n  \n  API [label=<<TABLE CELLSPACING=\"0\" CELLBORDER=\"0\" CELLPADDING=\"8\">\n    <TR><TD><B>API Server</B></TD></TR>\n    <TR><TD><I>REST Endpoints</I></TD></TR>\n  </TABLE>>];\n  \n  Cache [label=<<TABLE CELLSPACING=\"0\" CELLPADDING=\"8\">\n    <TR><TD>\ud83d\udd04 Redis Cache</TD></TR>\n    <TR><TD>TTL: 60s</TD></TR>\n  </TABLE>>];\n  \n  API -> Database [label=<<B>query</B>>];\n  API -> Cache [label=<<I>check</I>>];\n  Cache -> Database [label=\"load\"];\n}",
+        "layoutEngine": "dot"
+      },
+      "pluginVersion": "0.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Complex HTML Tables",
+      "type": "grafana-graphviz-panel"
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "description": "Classic DOT record shape syntax with labeled fields",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      },
+      "id": 5,
+      "options": {
+        "dotDiagram": "digraph structs {\n    node [shape=record];\n    struct1 [label=\"<f0> left|<f1> mid\\ dle|<f2> right\"];\n    struct2 [label=\"<f0> one|<f1> two\"];\n    struct3 [label=\"hello\\nworld |{ b |{c|<here> d|e}| f}| g | h\"];\n    struct1:f1 -> struct2:f0;\n    struct1:f2 -> struct3:here;\n}",
+        "layoutEngine": "dot"
+      },
+      "pluginVersion": "0.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Record Shape with Ports",
+      "type": "grafana-graphviz-panel"
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": [
+    "graphviz",
+    "html",
+    "demo"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Graphviz HTML Labels & Records",
+  "uid": "html-labels-and-records",
+  "version": 1
+}
