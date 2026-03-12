@@ -88,6 +88,7 @@
     "graphlib": "^2.1.8",
     "graphlib-dot": "^0.6.4",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "ts-graphviz": "^3.0.7"
   }
 }
