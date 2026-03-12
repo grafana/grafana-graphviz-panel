@@ -1,5 +1,5 @@
-import * as graphlibDot from 'graphlib-dot';
-import { Graph } from 'graphlib';
+import { fromDot, toDot } from 'ts-graphviz';
+import { findNodeById } from './utils/graphvizAst';
 
 export const VALID_SHAPES = [
   'box',
@@ -74,17 +74,16 @@ export interface DrawEdge {
 
 export function parseNodesFromDot(dotString: string): DrawNode[] {
   try {
-    const graph: Graph = graphlibDot.read(dotString);
+    const model = fromDot(dotString);
     const nodes: DrawNode[] = [];
 
-    graph.nodes().forEach((nodeId) => {
-      const nodeData = graph.node(nodeId);
+    for (const node of model.nodes) {
       nodes.push({
-        id: nodeId,
-        label: nodeData?.label,
-        shape: nodeData?.shape,
+        id: node.id,
+        label: node.attributes.get('label'),
+        shape: node.attributes.get('shape'),
       });
-    });
+    }
 
     return nodes;
   } catch (error) {
@@ -95,18 +94,20 @@ export function parseNodesFromDot(dotString: string): DrawNode[] {
 
 export function parseEdgesFromDot(dotString: string): DrawEdge[] {
   try {
-    const graph: Graph = graphlibDot.read(dotString);
+    const model = fromDot(dotString);
     const edges: DrawEdge[] = [];
 
-    graph.edges().forEach((edgeObj) => {
-      const edgeData = graph.edge(edgeObj);
-      edges.push({
-        source: edgeObj.v,
-        target: edgeObj.w,
-        label: edgeData?.label,
-        id: edgeData?.id,
-      });
-    });
+    for (const edge of model.edges) {
+      const targets: any[] = edge.targets;
+      if (targets.length >= 2) {
+        edges.push({
+          source: targets[0].id,
+          target: targets[1].id,
+          label: edge.attributes.get('label'),
+          id: edge.attributes.get('id'),
+        });
+      }
+    }
 
     return edges;
   } catch (error) {
@@ -140,19 +141,17 @@ export function getExistingEdgeIds(dotString: string): string[] {
 
 export function addNodeToDot(dotString: string, node: { id: string; label?: string; shape?: string }): string {
   try {
-    const graph: Graph = graphlibDot.read(dotString);
+    const model = fromDot(dotString);
 
-    const nodeAttributes: any = {};
+    const newNode = model.createNode(node.id);
     if (node.label) {
-      nodeAttributes.label = node.label;
+      newNode.attributes.set('label', node.label);
     }
     if (node.shape) {
-      nodeAttributes.shape = node.shape;
+      newNode.attributes.set('shape', node.shape);
     }
 
-    graph.setNode(node.id, nodeAttributes);
-
-    return graphlibDot.write(graph);
+    return toDot(model);
   } catch (error) {
     console.error('Error adding node to DOT:', error);
     return dotString;
@@ -165,35 +164,31 @@ export function updateNodeInDot(
   updates: { label?: string; shape?: string }
 ): string {
   try {
-    const graph: Graph = graphlibDot.read(dotString);
+    const model = fromDot(dotString);
 
-    const existingNode = graph.node(nodeId);
-    if (!existingNode) {
+    const node = findNodeById(model, nodeId);
+    if (!node) {
       console.error(`Node ${nodeId} not found in graph`);
       return dotString;
     }
 
-    const nodeAttributes: any = { ...existingNode };
-
     if (updates.label !== undefined) {
       if (updates.label) {
-        nodeAttributes.label = updates.label;
+        node.attributes.set('label', updates.label);
       } else {
-        delete nodeAttributes.label;
+        node.attributes.delete('label');
       }
     }
 
     if (updates.shape !== undefined) {
       if (updates.shape) {
-        nodeAttributes.shape = updates.shape;
+        node.attributes.set('shape', updates.shape);
       } else {
-        delete nodeAttributes.shape;
+        node.attributes.delete('shape');
       }
     }
 
-    graph.setNode(nodeId, nodeAttributes);
-
-    return graphlibDot.write(graph);
+    return toDot(model);
   } catch (error) {
     console.error('Error updating node in DOT:', error);
     return dotString;
@@ -207,35 +202,39 @@ export function updateEdgeInDot(
   updates: { id?: string; label?: string }
 ): string {
   try {
-    const graph: Graph = graphlibDot.read(dotString);
+    const model = fromDot(dotString);
 
-    const existingEdge = graph.edge(source, target);
-    if (!existingEdge) {
+    let foundEdge: any = null;
+    for (const edge of model.edges) {
+      const targets: any[] = edge.targets;
+      if (targets.length >= 2 && targets[0].id === source && targets[1].id === target) {
+        foundEdge = edge;
+        break;
+      }
+    }
+
+    if (!foundEdge) {
       console.error(`Edge from ${source} to ${target} not found in graph`);
       return dotString;
     }
 
-    const edgeAttributes: any = { ...existingEdge };
-
     if (updates.id !== undefined) {
       if (updates.id) {
-        edgeAttributes.id = updates.id;
+        foundEdge.attributes.set('id', updates.id);
       } else {
-        delete edgeAttributes.id;
+        foundEdge.attributes.delete('id');
       }
     }
 
     if (updates.label !== undefined) {
       if (updates.label) {
-        edgeAttributes.label = updates.label;
+        foundEdge.attributes.set('label', updates.label);
       } else {
-        delete edgeAttributes.label;
+        foundEdge.attributes.delete('label');
       }
     }
 
-    graph.setEdge(source, target, edgeAttributes);
-
-    return graphlibDot.write(graph);
+    return toDot(model);
   } catch (error) {
     console.error('Error updating edge in DOT:', error);
     return dotString;
@@ -248,30 +247,27 @@ export function addEdgeToDot(
   newTargetNode?: { id: string; label?: string; shape?: string }
 ): string {
   try {
-    let graph: Graph = graphlibDot.read(dotString);
+    const model = fromDot(dotString);
 
     if (newTargetNode) {
-      const nodeAttributes: any = {};
+      const node = model.createNode(newTargetNode.id);
       if (newTargetNode.label) {
-        nodeAttributes.label = newTargetNode.label;
+        node.attributes.set('label', newTargetNode.label);
       }
       if (newTargetNode.shape) {
-        nodeAttributes.shape = newTargetNode.shape;
+        node.attributes.set('shape', newTargetNode.shape);
       }
-      graph.setNode(newTargetNode.id, nodeAttributes);
     }
 
-    const edgeAttributes: any = {};
+    const newEdge = model.createEdge([edge.source, edge.target]);
     if (edge.id) {
-      edgeAttributes.id = edge.id;
+      newEdge.attributes.set('id', edge.id);
     }
     if (edge.label) {
-      edgeAttributes.label = edge.label;
+      newEdge.attributes.set('label', edge.label);
     }
 
-    graph.setEdge(edge.source, edge.target, edgeAttributes);
-
-    return graphlibDot.write(graph);
+    return toDot(model);
   } catch (error) {
     console.error('Error adding edge to DOT:', error);
     return dotString;
@@ -280,11 +276,14 @@ export function addEdgeToDot(
 
 export function deleteNodeFromDot(dotString: string, nodeId: string): string {
   try {
-    const graph: Graph = graphlibDot.read(dotString);
+    const model = fromDot(dotString);
 
-    graph.removeNode(nodeId);
+    const node = findNodeById(model, nodeId);
+    if (node) {
+      model.removeNode(node as any);
+    }
 
-    return graphlibDot.write(graph);
+    return toDot(model);
   } catch (error) {
     console.error('Error deleting node from DOT:', error);
     return dotString;
@@ -293,11 +292,17 @@ export function deleteNodeFromDot(dotString: string, nodeId: string): string {
 
 export function deleteEdgeFromDot(dotString: string, source: string, target: string): string {
   try {
-    const graph: Graph = graphlibDot.read(dotString);
+    const model = fromDot(dotString);
 
-    graph.removeEdge(source, target);
+    for (const edge of model.edges) {
+      const targets: any[] = edge.targets;
+      if (targets.length >= 2 && targets[0].id === source && targets[1].id === target) {
+        model.removeEdge(edge);
+        break;
+      }
+    }
 
-    return graphlibDot.write(graph);
+    return toDot(model);
   } catch (error) {
     console.error('Error deleting edge from DOT:', error);
     return dotString;
@@ -316,20 +321,17 @@ export function deleteEdgeFromDot(dotString: string, source: string, target: str
  */
 export function updateNodePositionInDot(dotString: string, nodeId: string, x: number, y: number): string {
   try {
-    const graph: Graph = graphlibDot.read(dotString);
+    const model = fromDot(dotString);
 
-    const existingNode = graph.node(nodeId);
-    if (!existingNode) {
+    const node = findNodeById(model, nodeId);
+    if (!node) {
       console.error(`Node ${nodeId} not found in graph`);
       return dotString;
     }
 
-    const nodeAttributes: Record<string, unknown> = { ...existingNode };
-    nodeAttributes.pos = `${x},${y}!`;
+    node.attributes.set('pos', `${x},${y}!`);
 
-    graph.setNode(nodeId, nodeAttributes);
-
-    return graphlibDot.write(graph);
+    return toDot(model);
   } catch (error) {
     console.error('Error updating node position in DOT:', error);
     return dotString;
@@ -346,14 +348,19 @@ export function updateNodePositionInDot(dotString: string, nodeId: string, x: nu
  */
 export function getNodePosition(dotString: string, nodeId: string): { x: number; y: number } | null {
   try {
-    const graph: Graph = graphlibDot.read(dotString);
+    const model = fromDot(dotString);
 
-    const nodeData = graph.node(nodeId);
-    if (!nodeData || !nodeData.pos) {
+    const node = findNodeById(model, nodeId);
+    if (!node) {
       return null;
     }
 
-    const posString = String(nodeData.pos).replace(/!$/, '');
+    const pos = node.attributes.get('pos');
+    if (!pos) {
+      return null;
+    }
+
+    const posString = String(pos).replace(/!$/, '');
     const parts = posString.split(',');
 
     if (parts.length >= 2) {

@@ -1,96 +1,93 @@
-import * as graphlibDot from 'graphlib-dot';
-import { Graph } from 'graphlib';
+import { fromDot, toDot } from 'ts-graphviz';
 import { EdgeOverride, NodeOverride, RuleKind } from './types';
 import { DataDrivenColors, DataDrivenWidths, findMatchedRow } from './data';
 import { interpolateLabel, hasInterpolation } from './interpolation';
+import { getEdgeId, findNodeById } from './utils/graphvizAst';
 
-/**
- * Applies edge mappings (static color rules) to the graph.
- *
- * @param dotString - The DOT notation string to process
- * @param edgeOverrides - Array of edge mappings to apply
- * @returns DOT string with edge mappings applied
- */
+function addStyleToCommaList(existingStyle: string | null, newStyle: string): string {
+  const current = existingStyle || '';
+  return current.includes(newStyle) ? current : `${current ? current + ',' : ''}${newStyle}`;
+}
+
+function calculateEdgeWidthAndArrowSize(width: number): { width: number; arrowSize: number } {
+  const clampedWidth = Math.min(Math.max(width, 0.1), 5);
+  const arrowSize = Math.min(clampedWidth / 1.0, 1.5);
+  return { width: clampedWidth, arrowSize };
+}
+
 export function applyEdgeStyleOverrides(dotString: string, edgeOverrides: EdgeOverride[]): string {
   if (!edgeOverrides || edgeOverrides.length === 0) {
     return dotString;
   }
 
-  const graph = graphlibDot.read(dotString);
+  const model = fromDot(dotString);
 
   edgeOverrides.forEach((mapping) => {
     const colorRules = mapping.rules.filter((r) => r.kind === RuleKind.STROKE_COLOR);
 
     colorRules.forEach((rule) => {
       if (rule.staticColor) {
-        graph.edges().forEach((edgeObj) => {
-          const edgeData = graph.edge(edgeObj);
-          const edgeId = edgeData?.id || `${edgeObj.v}__to__${edgeObj.w}`;
+        for (const edge of model.edges) {
+          const targets: any[] = edge.targets;
+          for (let i = 0; i < targets.length - 1; i++) {
+            const edgeId = getEdgeId(edge);
 
-          if (mapping.targetEdgeIds.includes(edgeId)) {
-            graph.setEdge(edgeObj.v, edgeObj.w, {
-              ...edgeData,
-              color: rule.staticColor,
-            });
+            if (edgeId && mapping.targetEdgeIds.includes(edgeId)) {
+              edge.attributes.set('color', rule.staticColor);
+            }
           }
-        });
+        }
       }
     });
   });
 
-  return graphlibDot.write(graph);
+  return toDot(model);
 }
 
 export function applyNodeStyleOverrides(dotString: string, nodeOverrides: NodeOverride[]): string {
   return applyStyleMappings(dotString, nodeOverrides);
 }
 
-function applyLabelToNode(graph: Graph, nodeId: string, labelRules: any[], dataRow: Record<string, any>): void {
-  if (!graph.hasNode(nodeId)) {
+function applyLabelToNode(model: any, nodeId: string, labelRules: any[], dataRow: Record<string, any>): void {
+  const node = findNodeById(model, nodeId);
+  if (!node) {
     return;
   }
 
-  const nodeData = graph.node(nodeId);
-  let finalLabel = nodeData.label;
+  const currentLabel = node.attributes.get('label');
+  let finalLabel = currentLabel;
 
   if (labelRules.length > 0 && labelRules[0].labelTemplate) {
     finalLabel = interpolateLabel(labelRules[0].labelTemplate, dataRow);
-  } else if (nodeData.label && hasInterpolation(nodeData.label)) {
-    finalLabel = interpolateLabel(nodeData.label, dataRow);
+  } else if (currentLabel && hasInterpolation(currentLabel)) {
+    finalLabel = interpolateLabel(currentLabel, dataRow);
   }
 
-  if (finalLabel !== nodeData.label) {
-    graph.setNode(nodeId, {
-      ...nodeData,
-      label: finalLabel,
-    });
+  if (finalLabel !== currentLabel) {
+    node.attributes.set('label', finalLabel);
   }
 }
 
-function applyLabelToEdge(graph: Graph, edgeId: string, labelRules: any[], dataRow: Record<string, any>): void {
-  graph.edges().forEach((edgeObj) => {
-    const edgeData = graph.edge(edgeObj);
-    const currentEdgeId = edgeData?.id || `${edgeObj.v}__to__${edgeObj.w}`;
+function applyLabelToEdgeHelper(model: any, edgeId: string, labelRules: any[], dataRow: Record<string, any>): void {
+  for (const edge of model.edges) {
+    const currentEdgeId = getEdgeId(edge);
 
-    if (currentEdgeId !== edgeId) {
-      return;
+    if (currentEdgeId === edgeId) {
+      const currentLabel = edge.attributes.get('label');
+      let finalLabel = currentLabel;
+
+      if (labelRules.length > 0 && labelRules[0].labelTemplate) {
+        finalLabel = interpolateLabel(labelRules[0].labelTemplate, dataRow);
+      } else if (currentLabel && hasInterpolation(currentLabel)) {
+        finalLabel = interpolateLabel(currentLabel, dataRow);
+      }
+
+      if (finalLabel !== currentLabel) {
+        edge.attributes.set('label', finalLabel);
+      }
+      break;
     }
-
-    let finalLabel = edgeData.label;
-
-    if (labelRules.length > 0 && labelRules[0].labelTemplate) {
-      finalLabel = interpolateLabel(labelRules[0].labelTemplate, dataRow);
-    } else if (edgeData.label && hasInterpolation(edgeData.label)) {
-      finalLabel = interpolateLabel(edgeData.label, dataRow);
-    }
-
-    if (finalLabel !== edgeData.label) {
-      graph.setEdge(edgeObj.v, edgeObj.w, {
-        ...edgeData,
-        label: finalLabel,
-      });
-    }
-  });
+  }
 }
 
 export function applyDataDrivenNodeLabels(dotString: string, nodeOverrides: NodeOverride[], data: any): string {
@@ -98,7 +95,7 @@ export function applyDataDrivenNodeLabels(dotString: string, nodeOverrides: Node
     return dotString;
   }
 
-  const graph = graphlibDot.read(dotString);
+  const model = fromDot(dotString);
 
   nodeOverrides.forEach((mapping) => {
     const labelRules = mapping.rules.filter((r) => r.kind === RuleKind.LABEL);
@@ -116,11 +113,11 @@ export function applyDataDrivenNodeLabels(dotString: string, nodeOverrides: Node
         return;
       }
 
-      applyLabelToNode(graph, nodeId, labelRules, dataRow);
+      applyLabelToNode(model, nodeId, labelRules, dataRow);
     });
   });
 
-  return graphlibDot.write(graph);
+  return toDot(model);
 }
 
 export function applyDataDrivenEdgeLabels(dotString: string, edgeOverrides: EdgeOverride[], data: any): string {
@@ -128,7 +125,7 @@ export function applyDataDrivenEdgeLabels(dotString: string, edgeOverrides: Edge
     return dotString;
   }
 
-  const graph = graphlibDot.read(dotString);
+  const model = fromDot(dotString);
 
   edgeOverrides.forEach((mapping) => {
     const labelRules = mapping.rules.filter((r) => r.kind === RuleKind.LABEL);
@@ -146,30 +143,23 @@ export function applyDataDrivenEdgeLabels(dotString: string, edgeOverrides: Edge
         return;
       }
 
-      applyLabelToEdge(graph, edgeId, labelRules, dataRow);
+      applyLabelToEdgeHelper(model, edgeId, labelRules, dataRow);
     });
   });
 
-  return graphlibDot.write(graph);
+  return toDot(model);
 }
 
-/**
- * Applies all style mappings to a DOT string.
- * Handles DOT marshalling/unmarshalling and coordinates between different mapping types.
- */
 function applyStyleMappings(dotString: string, nodeOverrides: NodeOverride[]): string {
-  const graph = graphlibDot.read(dotString);
+  const model = fromDot(dotString);
 
-  applyClusterStyleMappings(graph);
-  applyUserNodeOverrides(graph, nodeOverrides);
+  applyClusterStyleMappings(model);
+  applyUserNodeOverrides(model, nodeOverrides);
 
-  return graphlibDot.write(graph);
+  return toDot(model);
 }
 
-/**
- * Applies user-defined node mappings to the graph.
- */
-function applyUserNodeOverrides(graph: Graph, nodeOverrides: NodeOverride[]): void {
+function applyUserNodeOverrides(model: any, nodeOverrides: NodeOverride[]): void {
   if (nodeOverrides && nodeOverrides.length > 0) {
     nodeOverrides.forEach((mapping) => {
       const borderColorRules = mapping.rules.filter((r) => r.kind === RuleKind.STROKE_COLOR);
@@ -178,12 +168,9 @@ function applyUserNodeOverrides(graph: Graph, nodeOverrides: NodeOverride[]): vo
       borderColorRules.forEach((rule) => {
         if (rule.staticColor) {
           mapping.targetNodeIds.forEach((nodeId: string) => {
-            if (graph.hasNode(nodeId)) {
-              const nodeData = graph.node(nodeId);
-              graph.setNode(nodeId, {
-                ...nodeData,
-                color: rule.staticColor,
-              });
+            const node = findNodeById(model, nodeId);
+            if (node) {
+              node.attributes.set('color', rule.staticColor);
             }
           });
         }
@@ -192,17 +179,13 @@ function applyUserNodeOverrides(graph: Graph, nodeOverrides: NodeOverride[]): vo
       fillColorRules.forEach((rule) => {
         if (rule.staticColor) {
           mapping.targetNodeIds.forEach((nodeId: string) => {
-            if (graph.hasNode(nodeId)) {
-              const nodeData = graph.node(nodeId);
-              // Preserve existing style (e.g. 'rounded') when adding 'filled'
-              const existingStyle = nodeData.style || '';
-              const newStyle = existingStyle.includes('filled') ? existingStyle : `${existingStyle ? existingStyle + ',' : ''}filled`;
-              
-              graph.setNode(nodeId, {
-                ...nodeData,
-                fillcolor: rule.staticColor,
-                style: newStyle,
-              });
+            const node = findNodeById(model, nodeId);
+            if (node) {
+              const existingStyle = node.attributes.get('style');
+              const newStyle = addStyleToCommaList(existingStyle, 'filled');
+
+              node.attributes.set('fillcolor', rule.staticColor);
+              node.attributes.set('style', newStyle as any);
             }
           });
         }
@@ -211,123 +194,83 @@ function applyUserNodeOverrides(graph: Graph, nodeOverrides: NodeOverride[]): vo
   }
 }
 
-/**
- * Applies cluster style mappings to all nodes for better readability and padding.
- * Sets reasonable font size, node dimensions, and margins to prevent text overflow
- * and improve visual appearance.
- */
-function applyClusterStyleMappings(graph: Graph): void {
-  graph.nodes().forEach((nodeId: string) => {
-    if (nodeId.startsWith('cluster_')) {
-      return;
+function applyClusterStyleMappings(model: any): void {
+  for (const node of model.nodes) {
+    if (node.id.startsWith('cluster_')) {
+      continue;
     }
 
-    const nodeData = graph.node(nodeId);
-    if (nodeData) {
-      const updatedData = { ...nodeData };
-
-      if (!updatedData.fontsize) {
-        updatedData.fontsize = '15';
-      }
-
-      if (!updatedData.width) {
-        updatedData.width = '1.6';
-      }
-      if (!updatedData.height) {
-        updatedData.height = '0.8';
-      }
-
-      if (!updatedData.margin) {
-        updatedData.margin = '0.015,0.005';
-      }
-
-      if (!updatedData.fontname) {
-        updatedData.fontname = 'Arial';
-      }
-
-      graph.setNode(nodeId, updatedData);
+    if (!node.attributes.get('fontsize')) {
+      node.attributes.set('fontsize', '15');
     }
-  });
+
+    if (!node.attributes.get('width')) {
+      node.attributes.set('width', '1.6');
+    }
+    if (!node.attributes.get('height')) {
+      node.attributes.set('height', '0.8');
+    }
+
+    // NOTE: margin is now set by applyGraphDefaults() in sanitization.ts
+    // Don't override it here - graph-level defaults from sanitization should take precedence
+
+    if (!node.attributes.get('fontname')) {
+      node.attributes.set('fontname', 'Arial');
+    }
+  }
 }
 
-/**
- * Applies data-driven colors from field bindings to nodes and edges.
- * Data-driven colors override static colors.
- *
- * @param dotString - The DOT notation string to process
- * @param dataDrivenColors - Colors calculated from data fields and thresholds
- * @returns DOT string with data-driven colors applied
- */
 export function applyDataDrivenColors(dotString: string, dataDrivenColors: DataDrivenColors): string {
-  const graph = graphlibDot.read(dotString);
+  const model = fromDot(dotString);
 
   dataDrivenColors.nodeBorderColors.forEach((color, nodeId) => {
-    if (graph.hasNode(nodeId)) {
-      const nodeData = graph.node(nodeId);
-      graph.setNode(nodeId, {
-        ...nodeData,
-        color,
-      });
+    const node = findNodeById(model, nodeId);
+    if (node) {
+      node.attributes.set('color', color);
     }
   });
 
   dataDrivenColors.nodeFillColors.forEach((color, nodeId) => {
-    if (graph.hasNode(nodeId)) {
-      const nodeData = graph.node(nodeId);
-      // Preserve existing style (e.g. 'rounded') when adding 'filled'
-      const existingStyle = nodeData.style || '';
-      const newStyle = existingStyle.includes('filled') ? existingStyle : `${existingStyle ? existingStyle + ',' : ''}filled`;
+    const node = findNodeById(model, nodeId);
+    if (node) {
+      const existingStyle = node.attributes.get('style');
+      const newStyle = addStyleToCommaList(existingStyle, 'filled');
 
-      graph.setNode(nodeId, {
-        ...nodeData,
-        fillcolor: color,
-        style: newStyle,
-      });
+      node.attributes.set('fillcolor', color);
+      node.attributes.set('style', newStyle as any);
     }
   });
 
-  graph.edges().forEach((edgeObj) => {
-    const edgeData = graph.edge(edgeObj);
-    const edgeId = edgeData?.id || `${edgeObj.v}__to__${edgeObj.w}`;
+  for (const edge of model.edges) {
+    const edgeId = getEdgeId(edge);
 
-    const color = dataDrivenColors.edgeColors.get(edgeId);
-    if (color) {
-      graph.setEdge(edgeObj.v, edgeObj.w, {
-        ...edgeData,
-        color,
-      });
+    if (edgeId) {
+      const color = dataDrivenColors.edgeColors.get(edgeId);
+      if (color) {
+        edge.attributes.set('color', color);
+      }
     }
-  });
+  }
 
-  return graphlibDot.write(graph);
+  return toDot(model);
 }
 
-/**
- * Applies data-driven widths from width rules to edges.
- *
- * @param dotString - The DOT notation string to process
- * @param dataDrivenWidths - Widths calculated from data fields
- * @returns DOT string with widths applied
- */
 export function applyDataDrivenWidths(dotString: string, dataDrivenWidths: DataDrivenWidths): string {
-  const graph = graphlibDot.read(dotString);
+  const model = fromDot(dotString);
 
-  graph.edges().forEach((edgeObj) => {
-    const edgeData = graph.edge(edgeObj);
-    const edgeId = edgeData?.id || `${edgeObj.v}__to__${edgeObj.w}`;
+  for (const edge of model.edges) {
+    const edgeId = getEdgeId(edge);
 
-    const width = dataDrivenWidths.edgeWidths.get(edgeId);
-    if (width !== undefined) {
-      const clampedWidth = Math.min(Math.max(width, 0.1), 5);
-      const arrowSize = Math.min(clampedWidth / 1.0, 1.5);
+    if (edgeId) {
+      const width = dataDrivenWidths.edgeWidths.get(edgeId);
+      if (width !== undefined) {
+        const { width: clampedWidth, arrowSize } = calculateEdgeWidthAndArrowSize(width);
 
-      graph.setEdge(edgeObj.v, edgeObj.w, {
-        ...edgeData,
-        penwidth: clampedWidth,
-        arrowsize: arrowSize,
-      });
+        edge.attributes.set('penwidth', clampedWidth);
+        edge.attributes.set('arrowsize', arrowSize);
+      }
     }
-  });
+  }
 
-  return graphlibDot.write(graph);
+  return toDot(model);
 }
