@@ -1,39 +1,47 @@
-import * as graphlibDot from 'graphlib-dot';
-import { Graph } from 'graphlib';
+import { fromDot, toDot } from 'ts-graphviz';
 import * as d3 from 'd3-selection';
 import { GrafanaTheme2 } from '@grafana/data';
+import { isHtmlLabel } from './utils/graphvizDot';
+import { isDefaultColor } from './utils/graphvizColors';
+import { collectAllNodeIds, hasAnyHtmlLabels } from './utils/graphvizAst';
+
+function getFontAttributes(): string[] {
+  return ['fontname', 'fontsize', 'fontcolor'];
+}
 
 /**
  * Applies default styling to the DOT graph based on the Grafana theme.
  * This ensures a modern, sleek look by default, while allowing user overrides.
- * 
+ *
  * @param dotString - The DOT notation string
  * @param theme - The Grafana theme to use for defaults
  * @returns The modified DOT string
  */
 export function applyGraphDefaults(dotString: string, theme: GrafanaTheme2): string {
   try {
-    const graph = graphlibDot.read(dotString);
-    applyThemeDefaults(graph, theme);
-    return graphlibDot.write(graph);
+    const model = fromDot(dotString);
+    applyThemeDefaults(model, theme);
+    return toDot(model);
   } catch (error) {
     console.error('Failed to parse/write DOT for defaulting:', error);
-    // Return original string if we fail, so we don't break rendering completely
     return dotString;
   }
 }
 
 /**
  * Applies default attributes to nodes and edges if they are not already defined.
- * Iterates over all nodes/edges (including implicit ones from edges) and applies defaults.
+ *
+ * Handles both explicit nodes (declared in the DOT) and implicit nodes (only referenced in edges).
+ * Uses graph-level defaults when possible to keep DOT output clean, but promotes implicit nodes
+ * to explicit when necessary (e.g., when HTML labels require selective font attribute handling).
  */
-function applyThemeDefaults(graph: Graph, theme: GrafanaTheme2): void {
+function applyThemeDefaults(model: any, theme: GrafanaTheme2): void {
   const nodeDefaults: Record<string, string> = {
     fontname: theme.typography.fontFamily,
     fontsize: theme.typography.fontSize.toString(),
     fontcolor: theme.colors.primary.contrastText,
     color: theme.colors.primary.border,
-    fillcolor: `${theme.colors.primary.main}60`, // 50% transparency
+    fillcolor: `${theme.colors.primary.main}60`,
     style: 'rounded,filled',
     shape: 'box',
     penwidth: '1.0',
@@ -48,74 +56,96 @@ function applyThemeDefaults(graph: Graph, theme: GrafanaTheme2): void {
     penwidth: '1.0',
   };
 
-  // Iterate over all nodes. graphlib-dot automatically creates nodes for any identifier found in edges.
-  graph.nodes().forEach(nodeId => {
-    const nodeData = graph.node(nodeId) || {};
-    // Clone to avoid mutation issues
-    const newNodeData = { ...nodeData };
-    
-    let changed = false;
+  const htmlLabelsExist = hasAnyHtmlLabels(model, isHtmlLabel);
+  const fontAttrs = getFontAttributes();
+  const userHasPlaintext = model.attributes.node.get('shape') === 'plaintext';
+
+  // Attributes that are meaningless for plaintext nodes (no borders/backgrounds)
+  const plaintextIncompatibleAttrs = ['style', 'fillcolor', 'color'];
+
+  if (!htmlLabelsExist) {
+    // Simple case: No HTML labels, apply all defaults at graph level
+    // This keeps implicit nodes implicit and produces clean DOT output
     Object.entries(nodeDefaults).forEach(([key, value]) => {
-      // Only set if strictly undefined. If user set "", we respect it.
-      // If user defined a global default (e.g. node [shape=circle]), graphlib-dot
-      // might have already applied it to this node during read(), so this check respects that too.
-      if (newNodeData[key] === undefined) {
-        newNodeData[key] = value;
-        changed = true;
+      // Skip attributes that don't make sense for plaintext shapes
+      if (userHasPlaintext && plaintextIncompatibleAttrs.includes(key)) {
+        return;
+      }
+
+      if (!model.attributes.node.get(key)) {
+        model.attributes.node.set(key, value as any);
+      }
+    });
+  } else {
+    // Complex case: HTML labels present, need selective handling
+    // 1. Apply non-font attributes at graph level (safe for all nodes)
+    Object.entries(nodeDefaults).forEach(([key, value]) => {
+      // Skip font attributes (handled per-node below)
+      if (fontAttrs.includes(key)) {
+        return;
+      }
+
+      // Skip attributes that don't make sense for plaintext shapes
+      if (userHasPlaintext && plaintextIncompatibleAttrs.includes(key)) {
+        return;
+      }
+
+      if (!model.attributes.node.get(key)) {
+        model.attributes.node.set(key, value as any);
       }
     });
 
-    if (changed) {
-      graph.setNode(nodeId, newNodeData);
+    // 2. Collect all unique node IDs (explicit + implicit)
+    const allNodeIds = collectAllNodeIds(model);
+
+    // 3. Apply font attributes selectively per node (skipping HTML-labeled nodes)
+    for (const nodeId of allNodeIds) {
+      let node = model.getNode(nodeId);
+
+      if (!node) {
+        // Promote implicit node to explicit so we can set attributes
+        node = model.createNode(nodeId);
+      }
+
+      const label = node.attributes.get('label');
+      const htmlLabel = isHtmlLabel(label);
+
+      if (!htmlLabel) {
+        // Apply font defaults for non-HTML nodes only
+        fontAttrs.forEach((attr) => {
+          const value = nodeDefaults[attr];
+          if (!node.attributes.get(attr)) {
+            node.attributes.set(attr, value as any);
+          }
+        });
+      }
     }
-  });
+  }
 
-  graph.edges().forEach(edgeObj => {
-    const edgeData = graph.edge(edgeObj) || {};
-    const newEdgeData = { ...edgeData };
-
-    let changed = false;
-    Object.entries(edgeDefaults).forEach(([key, value]) => {
-      if (newEdgeData[key] === undefined) {
-        newEdgeData[key] = value;
-        changed = true;
-      }
-    });
-
-    if (changed) {
-      graph.setEdge(edgeObj.v, edgeObj.w, newEdgeData);
+  // Apply edge defaults at graph level
+  Object.entries(edgeDefaults).forEach(([key, value]) => {
+    if (!model.attributes.edge.get(key)) {
+      model.attributes.edge.set(key, value as any);
     }
   });
 }
 
 /**
  * Normalizes styling for path-based node shapes (like cylinders) to ensure fill colors work properly.
- * Certain shapes like cylinder, box3d, component, etc. are rendered as SVG paths and require 
+ * Certain shapes like cylinder, box3d, component, etc. are rendered as SVG paths and require
  * the style="filled" attribute along with fillcolor for the fill to be visible.
  * This function ensures that nodes with fillcolor also have style="filled" set.
- * 
+ *
  * @param svg - The d3 selection of the SVG element
  */
 export function normalizeNodePathStyling(svg: d3.Selection<SVGSVGElement, unknown, null, undefined>): void {
-  svg.selectAll('g.node path').each(function() {
+  svg.selectAll('g.node path').each(function () {
     const pathElement = d3.select(this);
     const currentFill = pathElement.attr('fill');
-    
+
     const hasCustomFillColor = currentFill && currentFill !== 'none' && !isDefaultColor(currentFill);
     if (hasCustomFillColor) {
       pathElement.attr('data-has-custom-fill', 'true');
     }
   });
-}
-
-/**
- * Checks if a color is a default Graphviz color.
- */
-function isDefaultColor(color: string | null): boolean {
-  if (!color) {
-    return true;
-  }
-  
-  const defaultColors = ['black', 'none', 'white', '#000000', '#ffffff'];
-  return defaultColors.includes(color.toLowerCase());
 }

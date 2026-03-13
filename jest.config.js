@@ -3,10 +3,15 @@
 process.env.TZ = 'UTC';
 
 const { createSourcePath, createSourceFilterConfig } = require('./scripts/utils/coverage');
+const baseConfig = require('./.config/jest.config');
+const { nodeModulesToTransform, grafanaESModules } = require('./.config/jest/utils');
 
 module.exports = {
   // Jest configuration provided by Grafana scaffolding
-  ...require('./.config/jest.config'),
+  ...baseConfig,
+
+  // Override transformIgnorePatterns to include ts-graphviz
+  transformIgnorePatterns: [nodeModulesToTransform([...grafanaESModules, 'ts-graphviz', '@ts-graphviz'])],
 
   // Enable coverage with V8 provider for monocart reports
   collectCoverage: true,

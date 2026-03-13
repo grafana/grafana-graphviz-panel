@@ -1,5 +1,6 @@
 import { GrafanaTheme2 } from '@grafana/data';
 import * as d3 from 'd3-selection';
+import { isDefaultColor } from './utils/graphvizColors';
 
 /**
  * Applies Grafana theme styling to a rendered SVG element.
@@ -40,8 +41,16 @@ export function applySvgTheming(svgElement: SVGSVGElement, theme: GrafanaTheme2,
     if (isDefaultColor(element.attr('stroke'))) {
       element.attr('stroke', edgeColor);
     }
-    if (isDefaultColor(element.attr('fill'))) {
+    const currentFill = element.attr('fill');
+    if (currentFill !== 'none' && isDefaultColor(currentFill)) {
       element.attr('fill', theme.colors.background.secondary);
+    }
+  });
+
+  svg.selectAll('g.node polyline').each(function () {
+    const element = d3.select(this);
+    if (isDefaultColor(element.attr('stroke'))) {
+      element.attr('stroke', edgeColor);
     }
   });
 
@@ -142,20 +151,4 @@ export function applySvgTheming(svgElement: SVGSVGElement, theme: GrafanaTheme2,
   } else {
     svg.selectAll('title').remove();
   }
-}
-
-/**
- * Checks if a color is a default Graphviz color that should be replaced with theme colors.
- * Preserves custom colors set via DOT attributes or style mappings.
- *
- * @param color - The color attribute value to check
- * @returns True if the color is a default that should be themed
- */
-function isDefaultColor(color: string | null): boolean {
-  if (!color) {
-    return true;
-  }
-
-  const defaultColors = ['black', 'none', 'white', '#000000', '#ffffff'];
-  return defaultColors.includes(color.toLowerCase());
 }

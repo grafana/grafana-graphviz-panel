@@ -1,4 +1,6 @@
 import { Graphviz } from '@hpcc-js/wasm';
+import { extractGraphContent, buildGraphAttributes } from './utils/graphvizDot';
+import { isDirectedGraph } from './builderMode';
 
 /**
  * Renders a DOT diagram to SVG format.
@@ -20,17 +22,10 @@ export async function renderDotToSvg(
   let processedDot = dotDiagram;
 
   if (rankDirection || splineType) {
-    const isDirected = /^\s*digraph/i.test(dotDiagram);
-    const graphType = isDirected ? 'digraph' : 'graph';
-    const graphContent = dotDiagram.replace(/^\s*(di)?graph\s+\w*\s*\{/, '').replace(/}\s*$/, '');
-
-    const attributes: string[] = [];
-    if (layoutEngine === 'dot' && rankDirection) {
-      attributes.push(`rankdir=${rankDirection}`);
-    }
-    if (splineType) {
-      attributes.push(`splines=${splineType}`);
-    }
+    const directed = isDirectedGraph(dotDiagram);
+    const graphType = directed ? 'digraph' : 'graph';
+    const graphContent = extractGraphContent(dotDiagram);
+    const attributes = buildGraphAttributes(layoutEngine, rankDirection, splineType);
 
     processedDot = `${graphType} G {\n  ${attributes.join(';\n  ')};\n${graphContent}\n}`;
   }

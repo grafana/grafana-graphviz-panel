@@ -98,7 +98,7 @@ export function useFetchDotFromUrl(
  * @returns Error state if rendering fails
  */
 export function useThemedDotSvg(
-  svgRef: RefObject<HTMLDivElement>,
+  svgRef: RefObject<HTMLDivElement | null>,
   dotDiagram: string | undefined,
   layoutEngine: string,
   rankDirection: string,
