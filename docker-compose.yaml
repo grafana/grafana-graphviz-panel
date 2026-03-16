@@ -31,3 +31,7 @@ services:
       PW_TEST_HTML_REPORT_OPEN: never
     ports:
       - '9323:9323'
+
+networks:
+  default:
+    name: grafana-graphviz-panel_default
