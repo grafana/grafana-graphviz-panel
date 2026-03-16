@@ -16,7 +16,6 @@ interface Props extends PanelProps<SimpleOptions> {}
 const getStyles = () => {
   return {
     wrapper: css`
-      font-family: Open Sans;
       position: relative;
     `,
     svg: css`
@@ -127,51 +126,32 @@ export const SimplePanel: React.FC<Props> = ({
     );
   }
 
-  if (isEmpty) {
-    if (isBuilderMode) {
-      return (
-        <div
-          style={{
-            position: 'relative',
-            width: `${width}px`,
-            height: `${height}px`,
-          }}
-          data-testid="graphviz-panel-builder-empty"
-        >
-          <div style={{ position: 'absolute', width: '100%', height: '100%' }}>
-            <EmptyDiagramDisplay
-              dotDiagram={effectiveDotDiagram}
-              layoutEngine={options.layoutEngine}
-              inputMode={options.inputMode || InputMode.CODE}
-              panelId={id}
-              isEditMode={isEditMode}
-            />
-          </div>
-          <BuilderModeOverlay
-            svgRef={svgRef}
-            dotDiagram={options.dotDiagram}
-            onChange={handleDotChange}
-            onClearTriggers={handleClearTriggers}
-            addNodeTrigger={options.builderModeActions?.addNodeTrigger}
-            layoutEngine={options.layoutEngine}
-            activeTool={options.builderModeActions?.activeTool}
-          />
-        </div>
-      );
-    }
+  const showEmptyState = isEmpty && !isBuilderMode;
+  const showErrorState = renderError && !isEmpty;
 
+  if (showEmptyState) {
     return (
-      <EmptyDiagramDisplay
-        dotDiagram={effectiveDotDiagram}
-        layoutEngine={options.layoutEngine}
-        inputMode={options.inputMode || InputMode.CODE}
-        panelId={id}
-        isEditMode={isEditMode}
-      />
+      <div
+        className={cx(
+          styles.wrapper,
+          css`
+            width: ${width}px;
+            height: ${height}px;
+          `
+        )}
+      >
+        <EmptyDiagramDisplay
+          dotDiagram={effectiveDotDiagram}
+          layoutEngine={options.layoutEngine}
+          inputMode={options.inputMode || InputMode.CODE}
+          panelId={id}
+          isEditMode={isEditMode}
+        />
+      </div>
     );
   }
 
-  if (renderError && !isEmpty) {
+  if (showErrorState) {
     return (
       <ErrorDisplay
         errorMessage={renderError.message}
@@ -193,7 +173,7 @@ export const SimplePanel: React.FC<Props> = ({
           height: ${height}px;
         `
       )}
-      data-testid="graphviz-panel-rendered"
+      data-testid={isEmpty && isBuilderMode ? 'graphviz-panel-builder-empty' : 'graphviz-panel-rendered'}
     >
       <div
         ref={svgRef}
@@ -202,11 +182,23 @@ export const SimplePanel: React.FC<Props> = ({
         style={{
           width,
           height,
-          display: 'flex',
+          display: isEmpty ? 'none' : 'flex',
           justifyContent: 'center',
           alignItems: 'center',
         }}
       />
+
+      {isEmpty && isBuilderMode && (
+        <div style={{ position: 'absolute', width: '100%', height: '100%' }}>
+          <EmptyDiagramDisplay
+            dotDiagram={effectiveDotDiagram}
+            layoutEngine={options.layoutEngine}
+            inputMode={options.inputMode || InputMode.CODE}
+            panelId={id}
+            isEditMode={isEditMode}
+          />
+        </div>
+      )}
 
       {isBuilderMode && (
         <BuilderModeOverlay
