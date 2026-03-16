@@ -17,12 +17,6 @@ const TOOL_OPTIONS: Array<SelectableValue<BuilderTool>> = [
     description: 'Create edges between nodes',
   },
   {
-    value: BuilderTool.MOVE,
-    label: 'Move',
-    icon: 'expand-arrows-alt',
-    description: 'Move nodes',
-  },
-  {
     value: BuilderTool.EDIT,
     label: 'Edit',
     icon: 'pen',
@@ -39,18 +33,10 @@ const TOOL_OPTIONS: Array<SelectableValue<BuilderTool>> = [
 export const BuilderModeEditor: React.FC<StandardEditorProps<BuilderModeActions, any, SimpleOptions>> = ({
   value,
   onChange,
-  context,
 }) => {
   const [activeTool, setActiveTool] = useState<BuilderTool>(value?.activeTool || BuilderTool.EDIT);
 
-  const layoutEngine = (context.options as SimpleOptions)?.layoutEngine;
-  const canMove = layoutEngine === 'neato' || layoutEngine === 'fdp';
-
   const handleToolChange = (newTool: BuilderTool) => {
-    if (newTool === BuilderTool.MOVE && !canMove) {
-      return;
-    }
-
     setActiveTool(newTool);
 
     if (newTool === BuilderTool.NODE) {
@@ -60,29 +46,18 @@ export const BuilderModeEditor: React.FC<StandardEditorProps<BuilderModeActions,
     }
   };
 
-  const getTooltipContent = (tool: SelectableValue<BuilderTool>) => {
-    if (tool.value === BuilderTool.MOVE && !canMove) {
-      return 'Move nodes (Network layout only)';
-    }
-    return tool.description || '';
-  };
-
   return (
     <ButtonGroup>
-      {TOOL_OPTIONS.map((tool) => {
-        const isDisabled = tool.value === BuilderTool.MOVE && !canMove;
-        return (
-          <Tooltip key={tool.value} content={getTooltipContent(tool)} placement="top">
-            <Button
-              icon={tool.icon as any}
-              variant={activeTool === tool.value ? 'primary' : 'secondary'}
-              onClick={() => handleToolChange(tool.value!)}
-              aria-label={tool.label || ''}
-              disabled={isDisabled}
-            />
-          </Tooltip>
-        );
-      })}
+      {TOOL_OPTIONS.map((tool) => (
+        <Tooltip key={tool.value} content={tool.description || ''} placement="top">
+          <Button
+            icon={tool.icon as any}
+            variant={activeTool === tool.value ? 'primary' : 'secondary'}
+            onClick={() => handleToolChange(tool.value!)}
+            aria-label={tool.label || ''}
+          />
+        </Tooltip>
+      ))}
     </ButtonGroup>
   );
 };

@@ -29,7 +29,6 @@ export enum InputMode {
 export enum BuilderTool {
   EDIT = 'edit',
   DELETE = 'delete',
-  MOVE = 'move',
   EDGE = 'edge',
   NODE = 'node',
 }
