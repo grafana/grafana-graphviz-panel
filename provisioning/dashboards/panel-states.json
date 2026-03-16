@@ -9,86 +9,31 @@
   "links": [],
   "panels": [
     {
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 100,
+      "title": "Builder Mode",
+      "type": "row"
+    },
+    {
       "datasource": {
         "type": "grafana-testdata-datasource"
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
+        "h": 6,
+        "w": 8,
         "x": 0,
-        "y": 0
+        "y": 1
       },
       "id": 1,
-      "title": "Valid Diagram - Simple Network",
+      "title": "Builder Mode - Invalid Diagram",
       "type": "grafana-graphviz-panel",
       "options": {
-        "inputMode": "code",
-        "dotDiagram": "digraph G { A -> B -> C; }",
-        "layoutEngine": "dot",
-        "rankDirection": "LR",
-        "edgeOverrides": [],
-        "nodeOverrides": [],
-        "namedThresholds": []
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-testdata-datasource"
-          },
-          "refId": "A",
-          "scenarioId": "csv_content",
-          "csvContent": "time,value\n1,1"
-        }
-      ]
-    },
-    {
-      "datasource": {
-        "type": "grafana-testdata-datasource"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 0
-      },
-      "id": 2,
-      "title": "Empty Diagram - No Nodes",
-      "type": "grafana-graphviz-panel",
-      "options": {
-        "inputMode": "code",
-        "dotDiagram": "digraph G {}",
-        "layoutEngine": "dot",
-        "rankDirection": "LR",
-        "edgeOverrides": [],
-        "nodeOverrides": [],
-        "namedThresholds": []
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-testdata-datasource"
-          },
-          "refId": "A",
-          "scenarioId": "csv_content",
-          "csvContent": "time,value\n1,1"
-        }
-      ]
-    },
-    {
-      "datasource": {
-        "type": "grafana-testdata-datasource"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 8
-      },
-      "id": 3,
-      "title": "Invalid DOT Syntax",
-      "type": "grafana-graphviz-panel",
-      "options": {
-        "inputMode": "code",
+        "inputMode": "builder",
         "dotDiagram": "digraph G { A -> }",
         "layoutEngine": "dot",
         "rankDirection": "LR",
@@ -112,13 +57,13 @@
         "type": "grafana-testdata-datasource"
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 8
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 1
       },
-      "id": 4,
-      "title": "Builder Mode - Empty",
+      "id": 2,
+      "title": "Builder Mode - Empty Diagram",
       "type": "grafana-graphviz-panel",
       "options": {
         "inputMode": "builder",
@@ -145,19 +90,19 @@
         "type": "grafana-testdata-datasource"
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 16
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 1
       },
-      "id": 5,
-      "title": "Builder Mode - With Diagram",
+      "id": 3,
+      "title": "Builder Mode - Valid Diagram",
       "type": "grafana-graphviz-panel",
       "options": {
         "inputMode": "builder",
-        "dotDiagram": "digraph G { X -> Y; Y -> Z; }",
+        "dotDiagram": "digraph BuilderFlow { subgraph cluster_dashboard { label=\"Dashboard\"; User [label=\"User Clicks\"; shape=rect]; subgraph cluster_panel { label=\"Panel\"; Generate [label=\"generateDotFromBuilder()\"]; Render [label=\"Render Diagram\"]; subgraph cluster_options { label=\"Options\"; subgraph cluster_builder { label=\"Builder UI\"; AddNode [label=\"Add/Edit Nodes\"; shape=rect]; AddEdge [label=\"Add/Edit Edges\"; shape=rect]; } } } } User -> AddNode; User -> AddEdge; AddNode -> Generate; AddEdge -> Generate; Generate -> Render; Render -> User; }",
         "layoutEngine": "dot",
-        "rankDirection": "TB",
+        "rankDirection": "LR",
         "edgeOverrides": [],
         "nodeOverrides": [],
         "namedThresholds": []
@@ -174,22 +119,33 @@
       ]
     },
     {
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "id": 101,
+      "title": "Code Mode",
+      "type": "row"
+    },
+    {
       "datasource": {
         "type": "grafana-testdata-datasource"
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 16
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 8
       },
-      "id": 6,
-      "title": "Different Layout Engines",
+      "id": 4,
+      "title": "Code Mode - Invalid Diagram",
       "type": "grafana-graphviz-panel",
       "options": {
         "inputMode": "code",
-        "dotDiagram": "digraph G { A -> B; B -> C; C -> D; D -> A; }",
-        "layoutEngine": "neato",
+        "dotDiagram": "digraph G { A -> }",
+        "layoutEngine": "dot",
         "rankDirection": "LR",
         "edgeOverrides": [],
         "nodeOverrides": [],
@@ -211,13 +167,13 @@
         "type": "grafana-testdata-datasource"
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 24
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 8
       },
-      "id": 7,
-      "title": "Whitespace Only Diagram",
+      "id": 5,
+      "title": "Code Mode - Empty Diagram",
       "type": "grafana-graphviz-panel",
       "options": {
         "inputMode": "code",
@@ -244,13 +200,129 @@
         "type": "grafana-testdata-datasource"
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 24
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 8
+      },
+      "id": 6,
+      "title": "Code Mode - Valid Diagram",
+      "type": "grafana-graphviz-panel",
+      "options": {
+        "inputMode": "code",
+        "dotDiagram": "digraph CodeFlow { subgraph cluster_dashboard { label=\"Dashboard\"; User [label=\"User Types\"; shape=rect]; subgraph cluster_panel { label=\"Panel\"; Parse [label=\"parseDotSource()\"]; Render [label=\"Render Diagram\"]; subgraph cluster_options { label=\"Options\"; subgraph cluster_editor { label=\"Code Editor\"; Monaco [label=\"Monaco Editor\"; shape=rect]; Syntax [label=\"Syntax Hints\"]; } } } } User -> Monaco; Syntax -> Monaco; Monaco -> Parse; Parse -> Render; Render -> User; }",
+        "layoutEngine": "dot",
+        "rankDirection": "LR",
+        "edgeOverrides": [],
+        "nodeOverrides": [],
+        "namedThresholds": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource"
+          },
+          "refId": "A",
+          "scenarioId": "csv_content",
+          "csvContent": "time,value\n1,1"
+        }
+      ]
+    },
+    {
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "id": 102,
+      "title": "Query Mode",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 15
+      },
+      "id": 7,
+      "title": "Query Mode - Invalid Diagram",
+      "type": "grafana-graphviz-panel",
+      "options": {
+        "inputMode": "query",
+        "dotQueryConfig": {
+          "fieldName": "dot_source",
+          "maxSizeBytes": 1048576
+        },
+        "layoutEngine": "dot",
+        "rankDirection": "LR",
+        "edgeOverrides": [],
+        "nodeOverrides": [],
+        "namedThresholds": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource"
+          },
+          "refId": "A",
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[\n  {\n    \"columns\": [\n      {\n        \"text\": \"time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"dot_source\",\n        \"type\": \"string\"\n      }\n    ],\n    \"rows\": [\n      [\n        1609459200000,\n        \"digraph G { A -> }\"\n      ]\n    ]\n  }\n]"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 15
       },
       "id": 8,
-      "title": "Query Mode - DOT from Datasource",
+      "title": "Query Mode - Empty Diagram",
+      "type": "grafana-graphviz-panel",
+      "options": {
+        "inputMode": "query",
+        "dotQueryConfig": {
+          "fieldName": "dot_source",
+          "maxSizeBytes": 1048576
+        },
+        "layoutEngine": "dot",
+        "rankDirection": "LR",
+        "edgeOverrides": [],
+        "nodeOverrides": [],
+        "namedThresholds": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource"
+          },
+          "refId": "A",
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[\n  {\n    \"columns\": [\n      {\n        \"text\": \"time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"dot_source\",\n        \"type\": \"string\"\n      }\n    ],\n    \"rows\": [\n      [\n        1609459200000,\n        \"\"\n      ]\n    ]\n  }\n]"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 15
+      },
+      "id": 9,
+      "title": "Query Mode - Valid Diagram",
       "type": "grafana-graphviz-panel",
       "options": {
         "inputMode": "query",
@@ -286,7 +358,7 @@
     "to": "now"
   },
   "timezone": "",
-  "title": "Test - SimplePanel States",
+  "title": "Panel States",
   "uid": "test-simple-panel-states",
   "version": 1
 }
