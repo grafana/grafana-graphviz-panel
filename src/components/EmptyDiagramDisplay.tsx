@@ -1,24 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { Input, Stack, Alert, Icon, Text, Box } from '@grafana/ui';
+import { Input, Stack, Icon, Text, Box } from '@grafana/ui';
 import { isAssistantAvailable as checkAssistantAvailability } from '@grafana/assistant';
 import { GraphvizAssistantService } from '../assistantService';
 import { LayoutEngine, InputMode } from '../types';
 import { AskButton } from './AskButton';
+import { EmptyStateAlert } from './EmptyStateAlert';
+import { EmptyStateContent } from './EmptyStateContent';
 
 interface EmptyDiagramDisplayProps {
   dotDiagram: string;
   layoutEngine: LayoutEngine;
   inputMode: InputMode;
-  panelId: number;
   isEditMode: boolean;
+  onAddNode?: () => void;
 }
 
 export const EmptyDiagramDisplay: React.FC<EmptyDiagramDisplayProps> = ({
   dotDiagram,
   layoutEngine,
   inputMode,
-  panelId,
   isEditMode,
+  onAddNode,
 }) => {
   const [isAssistantAvailable, setIsAssistantAvailable] = useState(false);
   const [prompt, setPrompt] = useState('');
@@ -53,22 +55,9 @@ export const EmptyDiagramDisplay: React.FC<EmptyDiagramDisplayProps> = ({
 
   return (
     <Box display="flex" direction="column" height="100%">
-      <Box padding={2}>
-        <Stack direction="row" justifyContent="center">
-          <Box width="600px">
-            <Alert title="This diagram is empty!" severity="info">
-              <Stack direction="column" gap={2}>
-                <div>Diagrams require at least one node, none have been added.</div>
-                {isEditMode && (
-                  <div>
-                    Update the Diagram in panel options <Icon name="arrow-right" />
-                  </div>
-                )}
-              </Stack>
-            </Alert>
-          </Box>
-        </Stack>
-      </Box>
+      <EmptyStateAlert>
+        {isEditMode && <EmptyStateContent inputMode={inputMode} onAddNode={onAddNode} />}
+      </EmptyStateAlert>
 
       {isAssistantAvailable && (
         <Box display="flex" alignItems="center" justifyContent="center" padding={2} grow={1}>

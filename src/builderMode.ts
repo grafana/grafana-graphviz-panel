@@ -141,7 +141,8 @@ export function getExistingEdgeIds(dotString: string): string[] {
 
 export function addNodeToDot(dotString: string, node: { id: string; label?: string; shape?: string }): string {
   try {
-    const model = fromDot(dotString);
+    const isEmpty = !dotString.trim();
+    const model = isEmpty ? fromDot('digraph G {}') : fromDot(dotString);
 
     const newNode = model.createNode(node.id);
     if (node.label) {

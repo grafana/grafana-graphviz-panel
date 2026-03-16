@@ -108,6 +108,17 @@ export const SimplePanel: React.FC<Props> = ({
     });
   }, [options, onOptionsChange]);
 
+  const handleAddNode = useCallback(() => {
+    onOptionsChange({
+      ...options,
+      builderModeActions: {
+        ...options.builderModeActions,
+        addNodeTrigger: Date.now(),
+        activeTool: options.builderModeActions?.activeTool,
+      },
+    });
+  }, [options, onOptionsChange]);
+
   if (data.series.length === 0) {
     return <PanelDataErrorView fieldConfig={fieldConfig} panelId={id} data={data} needsStringField />;
   }
@@ -144,8 +155,8 @@ export const SimplePanel: React.FC<Props> = ({
           dotDiagram={effectiveDotDiagram}
           layoutEngine={options.layoutEngine}
           inputMode={options.inputMode || InputMode.CODE}
-          panelId={id}
           isEditMode={isEditMode}
+          onAddNode={handleAddNode}
         />
       </div>
     );
@@ -194,8 +205,8 @@ export const SimplePanel: React.FC<Props> = ({
             dotDiagram={effectiveDotDiagram}
             layoutEngine={options.layoutEngine}
             inputMode={options.inputMode || InputMode.CODE}
-            panelId={id}
             isEditMode={isEditMode}
+            onAddNode={handleAddNode}
           />
         </div>
       )}
