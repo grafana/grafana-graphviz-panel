@@ -1,10 +1,11 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useMemo, useState } from 'react';
 import { PanelProps } from '@grafana/data';
 import { SimpleOptions, InputMode } from 'types';
 import { css, cx } from '@emotion/css';
 import { useStyles2, useTheme2 } from '@grafana/ui';
 import { PanelDataErrorView } from '@grafana/runtime';
 import { useThemedDotSvg, useFetchDotFromUrl } from '../hooks';
+import { extractDotFromQuery } from '../data';
 import { ErrorDisplay } from './ErrorDisplay';
 import { BuilderModeOverlay } from './BuilderModeOverlay';
 import { EmptyDiagramDisplay } from './EmptyDiagramDisplay';
@@ -54,7 +55,28 @@ export const SimplePanel: React.FC<Props> = ({
     options.inputMode || InputMode.CODE
   );
 
-  const effectiveDotDiagram = options.inputMode === InputMode.URL ? dotContent || '' : options.dotDiagram;
+  const [queryError, setQueryError] = useState<string | null>(null);
+
+  const effectiveDotDiagram = useMemo(() => {
+    if (options.inputMode === InputMode.QUERY) {
+      try {
+        const dot = extractDotFromQuery(
+          data.series,
+          options.dotQueryConfig?.fieldName || 'dot_diagram',
+          options.dotQueryConfig?.maxSizeBytes
+        );
+        setQueryError(null);
+        return dot || '';
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to extract DOT diagram from query';
+        setQueryError(errorMessage);
+        return '';
+      }
+    }
+    setQueryError(null);
+    return options.inputMode === InputMode.URL ? dotContent || '' : options.dotDiagram;
+  }, [options.inputMode, options.dotDiagram, options.dotQueryConfig, data.series, dotContent]);
+
   const isEmpty = isEmptyDiagram(effectiveDotDiagram);
   const isBuilderMode = options.inputMode === InputMode.BUILDER && isEditMode;
 
@@ -100,6 +122,20 @@ export const SimplePanel: React.FC<Props> = ({
     return (
       <ErrorDisplay
         errorMessage={fetchError}
+        dotDiagram={effectiveDotDiagram}
+        layoutEngine={options.layoutEngine}
+        inputMode={options.inputMode || InputMode.CODE}
+        isEditMode={isEditMode}
+      />
+    );
+  }
+
+  if (queryError) {
+    const fieldName = options.dotQueryConfig?.fieldName || 'dot_diagram';
+    const errorWithContext = `${queryError}\n\nConfigured field name: "${fieldName}"`;
+    return (
+      <ErrorDisplay
+        errorMessage={errorWithContext}
         dotDiagram={effectiveDotDiagram}
         layoutEngine={options.layoutEngine}
         inputMode={options.inputMode || InputMode.CODE}

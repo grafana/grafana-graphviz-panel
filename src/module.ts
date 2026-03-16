@@ -27,6 +27,10 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
             label: 'Code',
           },
           {
+            value: InputMode.QUERY,
+            label: 'Query',
+          },
+          {
             value: InputMode.URL,
             label: 'URL',
           },
@@ -61,6 +65,14 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
       defaultValue: '',
       category: ['Diagram'],
       showIf: (options) => options.inputMode === InputMode.URL,
+    })
+    .addTextInput({
+      path: 'dotQueryConfig.fieldName',
+      name: 'DOT field name',
+      description: 'Name of the field in query results containing the DOT diagram string',
+      defaultValue: 'dot_diagram',
+      category: ['Diagram'],
+      showIf: (options) => options.inputMode === InputMode.QUERY,
     })
     .addSelect({
       path: 'layoutEngine',

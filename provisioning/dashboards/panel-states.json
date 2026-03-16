@@ -238,6 +238,42 @@
           "csvContent": "time,value\n1,1"
         }
       ]
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
+      "id": 8,
+      "title": "Query Mode - DOT from Datasource",
+      "type": "grafana-graphviz-panel",
+      "options": {
+        "inputMode": "query",
+        "dotQueryConfig": {
+          "fieldName": "dot_source",
+          "maxSizeBytes": 1048576
+        },
+        "layoutEngine": "dot",
+        "rankDirection": "LR",
+        "edgeOverrides": [],
+        "nodeOverrides": [],
+        "namedThresholds": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource"
+          },
+          "refId": "A",
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[\n  {\n    \"columns\": [\n      {\n        \"text\": \"time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"dot_source\",\n        \"type\": \"string\"\n      }\n    ],\n    \"rows\": [\n      [\n        1609459200000,\n        \"digraph QueryMode { subgraph cluster_dashboard { label=\\\"Dashboard\\\"; Refresh [label=\\\"Refresh DateTime\\\"]; subgraph cluster_panel { label=\\\"Panel\\\"; Extract [label=\\\"extractDotFromQuery()\\\"]; Render [label=\\\"Render Diagram\\\"]; } } subgraph cluster_datasource { label=\\\"Datasource\\\"; Database [shape=cylinder]; Query [label=\\\"Execute Query\\\"]; Field [label=\\\"Return String Field\\\"]; } Database -> Query; Query -> Field; Field -> Extract; Extract -> Render; Render -> Refresh; Refresh -> Query; }\"\n      ]\n    ]\n  }\n]"
+        }
+      ]
     }
   ],
   "schemaVersion": 42,
