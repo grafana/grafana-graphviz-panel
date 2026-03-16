@@ -4,7 +4,7 @@ import { SimpleOptions, InputMode } from 'types';
 import { css, cx } from '@emotion/css';
 import { useStyles2, useTheme2 } from '@grafana/ui';
 import { PanelDataErrorView } from '@grafana/runtime';
-import { useThemedDotSvg, useFetchDotFromUrl } from '../hooks';
+import { useThemedDotSvg } from '../hooks';
 import { extractDotFromQuery } from '../data';
 import { ErrorDisplay } from './ErrorDisplay';
 import { BuilderModeOverlay } from './BuilderModeOverlay';
@@ -50,11 +50,6 @@ export const SimplePanel: React.FC<Props> = ({
     typeof window !== 'undefined' &&
     (window.location.search.includes('editPanel=') || window.location.search.includes('viewPanel='));
 
-  const { dotContent, isLoading, fetchError } = useFetchDotFromUrl(
-    options.dotDiagramUrl,
-    options.inputMode || InputMode.CODE
-  );
-
   const [queryError, setQueryError] = useState<string | null>(null);
 
   const effectiveDotDiagram = useMemo(() => {
@@ -74,8 +69,8 @@ export const SimplePanel: React.FC<Props> = ({
       }
     }
     setQueryError(null);
-    return options.inputMode === InputMode.URL ? dotContent || '' : options.dotDiagram;
-  }, [options.inputMode, options.dotDiagram, options.dotQueryConfig, data.series, dotContent]);
+    return options.dotDiagram;
+  }, [options.inputMode, options.dotDiagram, options.dotQueryConfig, data.series]);
 
   const isEmpty = isEmptyDiagram(effectiveDotDiagram);
   const isBuilderMode = options.inputMode === InputMode.BUILDER && isEditMode;
@@ -118,18 +113,6 @@ export const SimplePanel: React.FC<Props> = ({
     return <PanelDataErrorView fieldConfig={fieldConfig} panelId={id} data={data} needsStringField />;
   }
 
-  if (fetchError) {
-    return (
-      <ErrorDisplay
-        errorMessage={fetchError}
-        dotDiagram={effectiveDotDiagram}
-        layoutEngine={options.layoutEngine}
-        inputMode={options.inputMode || InputMode.CODE}
-        isEditMode={isEditMode}
-      />
-    );
-  }
-
   if (queryError) {
     const fieldName = options.dotQueryConfig?.fieldName || 'dot_diagram';
     const errorWithContext = `${queryError}\n\nConfigured field name: "${fieldName}"`;
@@ -141,25 +124,6 @@ export const SimplePanel: React.FC<Props> = ({
         inputMode={options.inputMode || InputMode.CODE}
         isEditMode={isEditMode}
       />
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div
-        className={cx(
-          styles.wrapper,
-          css`
-            width: ${width}px;
-            height: ${height}px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-          `
-        )}
-      >
-        <div>Loading DOT diagram from URL...</div>
-      </div>
     );
   }
 

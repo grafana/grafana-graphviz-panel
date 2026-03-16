@@ -30,10 +30,6 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
             value: InputMode.QUERY,
             label: 'Query',
           },
-          {
-            value: InputMode.URL,
-            label: 'URL',
-          },
         ],
       },
     })
@@ -56,15 +52,6 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
       editor: BuilderModeEditor,
       category: ['Diagram'],
       showIf: (options) => options.inputMode === InputMode.BUILDER,
-    })
-    .addTextInput({
-      path: 'dotDiagramUrl',
-      name: 'DOT diagram URL',
-      description:
-        'Enter the URL to fetch the DOT diagram from. The URL should return a text file containing valid DOT syntax.',
-      defaultValue: '',
-      category: ['Diagram'],
-      showIf: (options) => options.inputMode === InputMode.URL,
     })
     .addTextInput({
       path: 'dotQueryConfig.fieldName',

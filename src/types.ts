@@ -24,7 +24,6 @@ export enum InputMode {
   BUILDER = 'builder',
   CODE = 'code',
   QUERY = 'query',
-  URL = 'url',
 }
 
 export enum BuilderTool {
@@ -123,7 +122,6 @@ export interface DotQueryConfig {
 export interface SimpleOptions {
   inputMode?: InputMode;
   dotDiagram: string;
-  dotDiagramUrl: string;
   dotQueryConfig?: DotQueryConfig;
   layoutEngine: LayoutEngine;
   splineType?: SplineType;
