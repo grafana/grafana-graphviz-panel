@@ -16,7 +16,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "fastify": "^4.25.0",
+    "fastify": "^5.0.0",
     "@fastify/cors": "^9.0.0",
     "@fastify/multipart": "^8.1.0"
   },
