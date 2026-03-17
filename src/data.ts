@@ -713,3 +713,76 @@ export function autodetectMatchField(series: DataFrame[], targetIds: string[]): 
 
   return undefined;
 }
+
+const DEFAULT_MAX_DOT_SIZE = 1024 * 1024;
+
+export function findWideFormatFieldValue(frames: DataFrame[], fieldName: string): string | null {
+  for (const frame of frames) {
+    const dotField = frame.fields.find((f) => f.name === fieldName && f.type === FieldType.string);
+    if (dotField && dotField.values.length > 0) {
+      return dotField.values[dotField.values.length - 1];
+    }
+  }
+  return null;
+}
+
+export function findTimeseriesFieldValue(frames: DataFrame[], fieldName: string): string | null {
+  for (const frame of frames) {
+    for (const field of frame.fields) {
+      if (field.name === fieldName && field.type === FieldType.string) {
+        if (field.values.length > 0) {
+          return field.values[field.values.length - 1];
+        }
+      }
+    }
+  }
+  return null;
+}
+
+export function validateDotSize(dotValue: string, maxSizeBytes: number): void {
+  if (dotValue.length > maxSizeBytes) {
+    throw new Error(
+      `DOT diagram too large: ${(dotValue.length / 1024).toFixed(1)} KB exceeds limit of ${(
+        maxSizeBytes / 1024
+      ).toFixed(0)} KB`
+    );
+  }
+}
+
+export function extractDotFromQuery(
+  series: DataFrame[],
+  fieldName: string,
+  maxSizeBytes: number = DEFAULT_MAX_DOT_SIZE
+): string | null {
+  if (!series || series.length === 0 || !fieldName) {
+    return null;
+  }
+
+  const strategy = detectDataFormatStrategy(series);
+
+  let dotValue: string | null = null;
+
+  switch (strategy) {
+    case DataFormatStrategy.WIDE:
+      dotValue = findWideFormatFieldValue(series, fieldName);
+      break;
+
+    case DataFormatStrategy.TIMESERIES:
+      dotValue = findTimeseriesFieldValue(series, fieldName);
+      break;
+
+    case DataFormatStrategy.MIXED:
+      dotValue = findTimeseriesFieldValue(series, fieldName);
+      if (dotValue === null) {
+        dotValue = findWideFormatFieldValue(series, fieldName);
+      }
+      break;
+  }
+
+  if (dotValue && typeof dotValue === 'string') {
+    validateDotSize(dotValue, maxSizeBytes);
+    return dotValue;
+  }
+
+  return null;
+}

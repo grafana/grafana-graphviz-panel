@@ -1,6 +1,0 @@
-node_modules/
-uploads/*
-!uploads/.gitkeep
-npm-debug.log
-*.log
-

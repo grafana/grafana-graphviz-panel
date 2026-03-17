@@ -21,9 +21,9 @@ export enum SplineType {
 }
 
 export enum InputMode {
-  CODE = 'code',
   BUILDER = 'builder',
-  URL = 'url',
+  CODE = 'code',
+  QUERY = 'query',
 }
 
 export enum BuilderTool {
@@ -114,10 +114,15 @@ export interface BuilderModeActions {
   addNodeTrigger?: number;
 }
 
+export interface DotQueryConfig {
+  fieldName: string;
+  maxSizeBytes?: number;
+}
+
 export interface SimpleOptions {
   inputMode?: InputMode;
   dotDiagram: string;
-  dotDiagramUrl: string;
+  dotQueryConfig?: DotQueryConfig;
   layoutEngine: LayoutEngine;
   splineType?: SplineType;
   rankDirection: RankDirection;

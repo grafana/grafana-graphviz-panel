@@ -27,8 +27,8 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
             label: 'Code',
           },
           {
-            value: InputMode.URL,
-            label: 'URL',
+            value: InputMode.QUERY,
+            label: 'Query',
           },
         ],
       },
@@ -54,13 +54,12 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig
       showIf: (options) => options.inputMode === InputMode.BUILDER,
     })
     .addTextInput({
-      path: 'dotDiagramUrl',
-      name: 'DOT diagram URL',
-      description:
-        'Enter the URL to fetch the DOT diagram from. The URL should return a text file containing valid DOT syntax.',
-      defaultValue: '',
+      path: 'dotQueryConfig.fieldName',
+      name: 'DOT field name',
+      description: 'Name of the field in query results containing the DOT diagram string',
+      defaultValue: 'dot_diagram',
       category: ['Diagram'],
-      showIf: (options) => options.inputMode === InputMode.URL,
+      showIf: (options) => options.inputMode === InputMode.QUERY,
     })
     .addSelect({
       path: 'layoutEngine',

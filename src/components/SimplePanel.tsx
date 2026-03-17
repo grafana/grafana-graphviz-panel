@@ -1,10 +1,11 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useMemo, useState } from 'react';
 import { PanelProps } from '@grafana/data';
 import { SimpleOptions, InputMode } from 'types';
 import { css, cx } from '@emotion/css';
 import { useStyles2, useTheme2 } from '@grafana/ui';
 import { PanelDataErrorView } from '@grafana/runtime';
-import { useThemedDotSvg, useFetchDotFromUrl } from '../hooks';
+import { useThemedDotSvg } from '../hooks';
+import { extractDotFromQuery } from '../data';
 import { ErrorDisplay } from './ErrorDisplay';
 import { BuilderModeOverlay } from './BuilderModeOverlay';
 import { EmptyDiagramDisplay } from './EmptyDiagramDisplay';
@@ -15,7 +16,6 @@ interface Props extends PanelProps<SimpleOptions> {}
 const getStyles = () => {
   return {
     wrapper: css`
-      font-family: Open Sans;
       position: relative;
     `,
     svg: css`
@@ -49,12 +49,28 @@ export const SimplePanel: React.FC<Props> = ({
     typeof window !== 'undefined' &&
     (window.location.search.includes('editPanel=') || window.location.search.includes('viewPanel='));
 
-  const { dotContent, isLoading, fetchError } = useFetchDotFromUrl(
-    options.dotDiagramUrl,
-    options.inputMode || InputMode.CODE
-  );
+  const [queryError, setQueryError] = useState<string | null>(null);
 
-  const effectiveDotDiagram = options.inputMode === InputMode.URL ? dotContent || '' : options.dotDiagram;
+  const effectiveDotDiagram = useMemo(() => {
+    if (options.inputMode === InputMode.QUERY) {
+      try {
+        const dot = extractDotFromQuery(
+          data.series,
+          options.dotQueryConfig?.fieldName || 'dot_diagram',
+          options.dotQueryConfig?.maxSizeBytes
+        );
+        setQueryError(null);
+        return dot || '';
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to extract DOT diagram from query';
+        setQueryError(errorMessage);
+        return '';
+      }
+    }
+    setQueryError(null);
+    return options.dotDiagram;
+  }, [options.inputMode, options.dotDiagram, options.dotQueryConfig, data.series]);
+
   const isEmpty = isEmptyDiagram(effectiveDotDiagram);
   const isBuilderMode = options.inputMode === InputMode.BUILDER && isEditMode;
 
@@ -92,14 +108,27 @@ export const SimplePanel: React.FC<Props> = ({
     });
   }, [options, onOptionsChange]);
 
+  const handleAddNode = useCallback(() => {
+    onOptionsChange({
+      ...options,
+      builderModeActions: {
+        ...options.builderModeActions,
+        addNodeTrigger: Date.now(),
+        activeTool: options.builderModeActions?.activeTool,
+      },
+    });
+  }, [options, onOptionsChange]);
+
   if (data.series.length === 0) {
     return <PanelDataErrorView fieldConfig={fieldConfig} panelId={id} data={data} needsStringField />;
   }
 
-  if (fetchError) {
+  if (queryError) {
+    const fieldName = options.dotQueryConfig?.fieldName || 'dot_diagram';
+    const errorWithContext = `${queryError}\n\nConfigured field name: "${fieldName}"`;
     return (
       <ErrorDisplay
-        errorMessage={fetchError}
+        errorMessage={errorWithContext}
         dotDiagram={effectiveDotDiagram}
         layoutEngine={options.layoutEngine}
         inputMode={options.inputMode || InputMode.CODE}
@@ -108,7 +137,10 @@ export const SimplePanel: React.FC<Props> = ({
     );
   }
 
-  if (isLoading) {
+  const showEmptyState = isEmpty && !isBuilderMode;
+  const showErrorState = renderError && !isEmpty;
+
+  if (showEmptyState) {
     return (
       <div
         className={cx(
@@ -116,62 +148,21 @@ export const SimplePanel: React.FC<Props> = ({
           css`
             width: ${width}px;
             height: ${height}px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
           `
         )}
       >
-        <div>Loading DOT diagram from URL...</div>
+        <EmptyDiagramDisplay
+          dotDiagram={effectiveDotDiagram}
+          layoutEngine={options.layoutEngine}
+          inputMode={options.inputMode || InputMode.CODE}
+          isEditMode={isEditMode}
+          onAddNode={handleAddNode}
+        />
       </div>
     );
   }
 
-  if (isEmpty) {
-    if (isBuilderMode) {
-      return (
-        <div
-          style={{
-            position: 'relative',
-            width: `${width}px`,
-            height: `${height}px`,
-          }}
-          data-testid="graphviz-panel-builder-empty"
-        >
-          <div style={{ position: 'absolute', width: '100%', height: '100%' }}>
-            <EmptyDiagramDisplay
-              dotDiagram={effectiveDotDiagram}
-              layoutEngine={options.layoutEngine}
-              inputMode={options.inputMode || InputMode.CODE}
-              panelId={id}
-              isEditMode={isEditMode}
-            />
-          </div>
-          <BuilderModeOverlay
-            svgRef={svgRef}
-            dotDiagram={options.dotDiagram}
-            onChange={handleDotChange}
-            onClearTriggers={handleClearTriggers}
-            addNodeTrigger={options.builderModeActions?.addNodeTrigger}
-            layoutEngine={options.layoutEngine}
-            activeTool={options.builderModeActions?.activeTool}
-          />
-        </div>
-      );
-    }
-
-    return (
-      <EmptyDiagramDisplay
-        dotDiagram={effectiveDotDiagram}
-        layoutEngine={options.layoutEngine}
-        inputMode={options.inputMode || InputMode.CODE}
-        panelId={id}
-        isEditMode={isEditMode}
-      />
-    );
-  }
-
-  if (renderError && !isEmpty) {
+  if (showErrorState) {
     return (
       <ErrorDisplay
         errorMessage={renderError.message}
@@ -193,7 +184,7 @@ export const SimplePanel: React.FC<Props> = ({
           height: ${height}px;
         `
       )}
-      data-testid="graphviz-panel-rendered"
+      data-testid={isEmpty && isBuilderMode ? 'graphviz-panel-builder-empty' : 'graphviz-panel-rendered'}
     >
       <div
         ref={svgRef}
@@ -202,11 +193,23 @@ export const SimplePanel: React.FC<Props> = ({
         style={{
           width,
           height,
-          display: 'flex',
+          display: isEmpty ? 'none' : 'flex',
           justifyContent: 'center',
           alignItems: 'center',
         }}
       />
+
+      {isEmpty && isBuilderMode && (
+        <div style={{ position: 'absolute', width: '100%', height: '100%' }}>
+          <EmptyDiagramDisplay
+            dotDiagram={effectiveDotDiagram}
+            layoutEngine={options.layoutEngine}
+            inputMode={options.inputMode || InputMode.CODE}
+            isEditMode={isEditMode}
+            onAddNode={handleAddNode}
+          />
+        </div>
+      )}
 
       {isBuilderMode && (
         <BuilderModeOverlay
