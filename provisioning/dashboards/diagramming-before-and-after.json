@@ -1,0 +1,149 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 3,
+      "panels": [],
+      "title": "Creating a Diagram",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource"
+      },
+      "description": "Empty panel for E2E test to configure",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 0,
+        "y": 1
+      },
+      "id": 1,
+      "options": {
+        "dotDiagram": "",
+        "edgeOverrides": [],
+        "inputMode": "builder",
+        "layoutEngine": "dot",
+        "namedThresholds": [],
+        "nodeOverrides": [],
+        "rankDirection": "TB",
+        "splineType": "spline"
+      },
+      "pluginVersion": "0.0.1",
+      "targets": [
+        {
+          "csvContent": "node_id,cpu_usage,memory_usage,status\nServer1,25,45,healthy\nServer2,75,60,warning\nServer3,95,85,critical",
+          "refId": "A",
+          "scenarioId": "csv_content"
+        }
+      ],
+      "title": "Empty diagram (START)",
+      "type": "grafana-graphviz-panel"
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource"
+      },
+      "description": "Pre-configured panel showing complete diagram",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 12,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "dotDiagram": "digraph G {\n  Server1 [label=\"Server1\", shape=\"circle\"];\n  Server2 [shape=\"triangle\"];\n  Server1 -> Server2 [label=\"connects\"];\n  Server3 [label=\"Server 3\"];\n  Server2 -> Server3 [label=\"links to\"];\n}",
+        "edgeOverrides": [],
+        "inputMode": "code",
+        "layoutEngine": "dot",
+        "namedThresholds": [],
+        "nodeOverrides": [],
+        "rankDirection": "LR",
+        "splineType": "spline"
+      },
+      "pluginVersion": "0.0.1",
+      "targets": [
+        {
+          "csvContent": "node_id,cpu_usage,memory_usage,status\nServer1,25,45,healthy\nServer2,75,60,warning\nServer3,95,85,critical",
+          "refId": "A",
+          "scenarioId": "csv_content"
+        }
+      ],
+      "title": "Static diagram (END)",
+      "type": "grafana-graphviz-panel"
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["e2e-test", "diagramming"],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Diagramming Before & After",
+  "uid": "e2e-diagramming",
+  "version": 1,
+  "weekStart": ""
+}

@@ -53,7 +53,9 @@ export default defineConfig<PluginOptions>({
     baseURL: process.env.GRAFANA_URL || 'http://localhost:3000',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+    trace: process.env.CI ? 'on-first-retry' : 'on',
+    video: process.env.CI ? 'off' : 'retain-on-failure',
+    screenshot: process.env.CI ? 'off' : 'on',
   },
 
   /* Configure projects for major browsers */
