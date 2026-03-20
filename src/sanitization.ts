@@ -39,9 +39,9 @@ function applyThemeDefaults(model: any, theme: GrafanaTheme2): void {
   const nodeDefaults: Record<string, string> = {
     fontname: theme.typography.fontFamily,
     fontsize: theme.typography.fontSize.toString(),
-    fontcolor: theme.colors.primary.contrastText,
-    color: theme.colors.primary.border,
-    fillcolor: `${theme.colors.primary.main}60`,
+    fontcolor: theme.colors.secondary.contrastText,
+    color: theme.colors.text.secondary,
+    fillcolor: `${theme.colors.secondary.main}60`,
     style: 'rounded,filled',
     shape: 'box',
     penwidth: '1.0',
@@ -51,8 +51,8 @@ function applyThemeDefaults(model: any, theme: GrafanaTheme2): void {
   const edgeDefaults: Record<string, string> = {
     fontname: theme.typography.fontFamily,
     fontsize: theme.typography.fontSize.toString(),
-    fontcolor: theme.colors.primary.contrastText,
-    color: theme.colors.primary.border,
+    fontcolor: theme.colors.secondary.contrastText,
+    color: theme.colors.text.secondary,
     penwidth: '1.0',
   };
 

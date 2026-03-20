@@ -15,7 +15,7 @@ import { isDefaultColor } from './utils/graphvizColors';
 export function applySvgTheming(svgElement: SVGSVGElement, theme: GrafanaTheme2, isEditMode = false): void {
   const svg = d3.select(svgElement);
 
-  const edgeColor = theme.colors.text.primary;
+  const edgeColor = theme.colors.text.secondary;
 
   svg
     .style('background-color', 'transparent')
