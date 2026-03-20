@@ -41,7 +41,7 @@ export function escapeDotLabel(value: string): string {
 function replaceFieldReference(fieldName: string, dataRow: Record<string, any>): string {
   const value = dataRow[fieldName];
 
-  if (value === undefined || value === null) {
+  if (value == null) {
     return '';
   }
 
@@ -53,10 +53,15 @@ export function interpolateLabel(labelTemplate: string, dataRow: Record<string, 
 }
 
 export function hasInterpolation(label: string | undefined): boolean {
-  return !!label && INTERPOLATION_REGEX.test(label);
+  if (!label) {
+    return false;
+  }
+  INTERPOLATION_REGEX.lastIndex = 0;
+  return INTERPOLATION_REGEX.test(label);
 }
 
 export function extractFieldReferences(labelTemplate: string): string[] {
+  INTERPOLATION_REGEX.lastIndex = 0;
   const matches = labelTemplate.matchAll(INTERPOLATION_REGEX);
   return Array.from(matches, (m) => m[1]);
 }

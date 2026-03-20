@@ -4,12 +4,12 @@ import { DataDrivenColors, DataDrivenWidths, findMatchedRow } from './data';
 import { interpolateLabel, hasInterpolation } from './interpolation';
 import { getEdgeId, findNodeById } from './utils/graphvizAst';
 
-function addStyleToCommaList(existingStyle: string | null, newStyle: string): string {
+export function addStyleToCommaList(existingStyle: string | null, newStyle: string): string {
   const current = existingStyle || '';
   return current.includes(newStyle) ? current : `${current ? current + ',' : ''}${newStyle}`;
 }
 
-function calculateEdgeWidthAndArrowSize(width: number): { width: number; arrowSize: number } {
+export function calculateEdgeWidthAndArrowSize(width: number): { width: number; arrowSize: number } {
   const clampedWidth = Math.min(Math.max(width, 0.1), 5);
   const arrowSize = Math.min(clampedWidth / 1.0, 1.5);
   return { width: clampedWidth, arrowSize };
