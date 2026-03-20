@@ -57,6 +57,8 @@ export const EdgeFormModal: React.FC<EdgeFormModalProps> = ({
   };
 
   const effectiveSourceId = values.selectedSourceNodeId || sourceNodeId;
+  const hasTargetError = error.includes('Target') || error.includes('Edge already exists');
+  const isTargetFieldInvalid = !!error && hasTargetError;
 
   return (
     <Modal
@@ -72,6 +74,7 @@ export const EdgeFormModal: React.FC<EdgeFormModalProps> = ({
           error={!values.selectedSourceNodeId ? error : undefined}
         >
           <Combobox
+            data-testid="edge-form-source-select"
             options={existingNodeIds.map((id) => ({ label: id, value: id }))}
             placeholder="Select source node"
             value={values.selectedSourceNodeId}
@@ -80,13 +83,9 @@ export const EdgeFormModal: React.FC<EdgeFormModalProps> = ({
         </Field>
       )}
 
-      <Field
-        label="Target Node"
-        required
-        invalid={!!error && error.includes('Target')}
-        error={error.includes('Target') ? error : undefined}
-      >
+      <Field label="Target Node" required invalid={isTargetFieldInvalid} error={hasTargetError ? error : undefined}>
         <Combobox
+          data-testid="edge-form-target-select"
           options={existingNodeIds.filter((id) => id !== effectiveSourceId).map((id) => ({ label: id, value: id }))}
           placeholder="Select target node"
           value={values.targetNodeId}
@@ -94,13 +93,15 @@ export const EdgeFormModal: React.FC<EdgeFormModalProps> = ({
           disabled={!!targetNodeId}
         />
       </Field>
-      <Field label="Edge ID" description="Leave empty to auto-generate. Used to identify the edge when defining overrides E.g. 'server1_to_server2'.">
+      <Field
+        label="Edge ID"
+        description="Leave empty to auto-generate. Used to identify the edge when defining overrides E.g. 'server1_to_server2'."
+      >
         <Input
+          data-testid="edge-form-id-input"
           autoFocus
           placeholder={
-            values.targetNodeId && effectiveSourceId
-              ? formatEdgeId(effectiveSourceId, values.targetNodeId)
-              : 'Auto'
+            values.targetNodeId && effectiveSourceId ? formatEdgeId(effectiveSourceId, values.targetNodeId) : 'Auto'
           }
           value={values.edgeId}
           onChange={(e) => handleChange('edgeId')(e.currentTarget.value)}
@@ -108,6 +109,7 @@ export const EdgeFormModal: React.FC<EdgeFormModalProps> = ({
       </Field>
       <Field label="Edge Label (optional)" description="Text to display on the edge.">
         <Input
+          data-testid="edge-form-label-input"
           placeholder="E.g. 'Server 1 to Server 2'"
           value={values.edgeLabel}
           onChange={(e) => handleChange('edgeLabel')(e.currentTarget.value)}

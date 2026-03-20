@@ -65,6 +65,7 @@ export const NodeFormModal: React.FC<NodeFormModalProps> = ({ isOpen, existingNo
       </Field>
       <Field label="Shape (optional)" description="Shape for the node. By default, it'll be rendered as a box">
         <Select
+          data-testid="node-form-shape-select"
           options={shapeOptions}
           placeholder="Select shape"
           value={values.nodeShape}
