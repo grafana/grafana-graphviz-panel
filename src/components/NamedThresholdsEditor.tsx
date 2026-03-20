@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StandardEditorProps } from '@grafana/data';
-import { Button, Input, ColorPicker, IconButton, Collapse,Icon } from '@grafana/ui';
+import { Button, Input, ColorPicker, IconButton, Collapse, Icon } from '@grafana/ui';
 import { NamedThreshold, ThresholdStep } from '../types';
 import { css } from '@emotion/css';
 
@@ -25,19 +25,15 @@ export const NamedThresholdsEditor: React.FC<Props> = ({ value, onChange }) => {
   };
 
   const removeThreshold = (id: string) => {
-    onChange(thresholds.filter(threshold => threshold.id !== id));
+    onChange(thresholds.filter((threshold) => threshold.id !== id));
   };
 
   const updateThreshold = (id: string, updates: Partial<NamedThreshold>) => {
-    onChange(
-      thresholds.map(threshold =>
-        threshold.id === id ? { ...threshold, ...updates } : threshold
-      )
-    );
+    onChange(thresholds.map((threshold) => (threshold.id === id ? { ...threshold, ...updates } : threshold)));
   };
 
   const addStep = (thresholdId: string) => {
-    const threshold = thresholds.find(t => t.id === thresholdId);
+    const threshold = thresholds.find((t) => t.id === thresholdId);
     if (threshold) {
       const lastStep = threshold.steps[threshold.steps.length - 1];
       const newStep: ThresholdStep = {
@@ -51,7 +47,7 @@ export const NamedThresholdsEditor: React.FC<Props> = ({ value, onChange }) => {
   };
 
   const removeStep = (thresholdId: string, stepIndex: number) => {
-    const threshold = thresholds.find(t => t.id === thresholdId);
+    const threshold = thresholds.find((t) => t.id === thresholdId);
     if (threshold && threshold.steps.length > 1) {
       updateThreshold(thresholdId, {
         steps: threshold.steps.filter((_, idx) => idx !== stepIndex),
@@ -60,11 +56,9 @@ export const NamedThresholdsEditor: React.FC<Props> = ({ value, onChange }) => {
   };
 
   const updateStep = (thresholdId: string, stepIndex: number, updates: Partial<ThresholdStep>) => {
-    const threshold = thresholds.find(t => t.id === thresholdId);
+    const threshold = thresholds.find((t) => t.id === thresholdId);
     if (threshold) {
-      const updatedSteps = threshold.steps.map((step, idx) =>
-        idx === stepIndex ? { ...step, ...updates } : step
-      );
+      const updatedSteps = threshold.steps.map((step, idx) => (idx === stepIndex ? { ...step, ...updates } : step));
       updateThreshold(thresholdId, { steps: updatedSteps });
     }
   };
@@ -142,23 +136,21 @@ export const NamedThresholdsEditor: React.FC<Props> = ({ value, onChange }) => {
           onToggle={() => toggleSection(threshold.id)}
           collapsible={true}
         >
-          
-
           <div className={stepContainerStyle}>
             {threshold.steps.map((step, stepIndex) => (
               <div key={stepIndex} className={stepRowStyle}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
-                    <Input
-                      type="number"
-                      value={step.value}
-                      onChange={(e) =>
-                        updateStep(threshold.id, stepIndex, { value: parseFloat(e.currentTarget.value) || 0 })
-                      }
-                    />
-                    <ColorPicker
-                      color={step.color}
-                      onChange={(color) => updateStep(threshold.id, stepIndex, { color })}
-                    />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
+                  <Input
+                    type="number"
+                    value={step.value}
+                    onChange={(e) =>
+                      updateStep(threshold.id, stepIndex, { value: parseFloat(e.currentTarget.value) || 0 })
+                    }
+                  />
+                  <ColorPicker
+                    color={step.color}
+                    onChange={(color) => updateStep(threshold.id, stepIndex, { color })}
+                  />
                   {threshold.steps.length > 1 && (
                     <IconButton
                       name="trash-alt"
@@ -167,7 +159,7 @@ export const NamedThresholdsEditor: React.FC<Props> = ({ value, onChange }) => {
                       size="sm"
                     />
                   )}
-                  </div>
+                </div>
               </div>
             ))}
             <Button
@@ -189,4 +181,3 @@ export const NamedThresholdsEditor: React.FC<Props> = ({ value, onChange }) => {
     </div>
   );
 };
-

@@ -113,7 +113,7 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
     const timeoutId = setTimeout(updatePositions, POSITION_CALCULATION_DELAY_MS);
 
     return () => clearTimeout(timeoutId);
-  }, [svgRef, dotDiagram]);
+  }, [svgRef, dotDiagram, activeTool]);
 
   const handleNodeFormSubmit = (id: string, label?: string, shape?: string) => {
     const newDot = addNodeToDot(dotDiagram, { id, label, shape });
@@ -305,6 +305,7 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
   const existingNodeIds = useMemo(() => parseNodesFromDot(dotDiagram).map((node) => node.id), [dotDiagram]);
   const existingEdgeIds = useMemo(() => getExistingEdgeIds(dotDiagram), [dotDiagram]);
   const isDirected = useMemo(() => isDirectedGraph(dotDiagram), [dotDiagram]);
+  const isEmpty = existingNodeIds.length === 0;
 
   const sourceNodePos = nodePositions.find((n) => n.id === dragState.sourceNodeId);
 
@@ -316,7 +317,7 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
         left: 0,
         width: '100%',
         height: '100%',
-        pointerEvents: dragState.isDragging ? 'auto' : 'none',
+        pointerEvents: isEmpty ? 'none' : dragState.isDragging || activeTool === BuilderTool.EDIT ? 'auto' : 'none',
         cursor: undefined,
       }}
       onMouseMove={handleMouseMove}
@@ -416,7 +417,7 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
               </div>
             )}
 
-            {hoveredNodeId === pos.id && !dragState.isDragging && activeTool === BuilderTool.EDIT && (
+            {!dragState.isDragging && activeTool === BuilderTool.EDIT && (
               <div
                 style={{
                   position: 'absolute',
@@ -442,6 +443,7 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
                     icon="pen"
                     aria-label={`Edit ${pos.id}`}
                     title="Edit node"
+                    data-testid={`edit-node-${pos.id}`}
                     onClick={() => handleEditNodeClick(pos.id)}
                   />
                 </Box>
@@ -506,7 +508,7 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
 
       {edgePositions.map((edge) => {
         const edgeKey = `${edge.source}-${edge.target}`;
-        const showEditButton = hoveredEdgeKey === edgeKey && !dragState.isDragging && activeTool === BuilderTool.EDIT;
+        const showEditButton = !dragState.isDragging && activeTool === BuilderTool.EDIT;
         const showDeleteButton =
           hoveredEdgeKey === edgeKey && !dragState.isDragging && activeTool === BuilderTool.DELETE;
 
@@ -554,6 +556,7 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
                     icon="pen"
                     aria-label={`Edit edge ${edge.source} → ${edge.target}`}
                     title="Edit edge"
+                    data-testid={`edit-edge-${edge.source}-${edge.target}`}
                     onClick={() => handleEditEdgeClick(edge.source, edge.target)}
                   />
                 </Box>

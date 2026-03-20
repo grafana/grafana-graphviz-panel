@@ -77,7 +77,7 @@ export interface NodeOverrideWithTargets extends OverrideWithMatch {
   targetNodeIds: string[];
 }
 
-function getSuggestionsForEdge(data: any, override: EdgeOverrideWithTargets): CodeEditorSuggestionItem[] {
+export function getSuggestionsForEdge(data: any, override: EdgeOverrideWithTargets): CodeEditorSuggestionItem[] {
   const suggestions: CodeEditorSuggestionItem[] = [
     {
       label: 'id',
@@ -114,7 +114,7 @@ function getSuggestionsForEdge(data: any, override: EdgeOverrideWithTargets): Co
     }
 
     const value = matchedRow[fieldName];
-    if (value === null || value === undefined) {
+    if (value == null) {
       return;
     }
 
@@ -132,7 +132,7 @@ function getSuggestionsForEdge(data: any, override: EdgeOverrideWithTargets): Co
   return suggestions;
 }
 
-function getSuggestionsForNode(data: any, override: NodeOverrideWithTargets): CodeEditorSuggestionItem[] {
+export function getSuggestionsForNode(data: any, override: NodeOverrideWithTargets): CodeEditorSuggestionItem[] {
   const suggestions: CodeEditorSuggestionItem[] = [
     {
       label: 'id',
@@ -169,7 +169,7 @@ function getSuggestionsForNode(data: any, override: NodeOverrideWithTargets): Co
     }
 
     const value = matchedRow[fieldName];
-    if (value === null || value === undefined) {
+    if (value == null) {
       return;
     }
 

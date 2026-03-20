@@ -58,6 +58,7 @@ export const EdgeEditModal: React.FC<EdgeEditModalProps> = ({
       </Field>
       <Field label="Edge Label">
         <Input
+          data-testid="edge-edit-label-input"
           placeholder="Enter label (optional)"
           value={values.edgeLabel}
           onChange={(e) => handleChange('edgeLabel')(e.currentTarget.value)}

@@ -46,11 +46,27 @@ export const BuilderModeEditor: React.FC<StandardEditorProps<BuilderModeActions,
     }
   };
 
+  const getButtonTestId = (toolValue: BuilderTool): string => {
+    switch (toolValue) {
+      case BuilderTool.NODE:
+        return 'diagram-new-node';
+      case BuilderTool.EDGE:
+        return 'diagram-new-edge';
+      case BuilderTool.EDIT:
+        return 'diagram-edit-elements';
+      case BuilderTool.DELETE:
+        return 'diagram-delete-elements';
+      default:
+        return `diagram-tool-${toolValue}`;
+    }
+  };
+
   return (
     <ButtonGroup>
       {TOOL_OPTIONS.map((tool) => (
         <Tooltip key={tool.value} content={tool.description || ''} placement="top">
           <Button
+            data-testid={getButtonTestId(tool.value!)}
             icon={tool.icon as any}
             variant={activeTool === tool.value ? 'primary' : 'secondary'}
             onClick={() => handleToolChange(tool.value!)}

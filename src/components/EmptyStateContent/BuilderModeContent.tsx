@@ -6,7 +6,7 @@ interface BuilderModeContentProps {
 }
 
 export const BuilderModeContent: React.FC<BuilderModeContentProps> = ({ onAddNode }) => (
-  <Button icon="plus-square" onClick={onAddNode}>
+  <Button data-testid="empty-state-add-node" icon="plus-square" onClick={onAddNode}>
     Add Node
   </Button>
 );

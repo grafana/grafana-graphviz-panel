@@ -276,7 +276,7 @@ function extractColorFromWide(
   return finder(series, matchFieldName, matchValue, colorFieldName);
 }
 
-function applyThresholdToValue(value: number, threshold: NamedThreshold): string | undefined {
+export function applyThresholdToValue(value: number, threshold: NamedThreshold): string | undefined {
   const sortedSteps = [...threshold.steps].sort((a, b) => b.value - a.value);
 
   for (const step of sortedSteps) {
@@ -567,7 +567,7 @@ interface FieldMatchCandidate {
   matchPercentage: number;
 }
 
-function findMatchingIdsInWide(
+export function findMatchingIdsInWide(
   series: DataFrame[],
   fieldName: string,
   targetIds: string[]
@@ -597,7 +597,7 @@ function findMatchingIdsInWide(
   return { matchedIds, unmatchedIds };
 }
 
-function findMatchingIdsInTimeSeries(
+export function findMatchingIdsInTimeSeries(
   series: DataFrame[],
   labelName: string,
   targetIds: string[]
@@ -621,7 +621,7 @@ function findMatchingIdsInTimeSeries(
   return { matchedIds, unmatchedIds };
 }
 
-function extractAllStringFieldNames(series: DataFrame[]): string[] {
+export function extractAllStringFieldNames(series: DataFrame[]): string[] {
   const fieldNames = new Set<string>();
 
   series.forEach((frame) => {
@@ -641,7 +641,7 @@ function extractAllStringFieldNames(series: DataFrame[]): string[] {
   return Array.from(fieldNames).sort();
 }
 
-function evaluateFieldMatchQuality(
+export function evaluateFieldMatchQuality(
   series: DataFrame[],
   fieldName: string,
   targetIds: string[],

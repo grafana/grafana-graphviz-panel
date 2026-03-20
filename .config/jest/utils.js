@@ -20,6 +20,7 @@ const grafanaESModules = [
   'd3-force',
   'd3-interpolate',
   'd3-scale-chromatic',
+  'd3-selection',
   'get-user-locale',
   'marked',
   'memoize',

@@ -223,6 +223,7 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
           ref={(el) => {
             sectionRefs.current[mapping.id] = el;
           }}
+         
         >
           <Collapse
             className={mappingContainerStyle}
@@ -230,6 +231,7 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                 <span>Node override rule {index + 1}</span>
                 <IconButton
+                 
                   name="trash-alt"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -247,6 +249,7 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
               <div style={{ display: 'flex', gap: '4px', alignItems: 'flex-start' }}>
                 <div style={{ flex: 1 }}>
                   <MultiSelect
+                   
                     value={mapping.targetNodeIds}
                     options={availableNodeIds.map((id) => ({ label: id, value: id }))}
                     onChange={(selections) => {
@@ -257,6 +260,7 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
                   />
                 </div>
                 <Button
+                 
                   variant="secondary"
                   size="md"
                   onClick={() => updateMapping(mapping.id, { targetNodeIds: availableNodeIds })}
@@ -272,6 +276,7 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
               description="Allows you to match the node override to the value of a specific row in the data. By default, it will be matched based on the node ID"
             >
               <RadioButtonGroup
+               
                 value={mapping.matchMode || MatchMode.MANUAL}
                 options={[
                   { label: 'Autodetect', value: MatchMode.AUTODETECT },
@@ -574,6 +579,7 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
                           <>
                             <Field label="Color field">
                               <Select
+                               
                                 value={rule.colorFieldName}
                                 options={availableFields}
                                 onChange={(selection) => {
@@ -595,6 +601,7 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
                               description="Optional: Use a named threshold set instead of field config thresholds"
                             >
                               <Combobox
+                               
                                 value={rule.thresholdId}
                                 options={
                                   [
@@ -673,18 +680,21 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
                     overlay={
                       <Menu>
                         <Menu.Item
+                         
                           label="Stroke Color"
                           icon="circle"
                           onClick={() => addBorderColorRule(mapping.id)}
                           disabled={hasStrokeColor}
                         />
                         <Menu.Item
+                         
                           label="Fill Color"
                           icon="circle-mono"
                           onClick={() => addFillColorRule(mapping.id)}
                           disabled={hasFillColor}
                         />
                         <Menu.Item
+                         
                           label="Label"
                           icon="font"
                           onClick={() => addLabelRule(mapping.id)}
@@ -693,7 +703,13 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
                       </Menu>
                     }
                   >
-                    <Button icon="plus" variant="secondary" size="sm" disabled={isButtonDisabled}>
+                    <Button
+                     
+                      icon="plus"
+                      variant="secondary"
+                      size="sm"
+                      disabled={isButtonDisabled}
+                    >
                       Override node property
                     </Button>
                   </Dropdown>
