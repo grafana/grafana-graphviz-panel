@@ -1,4 +1,10 @@
-import { escapeDotLabel, interpolateLabel, hasInterpolation, extractFieldReferences } from './interpolation';
+import {
+  escapeDotLabel,
+  interpolateLabel,
+  interpolateLabelWithVariables,
+  hasInterpolation,
+  extractFieldReferences,
+} from './interpolation';
 
 describe('interpolation', () => {
   describe('escapeDotLabel', () => {
@@ -222,6 +228,101 @@ describe('interpolation', () => {
     testCases.forEach(({ name, input, expected }) => {
       it(name, () => {
         expect(hasInterpolation(input)).toBe(expected);
+      });
+    });
+  });
+
+  describe('interpolateLabelWithVariables', () => {
+    const testCases = [
+      {
+        name: 'should apply dashboard variables before field interpolation',
+        template: 'Environment: $environment, Server: ${server}',
+        dataRow: { server: 'web-01' },
+        replaceVariables: (str: string) => str.replace('$environment', 'production'),
+        expected: 'Environment: production, Server: web-01',
+      },
+      {
+        name: 'should handle ${variable} syntax for dashboard variables',
+        template: 'Env: ${environment}, Node: ${node}',
+        dataRow: { node: 'node-1' },
+        replaceVariables: (str: string) => str.replace('${environment}', 'staging'),
+        expected: 'Env: staging, Node: node-1',
+      },
+      {
+        name: 'should work without replaceVariables function',
+        template: 'Server: ${server}, Port: ${port}',
+        dataRow: { server: 'web-01', port: 8080 },
+        replaceVariables: undefined,
+        expected: 'Server: web-01, Port: 8080',
+      },
+      {
+        name: 'should handle multiple dashboard variables',
+        template: '$env-$region: ${status}',
+        dataRow: { status: 'healthy' },
+        replaceVariables: (str: string) => str.replace('$env', 'prod').replace('$region', 'us-east'),
+        expected: 'prod-us-east: healthy',
+      },
+      {
+        name: 'should not double-escape characters from dashboard variables',
+        template: '$var with "quotes": ${field}',
+        dataRow: { field: 'value' },
+        replaceVariables: (str: string) => str.replace('$var', 'test'),
+        expected: 'test with "quotes": value',
+      },
+      {
+        name: 'should handle empty data row',
+        template: 'Prefix $var ${missing}',
+        dataRow: {},
+        replaceVariables: (str: string) => str.replace('$var', 'value'),
+        expected: 'Prefix value ',
+      },
+      {
+        name: 'should handle only dashboard variables',
+        template: '$var1 and $var2',
+        dataRow: {},
+        replaceVariables: (str: string) => str.replace('$var1', 'foo').replace('$var2', 'bar'),
+        expected: 'foo and bar',
+      },
+      {
+        name: 'should handle only field interpolation',
+        template: '${field1} and ${field2}',
+        dataRow: { field1: 'hello', field2: 'world' },
+        replaceVariables: undefined,
+        expected: 'hello and world',
+      },
+      {
+        name: 'should escape special characters in field values',
+        template: '$env: ${status}',
+        dataRow: { status: 'error: "failed"' },
+        replaceVariables: (str: string) => str.replace('$env', 'prod'),
+        expected: 'prod: error: \\&quot;failed\\&quot;',
+      },
+      {
+        name: 'should preserve literal backslash-n in template',
+        template: 'Line1\\n${field}',
+        dataRow: { field: 'value' },
+        replaceVariables: (str: string) => str,
+        expected: 'Line1\\nvalue',
+      },
+      {
+        name: 'should handle complex Grafana built-in variables',
+        template: 'Dashboard: ${__dashboard.name}, Field: ${cpu}',
+        dataRow: { cpu: '45%' },
+        replaceVariables: (str: string) => str.replace('${__dashboard.name}', 'MyDashboard'),
+        expected: 'Dashboard: MyDashboard, Field: 45%',
+      },
+      {
+        name: 'should pass through plain text unchanged',
+        template: 'Just plain text',
+        dataRow: {},
+        replaceVariables: undefined,
+        expected: 'Just plain text',
+      },
+    ];
+
+    testCases.forEach(({ name, template, dataRow, replaceVariables, expected }) => {
+      it(name, () => {
+        expect(interpolateLabelWithVariables(template, dataRow, replaceVariables)).toBe(expected);
       });
     });
   });
