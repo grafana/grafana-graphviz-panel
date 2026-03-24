@@ -474,6 +474,61 @@ describe('overrides', () => {
       expect(result).toContain('B: inactive');
       expect(result).toContain('C: pending');
     });
+
+    it('should apply dashboard variables in label template', () => {
+      const dot = 'digraph G { A; }';
+      const overrides = [
+        {
+          id: '1',
+          targetNodeIds: ['A'],
+          matchFieldName: 'node_id',
+          matchValue: 'A',
+          rules: [{ kind: RuleKind.LABEL, labelTemplate: 'Env: $environment\\nStatus: ${status}' }],
+        },
+      ];
+      const replaceVariables = (str: string) => str.replace('$environment', 'production');
+
+      const result = applyDataDrivenNodeLabels(dot, overrides, mockData, replaceVariables);
+
+      expect(result).toContain('Env: production');
+      expect(result).toContain('Status: active');
+    });
+
+    it('should work without replaceVariables function', () => {
+      const dot = 'digraph G { A; }';
+      const overrides = [
+        {
+          id: '1',
+          targetNodeIds: ['A'],
+          matchFieldName: 'node_id',
+          matchValue: 'A',
+          rules: [{ kind: RuleKind.LABEL, labelTemplate: 'Status: ${status}' }],
+        },
+      ];
+
+      const result = applyDataDrivenNodeLabels(dot, overrides, mockData, undefined);
+
+      expect(result).toContain('Status: active');
+    });
+
+    it('should apply dashboard variables to existing label interpolation', () => {
+      const dot = 'digraph G { A [label="$environment: ${status}"]; }';
+      const overrides = [
+        {
+          id: '1',
+          targetNodeIds: ['A'],
+          matchFieldName: 'node_id',
+          matchValue: 'A',
+          rules: [],
+        },
+      ];
+      const replaceVariables = (str: string) => str.replace('$environment', 'production');
+
+      const result = applyDataDrivenNodeLabels(dot, overrides, mockData, replaceVariables);
+
+      expect(result).toContain('production');
+      expect(result).toContain('active');
+    });
   });
 
   describe('applyDataDrivenEdgeLabels', () => {
@@ -608,6 +663,62 @@ describe('overrides', () => {
 
       const result = applyDataDrivenEdgeLabels(dot, overrides, mockData);
 
+      expect(result).toContain('100Mbps');
+    });
+
+    it('should apply dashboard variables in edge label template', () => {
+      const dot = 'digraph G { A -> B; }';
+      const overrides = [
+        {
+          id: '1',
+          targetEdgeIds: ['A__to__B'],
+          matchFieldName: 'edge_id',
+          matchValue: 'A__to__B',
+          rules: [{ kind: RuleKind.LABEL, labelTemplate: '$environment\\n${bandwidth}\\n${latency}' }],
+        },
+      ];
+      const replaceVariables = (str: string) => str.replace('$environment', 'production');
+
+      const result = applyDataDrivenEdgeLabels(dot, overrides, mockData, replaceVariables);
+
+      expect(result).toContain('production');
+      expect(result).toContain('100Mbps');
+      expect(result).toContain('5ms');
+    });
+
+    it('should work without replaceVariables function for edges', () => {
+      const dot = 'digraph G { A -> B; }';
+      const overrides = [
+        {
+          id: '1',
+          targetEdgeIds: ['A__to__B'],
+          matchFieldName: 'edge_id',
+          matchValue: 'A__to__B',
+          rules: [{ kind: RuleKind.LABEL, labelTemplate: '${bandwidth}' }],
+        },
+      ];
+
+      const result = applyDataDrivenEdgeLabels(dot, overrides, mockData, undefined);
+
+      expect(result).toContain('100Mbps');
+    });
+
+    it('should apply dashboard variables to existing edge label interpolation', () => {
+      const dot = 'digraph G { A -> B [label="$region: ${bandwidth}"]; }';
+      const overrides = [
+        {
+          id: '1',
+          targetEdgeIds: ['A__to__B'],
+          matchFieldName: 'edge_id',
+          matchValue: 'A__to__B',
+          rules: [],
+        },
+      ];
+      const replaceVariables = (str: string) => str.replace('$region', 'us-east');
+
+      const result = applyDataDrivenEdgeLabels(dot, overrides, mockData, replaceVariables);
+
+      expect(result).toContain('us-east');
       expect(result).toContain('100Mbps');
     });
   });

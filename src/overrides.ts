@@ -1,7 +1,7 @@
 import { fromDot, toDot } from 'ts-graphviz';
 import { EdgeOverride, NodeOverride, RuleKind } from './types';
 import { DataDrivenColors, DataDrivenWidths, findMatchedRow } from './data';
-import { interpolateLabel, hasInterpolation } from './interpolation';
+import { interpolateLabelWithVariables, hasInterpolation } from './interpolation';
 import { getEdgeId, findNodeById } from './utils/graphvizAst';
 
 export function addStyleToCommaList(existingStyle: string | null, newStyle: string): string {
@@ -48,7 +48,13 @@ export function applyNodeStyleOverrides(dotString: string, nodeOverrides: NodeOv
   return applyStyleMappings(dotString, nodeOverrides);
 }
 
-function applyLabelToNode(model: any, nodeId: string, labelRules: any[], dataRow: Record<string, any>): void {
+function applyLabelToNode(
+  model: any,
+  nodeId: string,
+  labelRules: any[],
+  dataRow: Record<string, any>,
+  replaceVariables?: (value: string) => string
+): void {
   const node = findNodeById(model, nodeId);
   if (!node) {
     return;
@@ -58,9 +64,9 @@ function applyLabelToNode(model: any, nodeId: string, labelRules: any[], dataRow
   let finalLabel = currentLabel;
 
   if (labelRules.length > 0 && labelRules[0].labelTemplate) {
-    finalLabel = interpolateLabel(labelRules[0].labelTemplate, dataRow);
+    finalLabel = interpolateLabelWithVariables(labelRules[0].labelTemplate, dataRow, replaceVariables);
   } else if (currentLabel && hasInterpolation(currentLabel)) {
-    finalLabel = interpolateLabel(currentLabel, dataRow);
+    finalLabel = interpolateLabelWithVariables(currentLabel, dataRow, replaceVariables);
   }
 
   if (finalLabel !== currentLabel) {
@@ -68,7 +74,13 @@ function applyLabelToNode(model: any, nodeId: string, labelRules: any[], dataRow
   }
 }
 
-function applyLabelToEdgeHelper(model: any, edgeId: string, labelRules: any[], dataRow: Record<string, any>): void {
+function applyLabelToEdgeHelper(
+  model: any,
+  edgeId: string,
+  labelRules: any[],
+  dataRow: Record<string, any>,
+  replaceVariables?: (value: string) => string
+): void {
   for (const edge of model.edges) {
     const currentEdgeId = getEdgeId(edge);
 
@@ -77,9 +89,9 @@ function applyLabelToEdgeHelper(model: any, edgeId: string, labelRules: any[], d
       let finalLabel = currentLabel;
 
       if (labelRules.length > 0 && labelRules[0].labelTemplate) {
-        finalLabel = interpolateLabel(labelRules[0].labelTemplate, dataRow);
+        finalLabel = interpolateLabelWithVariables(labelRules[0].labelTemplate, dataRow, replaceVariables);
       } else if (currentLabel && hasInterpolation(currentLabel)) {
-        finalLabel = interpolateLabel(currentLabel, dataRow);
+        finalLabel = interpolateLabelWithVariables(currentLabel, dataRow, replaceVariables);
       }
 
       if (finalLabel !== currentLabel) {
@@ -90,7 +102,12 @@ function applyLabelToEdgeHelper(model: any, edgeId: string, labelRules: any[], d
   }
 }
 
-export function applyDataDrivenNodeLabels(dotString: string, nodeOverrides: NodeOverride[], data: any): string {
+export function applyDataDrivenNodeLabels(
+  dotString: string,
+  nodeOverrides: NodeOverride[],
+  data: any,
+  replaceVariables?: (value: string) => string
+): string {
   if (!data.series || data.series.length === 0) {
     return dotString;
   }
@@ -113,14 +130,19 @@ export function applyDataDrivenNodeLabels(dotString: string, nodeOverrides: Node
         return;
       }
 
-      applyLabelToNode(model, nodeId, labelRules, dataRow);
+      applyLabelToNode(model, nodeId, labelRules, dataRow, replaceVariables);
     });
   });
 
   return toDot(model);
 }
 
-export function applyDataDrivenEdgeLabels(dotString: string, edgeOverrides: EdgeOverride[], data: any): string {
+export function applyDataDrivenEdgeLabels(
+  dotString: string,
+  edgeOverrides: EdgeOverride[],
+  data: any,
+  replaceVariables?: (value: string) => string
+): string {
   if (!data.series || data.series.length === 0) {
     return dotString;
   }
@@ -143,7 +165,7 @@ export function applyDataDrivenEdgeLabels(dotString: string, edgeOverrides: Edge
         return;
       }
 
-      applyLabelToEdgeHelper(model, edgeId, labelRules, dataRow);
+      applyLabelToEdgeHelper(model, edgeId, labelRules, dataRow, replaceVariables);
     });
   });
 
