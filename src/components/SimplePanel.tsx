@@ -76,6 +76,9 @@ export const SimplePanel: React.FC<Props> = ({
     }
 
     return replaceVariables(dotDiagram);
+    // NOTE: `renderCounter` is provided by Grafana and increments when dashboard variables change,
+    //       this ensures the diagram re-renders with updated variable values
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options.inputMode, options.dotDiagram, options.dotQueryConfig, data.series, replaceVariables, renderCounter]);
 
   const isEmpty = isEmptyDiagram(effectiveDotDiagram);
