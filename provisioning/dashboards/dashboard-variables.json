@@ -1,0 +1,366 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 18,
+        "x": 6,
+        "y": 0
+      },
+      "id": 1,
+      "title": "Application server status",
+      "type": "grafana-graphviz-panel",
+      "options": {
+        "inputMode": "code",
+        "dotDiagram": "digraph G {\n  label=\"Server environment: $environment\";\n  labelloc=\"t\";\n  fontsize=20;\n  rankdir=LR;\n  \n  WebServer [label=\"Web Server\", shape=box];\n  AppServer [label=\"App Server\", shape=box];\n  Database [label=\"Database\", shape=cylinder];\n  Cache [label=\"Cache\", shape=ellipse];\n  \n  WebServer -> AppServer;\n  AppServer -> Database;\n  AppServer -> Cache;\n}",
+        "layoutEngine": "dot",
+        "rankDirection": "LR",
+        "edgeOverrides": [],
+        "nodeOverrides": [
+          {
+            "id": "node_override_1",
+            "targetNodeIds": ["WebServer", "AppServer", "Database", "Cache"],
+            "matchMode": "manual",
+            "matchFieldName": "server",
+            "matchPattern": "${id}",
+            "rules": [
+              {
+                "kind": "fillColor",
+                "colorFieldName": "status_value",
+                "thresholdId": "status_threshold"
+              },
+              {
+                "kind": "label",
+                "labelTemplate": "${server}\\nCPU: ${cpu}%\\nMem: ${memory}%\\n${status}"
+              }
+            ]
+          }
+        ],
+        "namedThresholds": [
+          {
+            "id": "status_threshold",
+            "name": "Status Threshold",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "orange",
+                "value": 75
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource"
+          },
+          "refId": "A",
+          "scenarioId": "csv_content",
+          "csvContent": "environment,server,cpu,memory,status,status_value\nproduction,WebServer,25,45,healthy,25\nproduction,AppServer,35,52,healthy,35\nproduction,Database,42,58,healthy,42\nproduction,Cache,18,34,healthy,18\nstaging,WebServer,55,68,warning,68\nstaging,AppServer,62,75,warning,75\nstaging,Database,78,82,warning,82\nstaging,Cache,48,55,warning,55\ndevelopment,WebServer,88,92,critical,92\ndevelopment,AppServer,95,96,critical,96\ndevelopment,Database,91,94,critical,94\ndevelopment,Cache,85,89,critical,89",
+          "hide": false
+        }
+      ],
+      "transformations": [
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "fieldName": "environment",
+                "config": {
+                  "id": "equal",
+                  "options": {
+                    "value": "$environment"
+                  }
+                }
+              }
+            ],
+            "type": "include",
+            "match": "all"
+          }
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 18,
+        "x": 6,
+        "y": 12
+      },
+      "id": 2,
+      "title": "Network status",
+      "type": "grafana-graphviz-panel",
+      "options": {
+        "inputMode": "code",
+        "dotDiagram": "digraph G {\n  label=\"Network environment: $environment\";\n  labelloc=\"t\";\n  fontsize=18;\n  rankdir=TB;\n  \n  LoadBalancer [label=\"LoadBalancer\", shape=diamond];\n  WebServer [label=\"WebServer\", shape=box];\n  AppServer [label=\"AppServer\", shape=box];\n  \n  LoadBalancer -> WebServer;\n  LoadBalancer -> AppServer;\n}",
+        "layoutEngine": "dot",
+        "rankDirection": "TB",
+        "edgeOverrides": [
+          {
+            "id": "edge_override_1",
+            "targetEdgeIds": ["LoadBalancer__to__WebServer", "LoadBalancer__to__AppServer"],
+            "matchMode": "manual",
+            "matchFieldName": "edge_id",
+            "matchPattern": "${id}",
+            "rules": [
+              {
+                "kind": "strokeWidth",
+                "widthFieldName": "bandwidth_normalized"
+              },
+              {
+                "kind": "strokeColor",
+                "colorFieldName": "latency_ms",
+                "thresholdId": "latency_threshold"
+              },
+              {
+                "kind": "label",
+                "labelTemplate": "${bandwidth_mbps} Mbps\\n${latency_ms}ms\\n${packet_loss}% loss"
+              }
+            ]
+          }
+        ],
+        "nodeOverrides": [],
+        "namedThresholds": [
+          {
+            "id": "latency_threshold",
+            "name": "Latency Threshold",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 20
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource"
+          },
+          "refId": "A",
+          "scenarioId": "csv_content",
+          "csvContent": "environment,edge_id,bandwidth_mbps,latency_ms,packet_loss,bandwidth_normalized\nproduction,LoadBalancer__to__WebServer,850,8,0.01,3.4\nproduction,LoadBalancer__to__AppServer,920,5,0.005,3.7\nstaging,LoadBalancer__to__WebServer,450,25,0.5,1.8\nstaging,LoadBalancer__to__AppServer,380,32,0.8,1.5\ndevelopment,LoadBalancer__to__WebServer,120,65,2.1,0.5\ndevelopment,LoadBalancer__to__AppServer,95,78,3.5,0.4",
+          "hide": false
+        }
+      ],
+      "transformations": [
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "fieldName": "environment",
+                "config": {
+                  "id": "equal",
+                  "options": {
+                    "value": "$environment"
+                  }
+                }
+              }
+            ],
+            "type": "include",
+            "match": "all"
+          }
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource"
+      },
+      "gridPos": {
+        "h": 24,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 3,
+      "title": "Environment health checks",
+      "type": "grafana-graphviz-panel",
+      "options": {
+        "inputMode": "code",
+        "dotDiagram": "digraph G {\n  development [shape=box, URL=\"/d/${__dashboard.uid}/${__dashboard.name}?var-environment=development\"];\n  staging [shape=box, URL=\"/d/${__dashboard.uid}/${__dashboard.name}?var-environment=staging\"];\n  production [shape=box, URL=\"/d/${__dashboard.uid}/${__dashboard.name}?var-environment=production\"];\n}",
+        "layoutEngine": "dot",
+        "rankDirection": "LR",
+        "edgeOverrides": [],
+        "nodeOverrides": [
+          {
+            "id": "production_node",
+            "targetNodeIds": ["production"],
+            "matchMode": "manual",
+            "matchFieldName": "environment",
+            "matchValue": "production",
+            "rules": [
+              {
+                "kind": "fillColor",
+                "colorFieldName": "avg_status",
+                "thresholdId": "status_threshold"
+              },
+              {
+                "kind": "label",
+                "labelTemplate": "production\\nAvg CPU: ${avg_cpu}%\\nAvg Mem: ${avg_memory}%\\nStatus: ${overall_status}"
+              }
+            ]
+          },
+          {
+            "id": "staging_node",
+            "targetNodeIds": ["staging"],
+            "matchMode": "manual",
+            "matchFieldName": "environment",
+            "matchValue": "staging",
+            "rules": [
+              {
+                "kind": "fillColor",
+                "colorFieldName": "avg_status",
+                "thresholdId": "status_threshold"
+              },
+              {
+                "kind": "label",
+                "labelTemplate": "staging\\nAvg CPU: ${avg_cpu}%\\nAvg Mem: ${avg_memory}%\\nStatus: ${overall_status}"
+              }
+            ]
+          },
+          {
+            "id": "development_node",
+            "targetNodeIds": ["development"],
+            "matchMode": "manual",
+            "matchFieldName": "environment",
+            "matchValue": "development",
+            "rules": [
+              {
+                "kind": "fillColor",
+                "colorFieldName": "avg_status",
+                "thresholdId": "status_threshold"
+              },
+              {
+                "kind": "label",
+                "labelTemplate": "development\\nAvg CPU: ${avg_cpu}%\\nAvg Mem: ${avg_memory}%\\nStatus: ${overall_status}"
+              }
+            ]
+          }
+        ],
+        "namedThresholds": [
+          {
+            "id": "status_threshold",
+            "name": "Status Threshold",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "orange",
+                "value": 75
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource"
+          },
+          "refId": "A",
+          "scenarioId": "csv_content",
+          "csvContent": "environment,avg_cpu,avg_memory,overall_status,avg_status\nproduction,30,47,healthy,30\nstaging,61,70,warning,70\ndevelopment,90,93,critical,93",
+          "hide": false
+        }
+      ]
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 39,
+  "tags": ["graphviz", "variables"],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "production",
+          "value": "production"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Environment",
+        "multi": false,
+        "name": "environment",
+        "options": [
+          {
+            "selected": true,
+            "text": "production",
+            "value": "production"
+          },
+          {
+            "selected": false,
+            "text": "staging",
+            "value": "staging"
+          },
+          {
+            "selected": false,
+            "text": "development",
+            "value": "development"
+          }
+        ],
+        "query": "production,staging,development",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Dashboard variables",
+  "uid": "graphviz-variables",
+  "version": 1,
+  "weekStart": ""
+}
