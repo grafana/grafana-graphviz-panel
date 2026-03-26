@@ -41,6 +41,8 @@ export const SimplePanel: React.FC<Props> = ({
   id,
   eventBus,
   onOptionsChange,
+  replaceVariables,
+  renderCounter,
 }) => {
   const styles = useStyles2(getStyles);
   const theme = useTheme2();
@@ -52,6 +54,8 @@ export const SimplePanel: React.FC<Props> = ({
   const [queryError, setQueryError] = useState<string | null>(null);
 
   const effectiveDotDiagram = useMemo(() => {
+    let dotDiagram = '';
+
     if (options.inputMode === InputMode.QUERY) {
       try {
         const dot = extractDotFromQuery(
@@ -60,16 +64,22 @@ export const SimplePanel: React.FC<Props> = ({
           options.dotQueryConfig?.maxSizeBytes
         );
         setQueryError(null);
-        return dot || '';
+        dotDiagram = dot || '';
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Failed to extract DOT diagram from query';
         setQueryError(errorMessage);
         return '';
       }
+    } else {
+      setQueryError(null);
+      dotDiagram = options.dotDiagram;
     }
-    setQueryError(null);
-    return options.dotDiagram;
-  }, [options.inputMode, options.dotDiagram, options.dotQueryConfig, data.series]);
+
+    return replaceVariables(dotDiagram);
+    // NOTE: `renderCounter` is provided by Grafana and increments when dashboard variables change,
+    //       this ensures the diagram re-renders with updated variable values
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options.inputMode, options.dotDiagram, options.dotQueryConfig, data.series, replaceVariables, renderCounter]);
 
   const isEmpty = isEmptyDiagram(effectiveDotDiagram);
   const isBuilderMode = options.inputMode === InputMode.BUILDER && isEditMode;
@@ -86,7 +96,8 @@ export const SimplePanel: React.FC<Props> = ({
     data,
     fieldConfig,
     theme,
-    isEditMode
+    isEditMode,
+    replaceVariables
   );
 
   const handleDotChange = useCallback(

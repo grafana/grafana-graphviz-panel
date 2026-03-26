@@ -553,6 +553,36 @@ export function findMatchedRow(
   }
 }
 
+/**
+ * Extracts the first row from a DataFrame series when there is exactly one row.
+ * Useful for dashboard variable filtering scenarios where data is filtered to a single row.
+ *
+ * @returns Record of field names to values, or undefined if no single-row data found
+ */
+export function getFirstDataRow(series: DataFrame[]): Record<string, any> | undefined {
+  if (!series || series.length === 0) {
+    return undefined;
+  }
+
+  for (const frame of series) {
+    if (frame.fields && frame.fields.length > 0) {
+      if (frame.length === 1) {
+        const row: Record<string, any> = {};
+        frame.fields.forEach((field) => {
+          if (field.values && field.values.length > 0) {
+            row[field.name] = field.values[0];
+          }
+        });
+        if (Object.keys(row).length > 0) {
+          return row;
+        }
+      }
+    }
+  }
+
+  return undefined;
+}
+
 export interface MatchDetectionResult {
   matchFieldName: string;
   matchPercentage: number;

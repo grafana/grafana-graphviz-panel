@@ -52,6 +52,22 @@ export function interpolateLabel(labelTemplate: string, dataRow: Record<string, 
   return labelTemplate.replace(INTERPOLATION_REGEX, (_match, fieldName) => replaceFieldReference(fieldName, dataRow));
 }
 
+export function interpolateLabelWithVariables(
+  labelTemplate: string,
+  dataRow: Record<string, any>,
+  replaceVariables?: (value: string) => string
+): string {
+  let result = labelTemplate;
+
+  if (replaceVariables) {
+    result = replaceVariables(result);
+  }
+
+  result = result.replace(INTERPOLATION_REGEX, (_match, fieldName) => replaceFieldReference(fieldName, dataRow));
+
+  return result;
+}
+
 export function hasInterpolation(label: string | undefined): boolean {
   if (!label) {
     return false;
@@ -64,4 +80,15 @@ export function extractFieldReferences(labelTemplate: string): string[] {
   INTERPOLATION_REGEX.lastIndex = 0;
   const matches = labelTemplate.matchAll(INTERPOLATION_REGEX);
   return Array.from(matches, (m) => m[1]);
+}
+
+export function interpolateLabelIfNeeded(
+  label: string | undefined,
+  dataRow: Record<string, any>,
+  replaceVariables?: (value: string) => string
+): string | undefined {
+  if (!label || !hasInterpolation(label)) {
+    return label;
+  }
+  return interpolateLabelWithVariables(label, dataRow, replaceVariables);
 }

@@ -1959,4 +1959,185 @@ describe('Integration functions - Phase 2', () => {
       expect(result).toBe(DataFormatStrategy.WIDE);
     });
   });
+
+  describe('getFirstDataRow', () => {
+    const { getFirstDataRow } = require('./data');
+
+    it('should return undefined for empty series', () => {
+      const result = getFirstDataRow([]);
+      expect(result).toBeUndefined();
+    });
+
+    it('should return undefined for null series', () => {
+      const result = getFirstDataRow(null as any);
+      expect(result).toBeUndefined();
+    });
+
+    it('should return row object from single-row frame', () => {
+      const frames: DataFrame[] = [
+        {
+          fields: [
+            { name: 'hostname', type: FieldType.string, values: ['server1'], config: {} },
+            { name: 'status', type: FieldType.string, values: ['active'], config: {} },
+            { name: 'cpu', type: FieldType.number, values: [75], config: {} },
+          ],
+          length: 1,
+        } as DataFrame,
+      ];
+
+      const result = getFirstDataRow(frames);
+
+      expect(result).toEqual({
+        hostname: 'server1',
+        status: 'active',
+        cpu: 75,
+      });
+    });
+
+    it('should return undefined for multi-row frame', () => {
+      const frames: DataFrame[] = [
+        {
+          fields: [
+            { name: 'id', type: FieldType.string, values: ['A', 'B', 'C'], config: {} },
+            { name: 'value', type: FieldType.number, values: [1, 2, 3], config: {} },
+          ],
+          length: 3,
+        } as DataFrame,
+      ];
+
+      const result = getFirstDataRow(frames);
+      expect(result).toBeUndefined();
+    });
+
+    it('should return undefined for zero-row frame', () => {
+      const frames: DataFrame[] = [
+        {
+          fields: [
+            { name: 'id', type: FieldType.string, values: [], config: {} },
+            { name: 'value', type: FieldType.number, values: [], config: {} },
+          ],
+          length: 0,
+        } as DataFrame,
+      ];
+
+      const result = getFirstDataRow(frames);
+      expect(result).toBeUndefined();
+    });
+
+    it('should return first single-row frame when multiple frames exist', () => {
+      const frames: DataFrame[] = [
+        {
+          fields: [{ name: 'id', type: FieldType.string, values: ['A', 'B'], config: {} }],
+          length: 2,
+        } as DataFrame,
+        {
+          fields: [
+            { name: 'hostname', type: FieldType.string, values: ['server1'], config: {} },
+            { name: 'region', type: FieldType.string, values: ['us-east'], config: {} },
+          ],
+          length: 1,
+        } as DataFrame,
+        {
+          fields: [{ name: 'other', type: FieldType.string, values: ['value'], config: {} }],
+          length: 1,
+        } as DataFrame,
+      ];
+
+      const result = getFirstDataRow(frames);
+
+      expect(result).toEqual({
+        hostname: 'server1',
+        region: 'us-east',
+      });
+    });
+
+    it('should return undefined for frame with no fields', () => {
+      const frames: DataFrame[] = [
+        {
+          fields: [],
+          length: 0,
+        } as DataFrame,
+      ];
+
+      const result = getFirstDataRow(frames);
+      expect(result).toBeUndefined();
+    });
+
+    it('should skip fields with empty values array', () => {
+      const frames: DataFrame[] = [
+        {
+          fields: [
+            { name: 'valid', type: FieldType.string, values: ['value'], config: {} },
+            { name: 'empty', type: FieldType.string, values: [], config: {} },
+          ],
+          length: 1,
+        } as DataFrame,
+      ];
+
+      const result = getFirstDataRow(frames);
+
+      expect(result).toEqual({
+        valid: 'value',
+      });
+    });
+
+    it('should return undefined when all fields have empty values', () => {
+      const frames: DataFrame[] = [
+        {
+          fields: [
+            { name: 'empty1', type: FieldType.string, values: [], config: {} },
+            { name: 'empty2', type: FieldType.string, values: [], config: {} },
+          ],
+          length: 1,
+        } as DataFrame,
+      ];
+
+      const result = getFirstDataRow(frames);
+      expect(result).toBeUndefined();
+    });
+
+    it('should handle mixed field types', () => {
+      const frames: DataFrame[] = [
+        {
+          fields: [
+            { name: 'str', type: FieldType.string, values: ['text'], config: {} },
+            { name: 'num', type: FieldType.number, values: [42], config: {} },
+            { name: 'bool', type: FieldType.boolean, values: [true], config: {} },
+            { name: 'time', type: FieldType.time, values: [1609459200000], config: {} },
+          ],
+          length: 1,
+        } as DataFrame,
+      ];
+
+      const result = getFirstDataRow(frames);
+
+      expect(result).toEqual({
+        str: 'text',
+        num: 42,
+        bool: true,
+        time: 1609459200000,
+      });
+    });
+
+    it('should handle null and undefined field values', () => {
+      const frames: DataFrame[] = [
+        {
+          fields: [
+            { name: 'valid', type: FieldType.string, values: ['value'], config: {} },
+            { name: 'null_val', type: FieldType.string, values: [null], config: {} },
+            { name: 'undef_val', type: FieldType.string, values: [undefined], config: {} },
+          ],
+          length: 1,
+        } as DataFrame,
+      ];
+
+      const result = getFirstDataRow(frames);
+
+      expect(result).toEqual({
+        valid: 'value',
+        null_val: null,
+        undef_val: undefined,
+      });
+    });
+  });
 });

@@ -11,6 +11,8 @@ import {
   applyDataDrivenWidths,
   applyDataDrivenNodeLabels,
   applyDataDrivenEdgeLabels,
+  interpolateAllNodeLabels,
+  interpolateAllEdgeLabels,
 } from './overrides';
 import { processDataFieldBindings, processWidthRules } from './data';
 import { renderDotToSvg } from './dot';
@@ -35,6 +37,7 @@ export interface RenderError {
  * @param data - Panel data from datasource
  * @param fieldConfig - Field configuration including thresholds
  * @param theme - The Grafana theme object for styling
+ * @param replaceVariables - Function to replace dashboard variables
  * @returns Error state if rendering fails
  */
 export function useThemedDotSvg(
@@ -49,7 +52,8 @@ export function useThemedDotSvg(
   data: PanelData,
   fieldConfig: FieldConfigSource,
   theme: GrafanaTheme2,
-  isEditMode: boolean
+  isEditMode: boolean,
+  replaceVariables?: (value: string) => string
 ): RenderError | null {
   const [renderError, setRenderError] = useState<RenderError | null>(null);
   useEffect(() => {
@@ -88,8 +92,11 @@ export function useThemedDotSvg(
         const dataDrivenWidths = processWidthRules(data, edgeOverrides);
         const dotWithDataWidths = applyDataDrivenWidths(dotWithDataColors, dataDrivenWidths);
 
-        const dotWithNodeLabels = applyDataDrivenNodeLabels(dotWithDataWidths, nodeOverrides, data);
-        const dotWithAllLabels = applyDataDrivenEdgeLabels(dotWithNodeLabels, edgeOverrides, data);
+        const dotWithNodeLabels = applyDataDrivenNodeLabels(dotWithDataWidths, nodeOverrides, data, replaceVariables);
+        const dotWithEdgeLabels = applyDataDrivenEdgeLabels(dotWithNodeLabels, edgeOverrides, data, replaceVariables);
+
+        const dotWithAllNodeLabels = interpolateAllNodeLabels(dotWithEdgeLabels, data, replaceVariables);
+        const dotWithAllLabels = interpolateAllEdgeLabels(dotWithAllNodeLabels, data, replaceVariables);
 
         const svg = await renderDotToSvg(dotWithAllLabels, layoutEngine, rankDirection, splineType);
 
@@ -133,6 +140,7 @@ export function useThemedDotSvg(
     theme,
     svgRef,
     isEditMode,
+    replaceVariables,
   ]);
 
   return renderError;
