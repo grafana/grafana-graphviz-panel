@@ -13,7 +13,7 @@
         "type": "grafana-testdata-datasource"
       },
       "gridPos": {
-        "h": 12,
+        "h": 8,
         "w": 18,
         "x": 6,
         "y": 0
@@ -109,10 +109,10 @@
         "type": "grafana-testdata-datasource"
       },
       "gridPos": {
-        "h": 12,
+        "h": 8,
         "w": 18,
         "x": 6,
-        "y": 12
+        "y": 8
       },
       "id": 2,
       "title": "Network status",
@@ -205,7 +205,7 @@
         "type": "grafana-testdata-datasource"
       },
       "gridPos": {
-        "h": 24,
+        "h": 12,
         "w": 6,
         "x": 0,
         "y": 0
@@ -311,6 +311,61 @@
           "hide": false
         }
       ]
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 12
+      },
+      "id": 4,
+      "title": "Hostname",
+      "type": "grafana-graphviz-panel",
+      "options": {
+        "inputMode": "code",
+        "dotDiagram": "digraph G {\n  label=\"Environment: $environment\";\n  labelloc=\"t\";\n  fontsize=16;\n  rankdir=LR;\n  \n  Hostname [label=\"Hostname\", shape=box];\n  Server [label=\"${hostname}\", shape=ellipse];\n  \n  Hostname -> Server;\n}",
+        "layoutEngine": "dot",
+        "rankDirection": "LR",
+        "edgeOverrides": [],
+        "nodeOverrides": [],
+        "namedThresholds": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource"
+          },
+          "refId": "A",
+          "scenarioId": "csv_content",
+          "csvContent": "environment,hostname\nproduction,web-01.prod\nstaging,web-01.staging\ndevelopment,web-01.dev",
+          "hide": false
+        }
+      ],
+      "transformations": [
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "fieldName": "environment",
+                "config": {
+                  "id": "equal",
+                  "options": {
+                    "value": "$environment"
+                  }
+                }
+              }
+            ],
+            "type": "include",
+            "match": "all"
+          }
+        }
+      ],
+      "description": "BUG: Label variable substitution ($hostname) does NOT work without an override. You will see literal \"$hostname\" text instead of actual hostnames like \"web-01.prod\"."
     }
   ],
   "refresh": "",
@@ -361,6 +416,6 @@
   "timezone": "browser",
   "title": "Dashboard variables",
   "uid": "graphviz-variables",
-  "version": 1,
-  "weekStart": ""
+  "weekStart": "",
+  "version": 2
 }
