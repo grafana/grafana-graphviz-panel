@@ -1,4 +1,10 @@
-import { addStyleToCommaList, calculateEdgeWidthAndArrowSize } from './overrides';
+import {
+  addStyleToCommaList,
+  calculateEdgeWidthAndArrowSize,
+  interpolateAllNodeLabels,
+  interpolateAllEdgeLabels,
+} from './overrides';
+import { FieldType } from '@grafana/data';
 const {
   applyNodeStyleOverrides,
   applyEdgeStyleOverrides,
@@ -903,6 +909,235 @@ describe('overrides', () => {
       const result = applyDataDrivenWidths(dot, widths);
 
       expect(result).toContain('penwidth');
+    });
+  });
+
+  describe('interpolateAllNodeLabels', () => {
+    const mockData = {
+      series: [
+        {
+          fields: [
+            { name: 'node_id', type: FieldType.string, values: ['WebServer', 'AppServer'], config: {} },
+            { name: 'hostname', type: FieldType.string, values: ['web-01.prod', 'app-01.prod'], config: {} },
+            { name: 'environment', type: FieldType.string, values: ['production', 'production'], config: {} },
+          ],
+          length: 2,
+        },
+      ],
+    };
+
+    it('should interpolate node labels with ${hostname} variable syntax', () => {
+      const dotString =
+        'digraph G {\n        WebServer [label="Web Server: ${hostname}"];\n        AppServer [label="App Server: ${hostname}"];\n      }';
+
+      const result = interpolateAllNodeLabels(dotString, mockData);
+
+      expect(result).toContain('Web Server: web-01.prod');
+      expect(result).toContain('App Server: app-01.prod');
+      expect(result).not.toContain('${hostname}');
+    });
+
+    it('should interpolate node labels with ${hostname} variable', () => {
+      const dotString = 'digraph G {\n        WebServer [label="${hostname}"];\n      }';
+
+      const result = interpolateAllNodeLabels(dotString, mockData);
+
+      expect(result).toContain('web-01.prod');
+      expect(result).not.toContain('${hostname}');
+    });
+
+    it('should not modify labels without variables', () => {
+      const dotString = `digraph G {
+        WebServer [label="Static Label"];
+      }`;
+
+      const result = interpolateAllNodeLabels(dotString, mockData);
+
+      expect(result).toContain('Static Label');
+    });
+
+    it('should handle missing data gracefully', () => {
+      const dotString = 'digraph G {\n        UnknownNode [label="${hostname}"];\n      }';
+
+      const result = interpolateAllNodeLabels(dotString, mockData);
+
+      expect(result).toContain('${hostname}');
+    });
+
+    it('should return original string when no data series', () => {
+      const dotString = 'digraph G {\n        WebServer [label="${hostname}"];\n      }';
+
+      const emptyData = { series: [] };
+      const result = interpolateAllNodeLabels(dotString, emptyData);
+
+      expect(result).toBe(dotString);
+    });
+
+    it('should call replaceVariables for dashboard variables and interpolate data fields', () => {
+      const dotString = 'digraph G {\n        WebServer [label="Server: ${hostname} in $environment"];\n      }';
+
+      const mockReplaceVariables = (value: string) => value.replace(/\$environment/g, 'production');
+
+      const result = interpolateAllNodeLabels(dotString, mockData, mockReplaceVariables);
+
+      expect(result).toContain('web-01.prod');
+      expect(result).toContain('production');
+    });
+
+    it('should use first row when there is only one row of data and node ID does not match', () => {
+      const singleRowData = {
+        series: [
+          {
+            fields: [
+              { name: 'environment', type: FieldType.string, values: ['production'], config: {} },
+              { name: 'hostname', type: FieldType.string, values: ['web-01.prod'], config: {} },
+            ],
+            length: 1,
+          },
+        ],
+      };
+
+      const dotString = 'digraph G {\n        Server [label="${hostname}"];\n      }';
+
+      const result = interpolateAllNodeLabels(dotString, singleRowData);
+
+      expect(result).toContain('web-01.prod');
+      expect(result).not.toContain('${hostname}');
+    });
+
+    it('should NOT use first row when there are multiple rows and node does not match', () => {
+      const dotString = 'digraph G {\n        UnknownNode [label="${hostname}"];\n      }';
+
+      const result = interpolateAllNodeLabels(dotString, mockData);
+
+      expect(result).toContain('${hostname}');
+      expect(result).not.toContain('web-01.prod');
+    });
+
+    it('should prefer matched node ID over single-row fallback', () => {
+      const singleRowData = {
+        series: [
+          {
+            fields: [
+              { name: 'node_id', type: FieldType.string, values: ['WebServer'], config: {} },
+              { name: 'hostname', type: FieldType.string, values: ['matched-host'], config: {} },
+            ],
+            length: 1,
+          },
+        ],
+      };
+
+      const dotString = 'digraph G {\n        WebServer [label="${hostname}"];\n      }';
+
+      const result = interpolateAllNodeLabels(dotString, singleRowData);
+
+      expect(result).toContain('matched-host');
+    });
+
+    it('should handle multiple nodes with single-row data', () => {
+      const singleRowData = {
+        series: [
+          {
+            fields: [{ name: 'hostname', type: FieldType.string, values: ['shared-host'], config: {} }],
+            length: 1,
+          },
+        ],
+      };
+
+      const dotString =
+        'digraph G {\n        NodeA [label="${hostname}"];\n        NodeB [label="${hostname}"];\n      }';
+
+      const result = interpolateAllNodeLabels(dotString, singleRowData);
+
+      const matches = (result.match(/shared-host/g) || []).length;
+      expect(matches).toBe(2);
+    });
+
+    it('should try multiple field names to match node ID', () => {
+      const dataWithServerField = {
+        series: [
+          {
+            fields: [
+              { name: 'server', type: FieldType.string, values: ['MyServer'], config: {} },
+              { name: 'value', type: FieldType.string, values: ['server-value'], config: {} },
+            ],
+            length: 1,
+          },
+        ],
+      };
+
+      const dotString = 'digraph G {\n        MyServer [label="${value}"];\n      }';
+
+      const result = interpolateAllNodeLabels(dotString, dataWithServerField);
+
+      expect(result).toContain('server-value');
+    });
+  });
+
+  describe('interpolateAllEdgeLabels', () => {
+    const mockEdgeData = {
+      series: [
+        {
+          fields: [
+            { name: 'edge_id', type: FieldType.string, values: ['A__to__B', 'C__to__D'], config: {} },
+            { name: 'bandwidth', type: FieldType.string, values: ['1000 Mbps', '500 Mbps'], config: {} },
+          ],
+          length: 2,
+        },
+      ],
+    };
+
+    it('should interpolate edge labels with variables', () => {
+      const dotString = 'digraph G {\n        A -> B [label="Bandwidth: ${bandwidth}"];\n      }';
+
+      const result = interpolateAllEdgeLabels(dotString, mockEdgeData);
+
+      expect(result).toContain('Bandwidth: 1000 Mbps');
+      expect(result).not.toContain('${bandwidth}');
+    });
+
+    it('should not modify edge labels without variables', () => {
+      const dotString = `digraph G {
+        A -> B [label="Static Edge"];
+      }`;
+
+      const result = interpolateAllEdgeLabels(dotString, mockEdgeData);
+
+      expect(result).toContain('Static Edge');
+    });
+
+    it('should handle missing edge data gracefully', () => {
+      const dotString = 'digraph G {\n        X -> Y [label="${bandwidth}"];\n      }';
+
+      const result = interpolateAllEdgeLabels(dotString, mockEdgeData);
+
+      expect(result).toContain('${bandwidth}');
+    });
+
+    it('should use first row for edges when there is only one row of data', () => {
+      const singleRowEdgeData = {
+        series: [
+          {
+            fields: [{ name: 'bandwidth', type: FieldType.string, values: ['1000 Mbps'], config: {} }],
+            length: 1,
+          },
+        ],
+      };
+
+      const dotString = 'digraph G {\n        A -> B [label="${bandwidth}"];\n      }';
+
+      const result = interpolateAllEdgeLabels(dotString, singleRowEdgeData);
+
+      expect(result).toContain('1000 Mbps');
+      expect(result).not.toContain('${bandwidth}');
+    });
+
+    it('should match edge by edge_id field', () => {
+      const dotString = 'digraph G {\n        A -> B [label="${bandwidth}"];\n      }';
+
+      const result = interpolateAllEdgeLabels(dotString, mockEdgeData);
+
+      expect(result).toContain('1000 Mbps');
     });
   });
 });

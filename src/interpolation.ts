@@ -81,3 +81,14 @@ export function extractFieldReferences(labelTemplate: string): string[] {
   const matches = labelTemplate.matchAll(INTERPOLATION_REGEX);
   return Array.from(matches, (m) => m[1]);
 }
+
+export function interpolateLabelIfNeeded(
+  label: string | undefined,
+  dataRow: Record<string, any>,
+  replaceVariables?: (value: string) => string
+): string | undefined {
+  if (!label || !hasInterpolation(label)) {
+    return label;
+  }
+  return interpolateLabelWithVariables(label, dataRow, replaceVariables);
+}

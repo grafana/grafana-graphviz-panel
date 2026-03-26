@@ -4,6 +4,7 @@ import {
   interpolateLabelWithVariables,
   hasInterpolation,
   extractFieldReferences,
+  interpolateLabelIfNeeded,
 } from './interpolation';
 
 describe('interpolation', () => {
@@ -385,6 +386,38 @@ describe('interpolation', () => {
       it(name, () => {
         expect(extractFieldReferences(input)).toEqual(expected);
       });
+    });
+  });
+
+  describe('interpolateLabelIfNeeded', () => {
+    it('should return label unchanged if no interpolation needed', () => {
+      const label = 'Plain text label';
+      const dataRow = { server: 'web-01' };
+      expect(interpolateLabelIfNeeded(label, dataRow)).toBe(label);
+    });
+
+    it('should interpolate label with variables', () => {
+      const label = 'Server: ${server}';
+      const dataRow = { server: 'web-01' };
+      expect(interpolateLabelIfNeeded(label, dataRow)).toBe('Server: web-01');
+    });
+
+    it('should return undefined if label is undefined', () => {
+      const dataRow = { server: 'web-01' };
+      expect(interpolateLabelIfNeeded(undefined, dataRow)).toBeUndefined();
+    });
+
+    it('should handle replaceVariables function', () => {
+      const label = 'Env: $environment, Server: ${server}';
+      const dataRow = { server: 'web-01' };
+      const replaceVariables = (str: string) => str.replace('$environment', 'production');
+      expect(interpolateLabelIfNeeded(label, dataRow, replaceVariables)).toBe('Env: production, Server: web-01');
+    });
+
+    it('should return label unchanged if empty string', () => {
+      const label = '';
+      const dataRow = { server: 'web-01' };
+      expect(interpolateLabelIfNeeded(label, dataRow)).toBe('');
     });
   });
 });

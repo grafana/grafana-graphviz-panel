@@ -1,7 +1,8 @@
 import { fromDot, toDot } from 'ts-graphviz';
+import { DataFrame } from '@grafana/data';
 import { EdgeOverride, NodeOverride, RuleKind } from './types';
-import { DataDrivenColors, DataDrivenWidths, findMatchedRow } from './data';
-import { interpolateLabelWithVariables, hasInterpolation } from './interpolation';
+import { DataDrivenColors, DataDrivenWidths, findMatchedRow, getFirstDataRow } from './data';
+import { interpolateLabelWithVariables, hasInterpolation, interpolateLabelIfNeeded } from './interpolation';
 import { getEdgeId, findNodeById } from './utils/graphvizAst';
 
 export function addStyleToCommaList(existingStyle: string | null, newStyle: string): string {
@@ -168,6 +169,99 @@ export function applyDataDrivenEdgeLabels(
       applyLabelToEdgeHelper(model, edgeId, labelRules, dataRow, replaceVariables);
     });
   });
+
+  return toDot(model);
+}
+
+export interface DataWithSeries {
+  series: DataFrame[];
+}
+
+export function interpolateAllNodeLabels(
+  dotString: string,
+  data: DataWithSeries,
+  replaceVariables?: (value: string) => string
+): string {
+  if (!data.series || data.series.length === 0) {
+    return dotString;
+  }
+
+  const model = fromDot(dotString);
+
+  for (const node of model.nodes) {
+    const nodeId = node.id;
+    const currentLabel = node.attributes.get('label');
+
+    if (!currentLabel || !hasInterpolation(currentLabel)) {
+      continue;
+    }
+
+    const fieldNamesToTry = ['node_id', 'server', 'hostname', 'name', 'id'];
+    let dataRow: Record<string, any> | undefined;
+
+    for (const fieldName of fieldNamesToTry) {
+      dataRow = findMatchedRow(data.series, fieldName, nodeId);
+      if (dataRow) {
+        break;
+      }
+    }
+
+    if (!dataRow) {
+      dataRow = getFirstDataRow(data.series);
+      if (!dataRow) {
+        continue;
+      }
+    }
+
+    const interpolatedLabel = interpolateLabelIfNeeded(currentLabel, dataRow, replaceVariables);
+    if (interpolatedLabel && interpolatedLabel !== currentLabel) {
+      node.attributes.set('label', interpolatedLabel);
+    }
+  }
+
+  return toDot(model);
+}
+
+export function interpolateAllEdgeLabels(
+  dotString: string,
+  data: DataWithSeries,
+  replaceVariables?: (value: string) => string
+): string {
+  if (!data.series || data.series.length === 0) {
+    return dotString;
+  }
+
+  const model = fromDot(dotString);
+
+  for (const edge of model.edges) {
+    const currentLabel = edge.attributes.get('label');
+
+    if (!currentLabel || !hasInterpolation(currentLabel)) {
+      continue;
+    }
+
+    const edgeId = getEdgeId(edge);
+    if (!edgeId) {
+      continue;
+    }
+
+    let dataRow =
+      findMatchedRow(data.series, 'edge_id', edgeId) ||
+      findMatchedRow(data.series, 'link_id', edgeId) ||
+      findMatchedRow(data.series, 'connection', edgeId);
+
+    if (!dataRow) {
+      dataRow = getFirstDataRow(data.series);
+      if (!dataRow) {
+        continue;
+      }
+    }
+
+    const interpolatedLabel = interpolateLabelIfNeeded(currentLabel, dataRow, replaceVariables);
+    if (interpolatedLabel && interpolatedLabel !== currentLabel) {
+      edge.attributes.set('label', interpolatedLabel);
+    }
+  }
 
   return toDot(model);
 }
