@@ -119,7 +119,7 @@ export interface DotQueryConfig {
   maxSizeBytes?: number;
 }
 
-export interface SimpleOptions {
+export interface PanelOptions {
   inputMode?: InputMode;
   dotDiagram: string;
   dotQueryConfig?: DotQueryConfig;

@@ -1,6 +1,6 @@
 import React, { useRef, useCallback, useMemo, useState } from 'react';
 import { PanelProps } from '@grafana/data';
-import { SimpleOptions, InputMode } from 'types';
+import { PanelOptions, InputMode } from 'types';
 import { css, cx } from '@emotion/css';
 import { useStyles2, useTheme2 } from '@grafana/ui';
 import { PanelDataErrorView } from '@grafana/runtime';
@@ -11,7 +11,7 @@ import { BuilderModeOverlay } from './BuilderModeOverlay';
 import { EmptyDiagramDisplay } from './EmptyDiagramDisplay';
 import { isEmptyDiagram } from '../utils/graphvizDot';
 
-interface Props extends PanelProps<SimpleOptions> {}
+interface Props extends PanelProps<PanelOptions> {}
 
 const getStyles = () => {
   return {
@@ -32,7 +32,7 @@ const getStyles = () => {
   };
 };
 
-export const SimplePanel: React.FC<Props> = ({
+export const Panel: React.FC<Props> = ({
   options,
   data,
   width,

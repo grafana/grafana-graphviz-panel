@@ -1,6 +1,6 @@
 import { PanelPlugin } from '@grafana/data';
-import { SimpleOptions, RankDirection, LayoutEngine, InputMode, SplineType } from './types';
-import { SimplePanel } from './components/SimplePanel';
+import { PanelOptions, RankDirection, LayoutEngine, InputMode, SplineType } from './types';
+import { Panel } from './components/Panel';
 import { DotDiagramEditor } from './components/DotDiagramEditor';
 import { BuilderModeEditor } from './components/BuilderModeEditor';
 import { NamedThresholdsEditor } from './components/NamedThresholdsEditor';
@@ -8,7 +8,7 @@ import { EdgeOverridesEditor } from './components/EdgeOverridesEditor';
 import { NodeOverridesEditor } from './components/NodeOverridesEditor';
 import { AssistantHelpEditor } from './components/AssistantHelpEditor';
 
-export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).useFieldConfig().setPanelOptions((builder) => {
+export const plugin = new PanelPlugin<PanelOptions>(Panel).useFieldConfig().setPanelOptions((builder) => {
   return builder
     .addRadio({
       path: 'inputMode',

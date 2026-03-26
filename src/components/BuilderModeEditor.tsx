@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StandardEditorProps, SelectableValue } from '@grafana/data';
 import { Button, ButtonGroup, Tooltip } from '@grafana/ui';
-import { BuilderTool, SimpleOptions, BuilderModeActions } from '../types';
+import { BuilderTool, PanelOptions, BuilderModeActions } from '../types';
 
 const TOOL_OPTIONS: Array<SelectableValue<BuilderTool>> = [
   {
@@ -30,7 +30,7 @@ const TOOL_OPTIONS: Array<SelectableValue<BuilderTool>> = [
   },
 ];
 
-export const BuilderModeEditor: React.FC<StandardEditorProps<BuilderModeActions, any, SimpleOptions>> = ({
+export const BuilderModeEditor: React.FC<StandardEditorProps<BuilderModeActions, any, PanelOptions>> = ({
   value,
   onChange,
 }) => {
