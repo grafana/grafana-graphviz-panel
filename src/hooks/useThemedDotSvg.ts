@@ -1,9 +1,9 @@
 import { useEffect, RefObject, useState } from 'react';
 import { GrafanaTheme2, PanelData, FieldConfigSource } from '@grafana/data';
 import * as d3 from 'd3-selection';
-import { validateDotSyntax, ValidationErrorInfo } from './validation';
-import { applyGraphDefaults, normalizeNodePathStyling } from './sanitization';
-import { deriveEdgeIds } from './enhancements';
+import { validateDotSyntax, ValidationErrorInfo } from '../validation';
+import { applyGraphDefaults, normalizeNodePathStyling } from '../sanitization';
+import { deriveEdgeIds } from '../enhancements';
 import {
   applyEdgeStyleOverrides,
   applyNodeStyleOverrides,
@@ -13,12 +13,12 @@ import {
   applyDataDrivenEdgeLabels,
   interpolateAllNodeLabels,
   interpolateAllEdgeLabels,
-} from './overrides';
-import { processDataFieldBindings, processWidthRules } from './data';
-import { renderDotToSvg } from './dot';
-import { applySvgTheming } from './theming';
-import { getOrCreateSvgDefinitions, applyBlurGlowFilter, applyNodeGradient } from './utils/svgFilters';
-import { EdgeOverride, NodeOverride, NamedThreshold } from './types';
+} from '../overrides';
+import { processDataFieldBindings, processWidthRules } from '../data';
+import { renderDotToSvg } from '../dot';
+import { applySvgTheming } from '../theming';
+import { getOrCreateSvgDefinitions, applyBlurGlowFilter, applyNodeGradient } from '../utils/svgFilters';
+import { EdgeOverride, NodeOverride, NamedThreshold } from '../types';
 
 export interface RenderError {
   message: string;
