@@ -1,5 +1,5 @@
 import { calculateEdgeWidthAndArrowSize, applyEdgeStyleOverrides, applyDataDrivenWidths } from './edge';
-const { RuleKind } = require('../types');
+const { RuleKind } = require('../../types');
 
 describe('overrides/edge', () => {
   describe('calculateEdgeWidthAndArrowSize', () => {

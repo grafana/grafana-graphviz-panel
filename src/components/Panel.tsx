@@ -9,7 +9,7 @@ import { extractDotFromQuery } from '../data';
 import { ErrorDisplay } from './ErrorDisplay';
 import { BuilderModeOverlay } from './BuilderModeOverlay';
 import { EmptyDiagramDisplay } from './EmptyDiagramDisplay';
-import { isEmptyDiagram } from '../utils/graphvizDot';
+import { isEmptyDiagram } from '../core/utils/graphvizDot';
 
 interface Props extends PanelProps<PanelOptions> {}
 

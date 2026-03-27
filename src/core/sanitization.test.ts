@@ -1,4 +1,4 @@
-import { applyGraphDefaults } from './sanitization';
+import { applyGraphDefaults, deriveEdgeIds } from './sanitization';
 import { createTheme, GrafanaTheme2 } from '@grafana/data';
 
 describe('sanitization', () => {
@@ -122,6 +122,81 @@ describe('sanitization', () => {
       expect(result).toContain('Italic');
       expect(result).toContain('B');
       expect(result).toContain('C');
+    });
+  });
+
+  describe('deriveEdgeIds', () => {
+    it('should add IDs to edges without IDs', () => {
+      const dot = 'digraph G { A -> B; C -> D; }';
+
+      const result = deriveEdgeIds(dot);
+
+      expect(result).toContain('A__to__B');
+      expect(result).toContain('C__to__D');
+    });
+
+    it('should preserve existing edge IDs', () => {
+      const dot = 'digraph G { A -> B [id="custom_id"]; }';
+
+      const result = deriveEdgeIds(dot);
+
+      expect(result).toContain('custom_id');
+      expect(result).not.toContain('A__to__B');
+    });
+
+    it('should handle mixed edges with and without IDs', () => {
+      const dot = 'digraph G { A -> B [id="edge1"]; C -> D; }';
+
+      const result = deriveEdgeIds(dot);
+
+      expect(result).toContain('edge1');
+      expect(result).toContain('C__to__D');
+      expect(result).not.toContain('A__to__B');
+    });
+
+    it('should handle empty graph', () => {
+      const dot = 'digraph G {}';
+
+      const result = deriveEdgeIds(dot);
+
+      expect(result).toContain('digraph');
+      expect(result).not.toContain('__to__');
+    });
+
+    it('should handle graph with only nodes', () => {
+      const dot = 'digraph G { A; B; C; }';
+
+      const result = deriveEdgeIds(dot);
+
+      expect(result).toContain('A');
+      expect(result).toContain('B');
+      expect(result).toContain('C');
+      expect(result).not.toContain('__to__');
+    });
+
+    it('should handle undirected graph', () => {
+      const dot = 'graph G { A -- B; }';
+
+      const result = deriveEdgeIds(dot);
+
+      expect(result).toContain('A__to__B');
+    });
+
+    it('should handle edges with complex node IDs', () => {
+      const dot = 'digraph G { "node-1" -> "node-2"; }';
+
+      const result = deriveEdgeIds(dot);
+
+      expect(result).toContain('node-1__to__node-2');
+    });
+
+    it('should handle multiple edges between same nodes', () => {
+      const dot = 'digraph G { A -> B; A -> B [label="second"]; }';
+
+      const result = deriveEdgeIds(dot);
+
+      expect(result).toContain('A__to__B');
+      expect(result).toContain('second');
     });
   });
 });

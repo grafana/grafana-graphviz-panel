@@ -1,9 +1,8 @@
 import { useEffect, RefObject, useState } from 'react';
 import { GrafanaTheme2, PanelData, FieldConfigSource } from '@grafana/data';
 import * as d3 from 'd3-selection';
-import { validateDotSyntax, ValidationErrorInfo } from '../validation';
-import { applyGraphDefaults, normalizeNodePathStyling } from '../sanitization';
-import { deriveEdgeIds } from '../enhancements';
+import { validateDotSyntax, ValidationErrorInfo } from '../core/validation';
+import { applyGraphDefaults, normalizeNodePathStyling, deriveEdgeIds } from '../core/sanitization';
 import {
   applyEdgeStyleOverrides,
   applyNodeStyleOverrides,
@@ -13,11 +12,11 @@ import {
   applyDataDrivenEdgeLabels,
   interpolateAllNodeLabels,
   interpolateAllEdgeLabels,
-} from '../overrides';
+} from '../core/overrides';
 import { processDataFieldBindings, processWidthRules } from '../data';
-import { renderDotToSvg } from '../dot';
+import { renderDotToSvg } from '../core/dot';
 import { applySvgTheming } from '../theming';
-import { getOrCreateSvgDefinitions, applyBlurGlowFilter, applyNodeGradient } from '../utils/svgFilters';
+import { getOrCreateSvgDefinitions, applyBlurGlowFilter, applyNodeGradient } from '../core/utils/svgFilters';
 import { EdgeOverride, NodeOverride, NamedThreshold } from '../types';
 
 export interface RenderError {

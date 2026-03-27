@@ -1,7 +1,7 @@
 import { interpolateAllNodeLabels, interpolateAllEdgeLabels } from './label';
 import { FieldType } from '@grafana/data';
 const { applyDataDrivenNodeLabels, applyDataDrivenEdgeLabels } = require('./label');
-const { RuleKind } = require('../types');
+const { RuleKind } = require('../../types');
 
 describe('overrides/label', () => {
   describe('applyDataDrivenNodeLabels', () => {

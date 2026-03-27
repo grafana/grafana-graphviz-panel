@@ -1,6 +1,6 @@
 import { fromDot, toDot } from 'ts-graphviz';
-import { EdgeOverride, RuleKind } from '../types';
-import { DataDrivenWidths } from '../data';
+import { EdgeOverride, RuleKind } from '../../types';
+import { DataDrivenWidths } from '../../data';
 import { getEdgeId } from '../utils/graphvizAst';
 
 export function calculateEdgeWidthAndArrowSize(width: number): { width: number; arrowSize: number } {

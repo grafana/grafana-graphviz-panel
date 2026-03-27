@@ -1,5 +1,5 @@
 import { applyNodeStyleOverrides, applyDataDrivenColors } from './node';
-const { RuleKind } = require('../types');
+const { RuleKind } = require('../../types');
 
 describe('overrides/node', () => {
   describe('applyNodeStyleOverrides', () => {

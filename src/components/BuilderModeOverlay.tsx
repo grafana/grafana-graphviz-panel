@@ -11,7 +11,7 @@ import {
   parseEdgesFromDot,
   getExistingEdgeIds,
   isDirectedGraph,
-} from '../builderMode';
+} from '../core/builderMode';
 import { NodeFormModal } from './NodeFormModal';
 import { EdgeFormModal } from './EdgeFormModal';
 import { NodeEditModal } from './NodeEditModal';
@@ -23,7 +23,7 @@ import {
   calculateEdgePositions,
   NodePosition,
   EdgePosition,
-} from '../utils/svgPositionCalculator';
+} from '../core/utils/svgPositionCalculator';
 import { LayoutEngine, BuilderTool } from '../types';
 
 const MENU_POSITION_X_RATIO = 0.75;

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Alert, Input, Stack, Icon, Text, Box } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { isAssistantAvailable as checkAssistantAvailability } from '@grafana/assistant';
-import { ValidationErrorInfo } from '../validation';
+import { ValidationErrorInfo } from '../core/validation';
 import { GraphvizAssistantService } from '../assistantService';
 import { LayoutEngine, InputMode } from '../types';
 import { AskButton } from './AskButton';

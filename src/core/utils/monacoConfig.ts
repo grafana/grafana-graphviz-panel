@@ -1,5 +1,5 @@
 import { Monaco, MonacoEditor, CodeEditorSuggestionItem, CodeEditorSuggestionItemKind } from '@grafana/ui';
-import { findMatchedRow } from '../data';
+import { findMatchedRow } from '../../data';
 
 export const SINGLE_LINE_MONACO_OPTIONS = {
   lineNumbers: 'off' as const,

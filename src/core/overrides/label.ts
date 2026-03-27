@@ -1,7 +1,7 @@
 import { fromDot, toDot } from 'ts-graphviz';
 import { DataFrame } from '@grafana/data';
-import { EdgeOverride, NodeOverride, RuleKind } from '../types';
-import { findMatchedRow, getFirstDataRow } from '../data';
+import { EdgeOverride, NodeOverride, RuleKind } from '../../types';
+import { findMatchedRow, getFirstDataRow } from '../../data';
 import { interpolateLabelWithVariables, hasInterpolation, interpolateLabelIfNeeded } from '../interpolation';
 import { getEdgeId, findNodeById } from '../utils/graphvizAst';
 

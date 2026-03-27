@@ -1,6 +1,6 @@
 import { GrafanaTheme2 } from '@grafana/data';
 import * as d3 from 'd3-selection';
-import { isDefaultColor } from './utils/graphvizColors';
+import { isDefaultColor } from './core/utils/graphvizColors';
 
 /**
  * Applies Grafana theme styling to a rendered SVG element.

@@ -27,7 +27,7 @@ import {
   SINGLE_LINE_MONACO_OPTIONS,
   registerSingleLineKeyCommands,
   registerMatchValueCompletion,
-} from '../utils/monacoConfig';
+} from '../core/utils/monacoConfig';
 
 interface Props extends StandardEditorProps<EdgeOverride[]> {}
 
