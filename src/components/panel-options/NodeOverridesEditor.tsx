@@ -20,15 +20,15 @@ import {
   getFieldTypeIconName,
   Collapse,
 } from '@grafana/ui';
-import { NodeOverride, StrokeColorRule, FillColorRule, Rule, RuleKind, MatchMode } from '../types';
-import { autodetectMatchField, MatchDetectionResult, findMatchedRow } from '../integrations/grafanaData';
+import { NodeOverride, StrokeColorRule, FillColorRule, Rule, RuleKind, MatchMode } from '../../types';
+import { autodetectMatchField, MatchDetectionResult, findMatchedRow } from '../../integrations/grafanaData';
 import { css } from '@emotion/css';
 import {
   registerNodeLabelCompletion,
   SINGLE_LINE_MONACO_OPTIONS,
   registerSingleLineKeyCommands,
   registerMatchValueCompletion,
-} from '../core/utils/monacoConfig';
+} from '../../core/utils/monacoConfig';
 
 interface Props extends StandardEditorProps<NodeOverride[]> {}
 

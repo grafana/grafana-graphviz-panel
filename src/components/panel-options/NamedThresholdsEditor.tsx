@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StandardEditorProps } from '@grafana/data';
 import { Button, Input, ColorPicker, IconButton, Collapse, Icon } from '@grafana/ui';
-import { NamedThreshold, ThresholdStep } from '../types';
+import { NamedThreshold, ThresholdStep } from '../../types';
 import { css } from '@emotion/css';
 
 interface Props extends StandardEditorProps<NamedThreshold[]> {}

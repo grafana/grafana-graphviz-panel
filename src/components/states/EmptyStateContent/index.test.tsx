@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { EmptyStateContent } from './index';
-import { InputMode } from '../../types';
+import { InputMode } from '../../../types';
 
 describe('EmptyStateContent', () => {
   describe('renders correct content for each input mode', () => {

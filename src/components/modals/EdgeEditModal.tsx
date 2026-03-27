@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Modal, Input, Button, Field } from '@grafana/ui';
-import { formatEdgeId, toOptional } from '../core/builderMode';
-import { useModalForm } from '../hooks/useModalForm';
+import { formatEdgeId, toOptional } from '../../core/builderMode';
+import { useModalForm } from '../../hooks/useModalForm';
 
 export interface EdgeEditModalProps {
   isOpen: boolean;

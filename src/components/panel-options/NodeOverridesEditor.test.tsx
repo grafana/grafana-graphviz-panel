@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { NodeOverridesEditor } from './NodeOverridesEditor';
-import { NodeOverride, MatchMode, RuleKind } from '../types';
+import { NodeOverride, MatchMode, RuleKind } from '../../types';
 
 const mockOnChange = jest.fn();
 

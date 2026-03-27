@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { NamedThresholdsEditor } from './NamedThresholdsEditor';
-import { NamedThreshold } from '../types';
+import { NamedThreshold } from '../../types';
 
 const mockOnChange = jest.fn();
 

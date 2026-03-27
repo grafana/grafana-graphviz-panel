@@ -6,9 +6,8 @@ import { useStyles2, useTheme2 } from '@grafana/ui';
 import { PanelDataErrorView } from '@grafana/runtime';
 import { useThemedDotSvg } from '../hooks';
 import { extractDotFromQuery } from '../integrations/grafanaData';
-import { ErrorDisplay } from './ErrorDisplay';
+import { ErrorDisplay, EmptyDiagramDisplay } from './states';
 import { BuilderModeOverlay } from './BuilderModeOverlay';
-import { EmptyDiagramDisplay } from './EmptyDiagramDisplay';
 import { isEmptyDiagram } from '../core/utils/graphvizDot';
 
 interface Props extends PanelProps<PanelOptions> {}

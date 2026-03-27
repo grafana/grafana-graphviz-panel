@@ -19,15 +19,15 @@ import {
   Icon,
   getFieldTypeIconName,
 } from '@grafana/ui';
-import { EdgeOverride, StrokeColorRule, StrokeWidthRule, Rule, RuleKind, MatchMode } from '../types';
-import { autodetectMatchField, MatchDetectionResult, findMatchedRow } from '../integrations/grafanaData';
+import { EdgeOverride, StrokeColorRule, StrokeWidthRule, Rule, RuleKind, MatchMode } from '../../types';
+import { autodetectMatchField, MatchDetectionResult, findMatchedRow } from '../../integrations/grafanaData';
 import { css } from '@emotion/css';
 import {
   registerEdgeLabelCompletion,
   SINGLE_LINE_MONACO_OPTIONS,
   registerSingleLineKeyCommands,
   registerMatchValueCompletion,
-} from '../core/utils/monacoConfig';
+} from '../../core/utils/monacoConfig';
 
 interface Props extends StandardEditorProps<EdgeOverride[]> {}
 

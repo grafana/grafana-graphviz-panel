@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { StandardEditorProps } from '@grafana/data';
 import { Input, Stack, Icon, Text, LinkButton } from '@grafana/ui';
 import { isAssistantAvailable as checkAssistantAvailability } from '@grafana/assistant';
-import { PanelOptions } from '../types';
-import { GraphvizAssistantService } from '../integrations/grafanaAssistant';
+import { PanelOptions } from '../../types';
+import { GraphvizAssistantService } from '../../integrations/grafanaAssistant';
 import { AskButton } from './AskButton';
 
 export const AssistantHelpEditor: React.FC<StandardEditorProps<string, any, PanelOptions>> = ({ context }) => {

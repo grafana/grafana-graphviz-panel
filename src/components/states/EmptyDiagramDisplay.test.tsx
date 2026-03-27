@@ -1,14 +1,14 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { EmptyDiagramDisplay } from './EmptyDiagramDisplay';
-import { LayoutEngine, InputMode } from '../types';
+import { LayoutEngine, InputMode } from '../../types';
 import { of } from 'rxjs';
 
 jest.mock('@grafana/assistant', () => ({
   isAssistantAvailable: jest.fn(() => of(true)),
 }));
 
-jest.mock('../integrations/grafanaAssistant', () => ({
+jest.mock('../../integrations/grafanaAssistant', () => ({
   GraphvizAssistantService: {
     openWithContext: jest.fn(),
   },
@@ -52,7 +52,7 @@ describe('EmptyDiagramDisplay', () => {
   });
 
   it('should call assistant service on Ask button click', () => {
-    const { GraphvizAssistantService } = require('../integrations/grafanaAssistant');
+    const { GraphvizAssistantService } = require('../../integrations/grafanaAssistant');
     render(<EmptyDiagramDisplay {...defaultProps} />);
 
     const input = screen.getByPlaceholderText(/Create a simple diagram/);
@@ -69,7 +69,7 @@ describe('EmptyDiagramDisplay', () => {
   });
 
   it('should call assistant service on Enter key press', () => {
-    const { GraphvizAssistantService } = require('../integrations/grafanaAssistant');
+    const { GraphvizAssistantService } = require('../../integrations/grafanaAssistant');
     GraphvizAssistantService.openWithContext.mockClear();
 
     render(<EmptyDiagramDisplay {...defaultProps} />);
@@ -94,7 +94,7 @@ describe('EmptyDiagramDisplay', () => {
   });
 
   it('should not call assistant when prompt is empty', () => {
-    const { GraphvizAssistantService } = require('../integrations/grafanaAssistant');
+    const { GraphvizAssistantService } = require('../../integrations/grafanaAssistant');
     GraphvizAssistantService.openWithContext.mockClear();
 
     render(<EmptyDiagramDisplay {...defaultProps} />);
@@ -106,7 +106,7 @@ describe('EmptyDiagramDisplay', () => {
   });
 
   it('should not call assistant when prompt is only whitespace', () => {
-    const { GraphvizAssistantService } = require('../integrations/grafanaAssistant');
+    const { GraphvizAssistantService } = require('../../integrations/grafanaAssistant');
     GraphvizAssistantService.openWithContext.mockClear();
 
     render(<EmptyDiagramDisplay {...defaultProps} />);

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StandardEditorProps, SelectableValue } from '@grafana/data';
 import { Button, ButtonGroup, Tooltip } from '@grafana/ui';
-import { BuilderTool, PanelOptions, BuilderModeActions } from '../types';
+import { BuilderTool, PanelOptions, BuilderModeActions } from '../../types';
 
 const TOOL_OPTIONS: Array<SelectableValue<BuilderTool>> = [
   {

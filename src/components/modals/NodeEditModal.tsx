@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Modal, Input, Button, Select, Field } from '@grafana/ui';
-import { getShapeOptions, toOptional } from '../core/builderMode';
-import { useModalForm } from '../hooks/useModalForm';
+import { getShapeOptions, toOptional } from '../../core/builderMode';
+import { useModalForm } from '../../hooks/useModalForm';
 
 export interface NodeEditModalProps {
   isOpen: boolean;

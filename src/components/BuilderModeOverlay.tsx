@@ -12,10 +12,7 @@ import {
   getExistingEdgeIds,
   isDirectedGraph,
 } from '../core/builderMode';
-import { NodeFormModal } from './NodeFormModal';
-import { EdgeFormModal } from './EdgeFormModal';
-import { NodeEditModal } from './NodeEditModal';
-import { EdgeEditModal } from './EdgeEditModal';
+import { NodeFormModal, EdgeFormModal, NodeEditModal, EdgeEditModal } from './modals';
 import { useConfirmation } from '../hooks/useConfirmation';
 import { useDragEdge } from '../hooks/useDragEdge';
 import {

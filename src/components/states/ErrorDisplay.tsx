@@ -1,26 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { Input, Stack, Icon, Text, Box } from '@grafana/ui';
+import { Alert, Input, Stack, Icon, Text, Box } from '@grafana/ui';
+import { css } from '@emotion/css';
 import { isAssistantAvailable as checkAssistantAvailability } from '@grafana/assistant';
-import { GraphvizAssistantService } from '../integrations/grafanaAssistant';
-import { LayoutEngine, InputMode } from '../types';
-import { AskButton } from './AskButton';
-import { EmptyStateAlert } from './EmptyStateAlert';
-import { EmptyStateContent } from './EmptyStateContent';
+import { ValidationErrorInfo } from '../../core/validation';
+import { GraphvizAssistantService } from '../../integrations/grafanaAssistant';
+import { LayoutEngine, InputMode } from '../../types';
+import { AskButton } from '../assistant';
 
-interface EmptyDiagramDisplayProps {
+interface ErrorDisplayProps {
+  errorMessage: string;
+  errorInfo?: ValidationErrorInfo;
   dotDiagram: string;
   layoutEngine: LayoutEngine;
   inputMode: InputMode;
   isEditMode: boolean;
-  onAddNode?: () => void;
 }
 
-export const EmptyDiagramDisplay: React.FC<EmptyDiagramDisplayProps> = ({
+export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
+  errorMessage,
+  errorInfo,
   dotDiagram,
   layoutEngine,
   inputMode,
   isEditMode,
-  onAddNode,
 }) => {
   const [isAssistantAvailable, setIsAssistantAvailable] = useState(false);
   const [prompt, setPrompt] = useState('');
@@ -42,6 +44,11 @@ export const EmptyDiagramDisplay: React.FC<EmptyDiagramDisplayProps> = ({
       dotDiagram,
       layoutEngine,
       inputMode,
+      error: {
+        message: errorMessage,
+        lineNumber: errorInfo?.lineNumber,
+        lineContent: errorInfo?.lineContent,
+      },
     });
 
     setPrompt('');
@@ -53,13 +60,33 @@ export const EmptyDiagramDisplay: React.FC<EmptyDiagramDisplayProps> = ({
     }
   };
 
+  const codeStyle = css`
+    display: block;
+    margin-top: 8px;
+    font-family: monospace;
+    font-size: 0.9em;
+  `;
+
   return (
     <Box display="flex" direction="column" height="100%">
-      <EmptyStateAlert>
-        {isEditMode && <EmptyStateContent inputMode={inputMode} onAddNode={onAddNode} />}
-      </EmptyStateAlert>
+      <Box padding={2}>
+        <Stack direction="row" justifyContent="center">
+          <Box width="600px">
+            <Alert severity="error" title="Invalid DOT diagram definition">
+              <Stack direction="column" gap={2}>
+                <div>{errorMessage}</div>
+                {errorInfo && (
+                  <code className={codeStyle}>
+                    {errorInfo.lineNumber}: {errorInfo.lineContent}
+                  </code>
+                )}
+              </Stack>
+            </Alert>
+          </Box>
+        </Stack>
+      </Box>
 
-      {isAssistantAvailable && (
+      {isEditMode && isAssistantAvailable && (
         <Box display="flex" alignItems="center" justifyContent="center" padding={2} grow={1}>
           <Box width="600px">
             <Stack direction="column" gap={2}>
@@ -69,7 +96,7 @@ export const EmptyDiagramDisplay: React.FC<EmptyDiagramDisplayProps> = ({
               </Stack>
               <Stack direction="row" gap={1}>
                 <Input
-                  placeholder='example: "Create a simple diagram with nodes representing my data."'
+                  placeholder='example: "How do I fix this DOT syntax error?"'
                   value={prompt}
                   onChange={(e) => setPrompt(e.currentTarget.value)}
                   onKeyDown={handleKeyDown}

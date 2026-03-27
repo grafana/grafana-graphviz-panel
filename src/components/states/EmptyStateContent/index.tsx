@@ -1,5 +1,5 @@
 import React from 'react';
-import { InputMode } from '../../types';
+import { InputMode } from '../../../types';
 import { CodeModeContent } from './CodeModeContent';
 import { BuilderModeContent } from './BuilderModeContent';
 import { QueryModeContent } from './QueryModeContent';
