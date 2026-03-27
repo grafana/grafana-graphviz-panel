@@ -1,4 +1,4 @@
-import { applySvgTheming } from './theming';
+import { applySvgTheming } from './grafanaTheme';
 import { createTheme, GrafanaTheme2 } from '@grafana/data';
 
 describe('theming', () => {

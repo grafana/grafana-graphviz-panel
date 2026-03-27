@@ -8,7 +8,7 @@ import {
   isTimeSeriesFrame,
   FieldWithIndex,
 } from '@grafana/data';
-import { EdgeOverride, NodeOverride, RuleKind, NamedThreshold, DataFormatStrategy } from './types';
+import { EdgeOverride, NodeOverride, RuleKind, NamedThreshold, DataFormatStrategy } from '../types';
 
 export interface DataDrivenColors {
   nodeBorderColors: Map<string, string>;

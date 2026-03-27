@@ -8,7 +8,7 @@ jest.mock('@grafana/assistant', () => ({
   isAssistantAvailable: jest.fn(() => of(true)),
 }));
 
-jest.mock('../assistantService', () => ({
+jest.mock('../integrations/grafanaAssistant', () => ({
   GraphvizAssistantService: {
     openWithContext: jest.fn(),
   },
@@ -52,7 +52,7 @@ describe('EmptyDiagramDisplay', () => {
   });
 
   it('should call assistant service on Ask button click', () => {
-    const { GraphvizAssistantService } = require('../assistantService');
+    const { GraphvizAssistantService } = require('../integrations/grafanaAssistant');
     render(<EmptyDiagramDisplay {...defaultProps} />);
 
     const input = screen.getByPlaceholderText(/Create a simple diagram/);
@@ -69,7 +69,7 @@ describe('EmptyDiagramDisplay', () => {
   });
 
   it('should call assistant service on Enter key press', () => {
-    const { GraphvizAssistantService } = require('../assistantService');
+    const { GraphvizAssistantService } = require('../integrations/grafanaAssistant');
     GraphvizAssistantService.openWithContext.mockClear();
 
     render(<EmptyDiagramDisplay {...defaultProps} />);
@@ -94,7 +94,7 @@ describe('EmptyDiagramDisplay', () => {
   });
 
   it('should not call assistant when prompt is empty', () => {
-    const { GraphvizAssistantService } = require('../assistantService');
+    const { GraphvizAssistantService } = require('../integrations/grafanaAssistant');
     GraphvizAssistantService.openWithContext.mockClear();
 
     render(<EmptyDiagramDisplay {...defaultProps} />);
@@ -106,7 +106,7 @@ describe('EmptyDiagramDisplay', () => {
   });
 
   it('should not call assistant when prompt is only whitespace', () => {
-    const { GraphvizAssistantService } = require('../assistantService');
+    const { GraphvizAssistantService } = require('../integrations/grafanaAssistant');
     GraphvizAssistantService.openWithContext.mockClear();
 
     render(<EmptyDiagramDisplay {...defaultProps} />);

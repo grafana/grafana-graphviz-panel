@@ -2,14 +2,14 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { of } from 'rxjs';
 import { AssistantHelpEditor } from './AssistantHelpEditor';
-import { GraphvizAssistantService } from '../assistantService';
+import { GraphvizAssistantService } from '../integrations/grafanaAssistant';
 import { LayoutEngine } from '../types';
 
 jest.mock('@grafana/assistant', () => ({
   isAssistantAvailable: jest.fn(),
 }));
 
-jest.mock('../assistantService', () => ({
+jest.mock('../integrations/grafanaAssistant', () => ({
   GraphvizAssistantService: {
     openWithContext: jest.fn(),
   },

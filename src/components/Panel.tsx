@@ -5,7 +5,7 @@ import { css, cx } from '@emotion/css';
 import { useStyles2, useTheme2 } from '@grafana/ui';
 import { PanelDataErrorView } from '@grafana/runtime';
 import { useThemedDotSvg } from '../hooks';
-import { extractDotFromQuery } from '../data';
+import { extractDotFromQuery } from '../integrations/grafanaData';
 import { ErrorDisplay } from './ErrorDisplay';
 import { BuilderModeOverlay } from './BuilderModeOverlay';
 import { EmptyDiagramDisplay } from './EmptyDiagramDisplay';

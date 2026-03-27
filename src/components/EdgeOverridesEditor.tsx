@@ -20,7 +20,7 @@ import {
   getFieldTypeIconName,
 } from '@grafana/ui';
 import { EdgeOverride, StrokeColorRule, StrokeWidthRule, Rule, RuleKind, MatchMode } from '../types';
-import { autodetectMatchField, MatchDetectionResult, findMatchedRow } from '../data';
+import { autodetectMatchField, MatchDetectionResult, findMatchedRow } from '../integrations/grafanaData';
 import { css } from '@emotion/css';
 import {
   registerEdgeLabelCompletion,

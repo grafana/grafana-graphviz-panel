@@ -1,6 +1,6 @@
 import { fromDot, toDot } from 'ts-graphviz';
 import { NodeOverride, RuleKind } from '../../types';
-import { DataDrivenColors } from '../../data';
+import { DataDrivenColors } from '../../integrations/grafanaData';
 import { findNodeById, getEdgeId } from '../utils/graphvizAst';
 import { addStyleToCommaList } from './color';
 

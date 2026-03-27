@@ -1,5 +1,5 @@
 import { openAssistant, createAssistantContextItem } from '@grafana/assistant';
-import { LayoutEngine } from './types';
+import { LayoutEngine } from '../types';
 
 export interface AssistantContext {
   dotDiagram: string;

@@ -13,9 +13,9 @@ import {
   interpolateAllNodeLabels,
   interpolateAllEdgeLabels,
 } from '../core/overrides';
-import { processDataFieldBindings, processWidthRules } from '../data';
+import { processDataFieldBindings, processWidthRules } from '../integrations/grafanaData';
 import { renderDotToSvg } from '../core/dot';
-import { applySvgTheming } from '../theming';
+import { applySvgTheming } from '../integrations/grafanaTheme';
 import { getOrCreateSvgDefinitions, applyBlurGlowFilter, applyNodeGradient } from '../core/utils/svgFilters';
 import { EdgeOverride, NodeOverride, NamedThreshold } from '../types';
 

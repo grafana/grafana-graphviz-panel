@@ -12,8 +12,8 @@ import {
   processDataFieldBindings,
   processWidthRules,
   autodetectMatchField,
-} from './data';
-import { DataFormatStrategy, RuleKind, EdgeOverride, NodeOverride } from './types';
+} from './grafanaData';
+import { DataFormatStrategy, RuleKind, EdgeOverride, NodeOverride } from '../types';
 
 describe('DOT diagram extraction from queries', () => {
   describe('findWideFormatFieldValue', () => {
@@ -459,8 +459,8 @@ describe('extractDotFromQuery', () => {
 });
 
 describe('Data format detection and row matching', () => {
-  const { detectDataFormatStrategy, findMatchedRow } = require('./data');
-  const { DataFormatStrategy } = require('./types');
+  const { detectDataFormatStrategy, findMatchedRow } = require('./grafanaData');
+  const { DataFormatStrategy } = require('../types');
 
   describe('detectDataFormatStrategy', () => {
     it('should return WIDE for empty series', () => {
@@ -1946,22 +1946,22 @@ describe('Integration functions - Phase 2', () => {
 
   describe('Empty/null data handling', () => {
     it('should return WIDE for null series', () => {
-      const { detectDataFormatStrategy } = require('./data');
-      const { DataFormatStrategy } = require('./types');
+      const { detectDataFormatStrategy } = require('./grafanaData');
+      const { DataFormatStrategy } = require('../types');
       const result = detectDataFormatStrategy(null as any);
       expect(result).toBe(DataFormatStrategy.WIDE);
     });
 
     it('should return WIDE for empty array', () => {
-      const { detectDataFormatStrategy } = require('./data');
-      const { DataFormatStrategy } = require('./types');
+      const { detectDataFormatStrategy } = require('./grafanaData');
+      const { DataFormatStrategy } = require('../types');
       const result = detectDataFormatStrategy([]);
       expect(result).toBe(DataFormatStrategy.WIDE);
     });
   });
 
   describe('getFirstDataRow', () => {
-    const { getFirstDataRow } = require('./data');
+    const { getFirstDataRow } = require('./grafanaData');
 
     it('should return undefined for empty series', () => {
       const result = getFirstDataRow([]);

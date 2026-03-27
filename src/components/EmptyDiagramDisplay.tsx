@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Input, Stack, Icon, Text, Box } from '@grafana/ui';
 import { isAssistantAvailable as checkAssistantAvailability } from '@grafana/assistant';
-import { GraphvizAssistantService } from '../assistantService';
+import { GraphvizAssistantService } from '../integrations/grafanaAssistant';
 import { LayoutEngine, InputMode } from '../types';
 import { AskButton } from './AskButton';
 import { EmptyStateAlert } from './EmptyStateAlert';

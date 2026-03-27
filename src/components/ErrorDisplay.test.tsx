@@ -8,7 +8,7 @@ jest.mock('@grafana/assistant', () => ({
   isAssistantAvailable: jest.fn(() => of(true)),
 }));
 
-jest.mock('../assistantService', () => ({
+jest.mock('../integrations/grafanaAssistant', () => ({
   GraphvizAssistantService: {
     openWithContext: jest.fn(),
   },
@@ -66,7 +66,7 @@ describe('ErrorDisplay', () => {
   });
 
   it('should call assistant service on Ask button click', () => {
-    const { GraphvizAssistantService } = require('../assistantService');
+    const { GraphvizAssistantService } = require('../integrations/grafanaAssistant');
     render(<ErrorDisplay {...defaultProps} />);
 
     const input = screen.getByPlaceholderText(/How do I fix/);
@@ -88,7 +88,7 @@ describe('ErrorDisplay', () => {
   });
 
   it('should call assistant service on Enter key press', () => {
-    const { GraphvizAssistantService } = require('../assistantService');
+    const { GraphvizAssistantService } = require('../integrations/grafanaAssistant');
     GraphvizAssistantService.openWithContext.mockClear();
 
     render(<ErrorDisplay {...defaultProps} />);
@@ -113,7 +113,7 @@ describe('ErrorDisplay', () => {
   });
 
   it('should not call assistant when prompt is empty', () => {
-    const { GraphvizAssistantService } = require('../assistantService');
+    const { GraphvizAssistantService } = require('../integrations/grafanaAssistant');
     GraphvizAssistantService.openWithContext.mockClear();
 
     render(<ErrorDisplay {...defaultProps} />);
@@ -125,7 +125,7 @@ describe('ErrorDisplay', () => {
   });
 
   it('should not call assistant when prompt is only whitespace', () => {
-    const { GraphvizAssistantService } = require('../assistantService');
+    const { GraphvizAssistantService } = require('../integrations/grafanaAssistant');
     GraphvizAssistantService.openWithContext.mockClear();
 
     render(<ErrorDisplay {...defaultProps} />);
@@ -140,7 +140,7 @@ describe('ErrorDisplay', () => {
   });
 
   it('should include error info in assistant context when provided', () => {
-    const { GraphvizAssistantService } = require('../assistantService');
+    const { GraphvizAssistantService } = require('../integrations/grafanaAssistant');
     GraphvizAssistantService.openWithContext.mockClear();
 
     const props = {
@@ -172,7 +172,7 @@ describe('ErrorDisplay', () => {
   });
 
   it('should not trigger assistant on non-Enter key press', () => {
-    const { GraphvizAssistantService } = require('../assistantService');
+    const { GraphvizAssistantService } = require('../integrations/grafanaAssistant');
     GraphvizAssistantService.openWithContext.mockClear();
 
     render(<ErrorDisplay {...defaultProps} />);

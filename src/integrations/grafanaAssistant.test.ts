@@ -1,6 +1,6 @@
-import { GraphvizAssistantService, AssistantContext } from './assistantService';
+import { GraphvizAssistantService, AssistantContext } from './grafanaAssistant';
 import { openAssistant, createAssistantContextItem } from '@grafana/assistant';
-import { LayoutEngine } from './types';
+import { LayoutEngine } from '../types';
 
 jest.mock('@grafana/assistant', () => ({
   openAssistant: jest.fn(),

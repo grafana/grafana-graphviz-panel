@@ -21,7 +21,7 @@ import {
   Collapse,
 } from '@grafana/ui';
 import { NodeOverride, StrokeColorRule, FillColorRule, Rule, RuleKind, MatchMode } from '../types';
-import { autodetectMatchField, MatchDetectionResult, findMatchedRow } from '../data';
+import { autodetectMatchField, MatchDetectionResult, findMatchedRow } from '../integrations/grafanaData';
 import { css } from '@emotion/css';
 import {
   registerNodeLabelCompletion,
