@@ -39,7 +39,7 @@ export function calculateNodePositions(
   const titleElements = svgElement.querySelectorAll('g.node title');
   const positions: NodePosition[] = [];
 
-  titleElements.forEach((titleEl) => {
+  for (const titleEl of titleElements) {
     let nodeId = titleEl.textContent || '';
 
     if (nodeId.startsWith(NODE_ID_PREFIX)) {
@@ -47,13 +47,13 @@ export function calculateNodePositions(
     }
 
     if (!nodeId) {
-      return;
+      continue;
     }
 
     const nodeGroup = titleEl.parentElement;
 
     if (!nodeGroup) {
-      return;
+      continue;
     }
 
     try {
@@ -61,7 +61,7 @@ export function calculateNodePositions(
       const ctm = (nodeGroup as unknown as SVGGraphicsElement).getScreenCTM();
 
       if (!ctm) {
-        return;
+        continue;
       }
 
       const svgPoint = svgElement.createSVGPoint();
@@ -94,7 +94,7 @@ export function calculateNodePositions(
     } catch (error) {
       console.error(`[svgPositionCalculator] Error calculating position for node ${nodeId}:`, error);
     }
-  });
+  }
 
   return positions;
 }
@@ -110,7 +110,7 @@ export function calculateEdgePositions(svgRef: RefObject<HTMLDivElement | null>,
   const edgePositions: EdgePosition[] = [];
   const edgesData = parseEdgesFromDot(dotDiagram);
 
-  edgeTitleElements.forEach((titleEl) => {
+  for (const titleEl of edgeTitleElements) {
     const titleText = titleEl.textContent || '';
 
     let source: string;
@@ -120,13 +120,13 @@ export function calculateEdgePositions(svgRef: RefObject<HTMLDivElement | null>,
       const edgeId = titleText.substring(EDGE_ID_PREFIX.length);
       const parts = edgeId.split(EDGE_ID_SEPARATOR);
       if (parts.length !== 2) {
-        return;
+        continue;
       }
       [source, target] = parts;
     } else {
       const parts = titleText.split('->').map((p) => p.trim());
       if (parts.length !== 2) {
-        return;
+        continue;
       }
       [source, target] = parts;
     }
@@ -134,13 +134,13 @@ export function calculateEdgePositions(svgRef: RefObject<HTMLDivElement | null>,
     const edgeGroup = titleEl.parentElement;
 
     if (!edgeGroup) {
-      return;
+      continue;
     }
 
     try {
       const pathElement = edgeGroup.querySelector('path');
       if (!pathElement) {
-        return;
+        continue;
       }
 
       const pathLength = pathElement.getTotalLength();
@@ -148,7 +148,7 @@ export function calculateEdgePositions(svgRef: RefObject<HTMLDivElement | null>,
 
       const ctm = (edgeGroup as unknown as SVGGraphicsElement).getScreenCTM();
       if (!ctm) {
-        return;
+        continue;
       }
 
       const svgPoint = svgElement.createSVGPoint();
@@ -170,7 +170,7 @@ export function calculateEdgePositions(svgRef: RefObject<HTMLDivElement | null>,
     } catch (error) {
       console.error(`[svgPositionCalculator] Error calculating position for edge ${source}->${target}:`, error);
     }
-  });
+  }
 
   return edgePositions;
 }

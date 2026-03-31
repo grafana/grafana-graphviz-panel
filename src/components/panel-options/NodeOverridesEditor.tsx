@@ -146,14 +146,14 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
     function computeDetectionResults() {
       const newResults = new Map<string, MatchDetectionResult | undefined>();
 
-      mappings.forEach((mapping) => {
+      for (const mapping of mappings) {
         const matchMode = mapping.matchMode || MatchMode.MANUAL;
 
         if (matchMode === MatchMode.AUTODETECT && mapping.targetNodeIds.length > 0 && context.data) {
           const result = autodetectMatchField(context.data, mapping.targetNodeIds);
           newResults.set(mapping.id, result);
         }
-      });
+      }
 
       setDetectionResults(newResults);
     },
@@ -164,7 +164,7 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
     function autoApplyMatchField() {
       const updatesToApply: Array<{ id: string; updates: Partial<NodeOverride> }> = [];
 
-      mappings.forEach((mapping) => {
+      for (const mapping of mappings) {
         const matchMode = mapping.matchMode || MatchMode.MANUAL;
         const detectionResult = detectionResults.get(mapping.id);
 
@@ -177,7 +177,7 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
             },
           });
         }
-      });
+      }
 
       if (updatesToApply.length > 0) {
         const updatedMappings = mappings.map((mapping) => {
@@ -438,7 +438,7 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
                       const matchedIds: string[] = [];
                       const unmatchedIds: string[] = [];
 
-                      mapping.targetNodeIds.forEach((nodeId) => {
+                      for (const nodeId of mapping.targetNodeIds) {
                         const matchValue = mapping.matchPattern
                           ? mapping.matchPattern.replace(/\$\{id\}/g, nodeId)
                           : mapping.matchValue;
@@ -453,7 +453,7 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
                         } else {
                           unmatchedIds.push(nodeId);
                         }
-                      });
+                      }
 
                       const matchPercentage =
                         mapping.targetNodeIds.length > 0 ? (matchedIds.length / mapping.targetNodeIds.length) * 100 : 0;
@@ -740,19 +740,21 @@ function extractStringFields(data: any): Array<SelectableValue<string>> {
 
   const stringFields = new Set<string>();
 
-  data.forEach((frame: any) => {
-    frame.fields?.forEach((field: any) => {
-      if (field.name && field.type === 'string') {
-        stringFields.add(field.name);
-      }
+  for (const frame of data) {
+    if (frame.fields) {
+      for (const field of frame.fields) {
+        if (field.name && field.type === 'string') {
+          stringFields.add(field.name);
+        }
 
-      if (field.labels) {
-        Object.keys(field.labels).forEach((labelName: string) => {
-          stringFields.add(labelName);
-        });
+        if (field.labels) {
+          for (const labelName of Object.keys(field.labels)) {
+            stringFields.add(labelName);
+          }
+        }
       }
-    });
-  });
+    }
+  }
 
   return Array.from(stringFields).map((name) => ({
     label: name,
@@ -767,17 +769,19 @@ function extractNumericFields(data: any): Array<SelectableValue<string>> {
 
   const numericFields = new Set<string>();
 
-  data.forEach((frame: any) => {
-    frame.fields?.forEach((field: any) => {
-      if (field.name && field.type === 'number') {
-        numericFields.add(field.name);
-      }
+  for (const frame of data) {
+    if (frame.fields) {
+      for (const field of frame.fields) {
+        if (field.name && field.type === 'number') {
+          numericFields.add(field.name);
+        }
 
-      if (field.labels) {
-        numericFields.add(`__${field.name}`);
+        if (field.labels) {
+          numericFields.add(`__${field.name}`);
+        }
       }
-    });
-  });
+    }
+  }
 
   return Array.from(numericFields).map((name) => ({
     label: name,
@@ -811,7 +815,7 @@ function extractAllFieldsForMatchedRow(
       const hasMatch = valuesArray.some((v: any) => String(v) === sampleNodeId);
 
       if (hasMatch) {
-        frame.fields.forEach((field: any) => {
+        for (const field of frame.fields) {
           if (field.name && !allFields.some((f) => f.name === field.name)) {
             allFields.push({
               name: field.name,
@@ -819,15 +823,15 @@ function extractAllFieldsForMatchedRow(
               isNumeric: field.type === 'number',
             });
           }
-        });
+        }
         foundMatch = true;
       }
     }
 
-    if (!foundMatch) {
-      frame.fields?.forEach((field: any) => {
+    if (!foundMatch && frame.fields) {
+      for (const field of frame.fields) {
         if (field.labels && field.labels[matchFieldName] === sampleNodeId) {
-          frame.fields.forEach((f: any) => {
+          for (const f of frame.fields) {
             if (f.name && !allFields.some((field) => field.name === field.name)) {
               allFields.push({
                 name: f.name,
@@ -835,10 +839,11 @@ function extractAllFieldsForMatchedRow(
                 isNumeric: f.type === 'number',
               });
             }
-          });
+          }
           foundMatch = true;
+          break;
         }
-      });
+      }
     }
   }
 

@@ -126,7 +126,7 @@ export function getExistingEdgeIds(dotString: string): string[] {
 
   const edgeIds: string[] = [];
 
-  edges.forEach((edge) => {
+  for (const edge of edges) {
     const edgeId = `${edge.source}__to__${edge.target}`;
     edgeIds.push(edgeId);
 
@@ -134,7 +134,7 @@ export function getExistingEdgeIds(dotString: string): string[] {
       const reverseEdgeId = `${edge.target}__to__${edge.source}`;
       edgeIds.push(reverseEdgeId);
     }
-  });
+  }
 
   return edgeIds;
 }

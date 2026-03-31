@@ -91,7 +91,7 @@ export function applyNodeGradient(svgDefinitions: Element, svgElement: SVGSVGEle
   svgDefinitions.appendChild(radialGradient);
 
   const nodeGroups = svgElement.querySelectorAll('.node');
-  nodeGroups.forEach((nodeGroup) => {
+  for (const nodeGroup of nodeGroups) {
     const shape = nodeGroup.querySelector('ellipse, polygon, path');
     if (shape) {
       const fillColor = shape.getAttribute('fill');
@@ -103,5 +103,5 @@ export function applyNodeGradient(svgDefinitions: Element, svgElement: SVGSVGEle
         shape.parentNode?.insertBefore(overlay, shape.nextSibling);
       }
     }
-  });
+  }
 }

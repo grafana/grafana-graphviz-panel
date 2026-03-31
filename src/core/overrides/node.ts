@@ -19,7 +19,7 @@ function applyStyleMappings(dotString: string, nodeOverrides: NodeOverride[]): s
 
 function applyUserNodeOverrides(model: any, nodeOverrides: NodeOverride[]): void {
   if (nodeOverrides && nodeOverrides.length > 0) {
-    nodeOverrides.forEach((mapping) => {
+    for (const mapping of nodeOverrides) {
       const borderColorRules = mapping.rules.filter((r) => r.kind === RuleKind.STROKE_COLOR);
       const fillColorRules = mapping.rules.filter((r) => r.kind === RuleKind.FILL_COLOR);
 
@@ -48,7 +48,7 @@ function applyUserNodeOverrides(model: any, nodeOverrides: NodeOverride[]): void
           });
         }
       });
-    });
+    }
   }
 }
 
@@ -81,14 +81,14 @@ function applyClusterStyleMappings(model: any): void {
 export function applyDataDrivenColors(dotString: string, dataDrivenColors: DataDrivenColors): string {
   const model = fromDot(dotString);
 
-  dataDrivenColors.nodeBorderColors.forEach((color, nodeId) => {
+  for (const [nodeId, color] of dataDrivenColors.nodeBorderColors) {
     const node = findNodeById(model, nodeId);
     if (node) {
       node.attributes.set('color', color);
     }
-  });
+  }
 
-  dataDrivenColors.nodeFillColors.forEach((color, nodeId) => {
+  for (const [nodeId, color] of dataDrivenColors.nodeFillColors) {
     const node = findNodeById(model, nodeId);
     if (node) {
       const existingStyle = node.attributes.get('style');
@@ -97,7 +97,7 @@ export function applyDataDrivenColors(dotString: string, dataDrivenColors: DataD
       node.attributes.set('fillcolor', color);
       node.attributes.set('style', newStyle as any);
     }
-  });
+  }
 
   for (const edge of model.edges) {
     const edgeId = getEdgeId(edge);

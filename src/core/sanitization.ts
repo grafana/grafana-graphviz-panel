@@ -66,34 +66,34 @@ function applyThemeDefaults(model: any, theme: GrafanaTheme2): void {
   if (!htmlLabelsExist) {
     // Simple case: No HTML labels, apply all defaults at graph level
     // This keeps implicit nodes implicit and produces clean DOT output
-    Object.entries(nodeDefaults).forEach(([key, value]) => {
+    for (const [key, value] of Object.entries(nodeDefaults)) {
       // Skip attributes that don't make sense for plaintext shapes
       if (userHasPlaintext && plaintextIncompatibleAttrs.includes(key)) {
-        return;
+        continue;
       }
 
       if (!model.attributes.node.get(key)) {
         model.attributes.node.set(key, value as any);
       }
-    });
+    }
   } else {
     // Complex case: HTML labels present, need selective handling
     // 1. Apply non-font attributes at graph level (safe for all nodes)
-    Object.entries(nodeDefaults).forEach(([key, value]) => {
+    for (const [key, value] of Object.entries(nodeDefaults)) {
       // Skip font attributes (handled per-node below)
       if (fontAttrs.includes(key)) {
-        return;
+        continue;
       }
 
       // Skip attributes that don't make sense for plaintext shapes
       if (userHasPlaintext && plaintextIncompatibleAttrs.includes(key)) {
-        return;
+        continue;
       }
 
       if (!model.attributes.node.get(key)) {
         model.attributes.node.set(key, value as any);
       }
-    });
+    }
 
     // 2. Collect all unique node IDs (explicit + implicit)
     const allNodeIds = collectAllNodeIds(model);
@@ -112,22 +112,22 @@ function applyThemeDefaults(model: any, theme: GrafanaTheme2): void {
 
       if (!htmlLabel) {
         // Apply font defaults for non-HTML nodes only
-        fontAttrs.forEach((attr) => {
+        for (const attr of fontAttrs) {
           const value = nodeDefaults[attr];
           if (!node.attributes.get(attr)) {
             node.attributes.set(attr, value as any);
           }
-        });
+        }
       }
     }
   }
 
   // Apply edge defaults at graph level
-  Object.entries(edgeDefaults).forEach(([key, value]) => {
+  for (const [key, value] of Object.entries(edgeDefaults)) {
     if (!model.attributes.edge.get(key)) {
       model.attributes.edge.set(key, value as any);
     }
-  });
+  }
 }
 
 /**

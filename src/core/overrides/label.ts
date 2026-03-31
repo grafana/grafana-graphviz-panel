@@ -71,7 +71,7 @@ export function applyDataDrivenNodeLabels(
 
   const model = fromDot(dotString);
 
-  nodeOverrides.forEach((mapping) => {
+  for (const mapping of nodeOverrides) {
     const labelRules = mapping.rules.filter((r) => r.kind === RuleKind.LABEL);
 
     mapping.targetNodeIds.forEach((nodeId: string) => {
@@ -89,7 +89,7 @@ export function applyDataDrivenNodeLabels(
 
       applyLabelToNode(model, nodeId, labelRules, dataRow, replaceVariables);
     });
-  });
+  }
 
   return toDot(model);
 }
@@ -106,7 +106,7 @@ export function applyDataDrivenEdgeLabels(
 
   const model = fromDot(dotString);
 
-  edgeOverrides.forEach((mapping) => {
+  for (const mapping of edgeOverrides) {
     const labelRules = mapping.rules.filter((r) => r.kind === RuleKind.LABEL);
 
     mapping.targetEdgeIds.forEach((edgeId: string) => {
@@ -124,7 +124,7 @@ export function applyDataDrivenEdgeLabels(
 
       applyLabelToEdgeHelper(model, edgeId, labelRules, dataRow, replaceVariables);
     });
-  });
+  }
 
   return toDot(model);
 }

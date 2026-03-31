@@ -59,7 +59,7 @@ export function processDataFieldBindings(
     return { nodeBorderColors, nodeFillColors, edgeColors };
   }
 
-  nodeOverrides.forEach((mapping) => {
+  for (const mapping of nodeOverrides) {
     const borderColorRules = mapping.rules.filter((r) => r.kind === RuleKind.STROKE_COLOR);
     const fillColorRules = mapping.rules.filter((r) => r.kind === RuleKind.FILL_COLOR);
 
@@ -116,9 +116,9 @@ export function processDataFieldBindings(
         });
       }
     });
-  });
+  }
 
-  edgeOverrides.forEach((mapping) => {
+  for (const mapping of edgeOverrides) {
     const colorRules = mapping.rules.filter((r) => r.kind === RuleKind.STROKE_COLOR);
 
     colorRules.forEach((rule) => {
@@ -147,7 +147,7 @@ export function processDataFieldBindings(
         });
       }
     });
-  });
+  }
 
   return { nodeBorderColors, nodeFillColors, edgeColors };
 }
@@ -162,7 +162,7 @@ export function processWidthRules(data: PanelData, edgeOverrides: EdgeOverride[]
     return { edgeWidths };
   }
 
-  edgeOverrides.forEach((mapping) => {
+  for (const mapping of edgeOverrides) {
     const widthRules = mapping.rules.filter((r) => r.kind === RuleKind.STROKE_WIDTH);
 
     widthRules.forEach((rule) => {
@@ -186,7 +186,7 @@ export function processWidthRules(data: PanelData, edgeOverrides: EdgeOverride[]
         });
       }
     });
-  });
+  }
 
   return { edgeWidths };
 }
@@ -506,9 +506,9 @@ function findMatchedRowFromTimeSeries(
         const row: Record<string, any> = {};
 
         if (field.labels) {
-          Object.entries(field.labels).forEach(([key, value]) => {
+          for (const [key, value] of Object.entries(field.labels)) {
             row[key] = value;
-          });
+          }
         }
 
         if (field.values.length > 0) {
@@ -565,17 +565,15 @@ export function getFirstDataRow(series: DataFrame[]): Record<string, any> | unde
   }
 
   for (const frame of series) {
-    if (frame.fields && frame.fields.length > 0) {
-      if (frame.length === 1) {
-        const row: Record<string, any> = {};
-        frame.fields.forEach((field) => {
-          if (field.values && field.values.length > 0) {
-            row[field.name] = field.values[0];
-          }
-        });
-        if (Object.keys(row).length > 0) {
-          return row;
+    if (frame.fields && frame.fields.length > 0 && frame.length === 1) {
+      const row: Record<string, any> = {};
+      for (const field of frame.fields) {
+        if (field.values && field.values.length > 0) {
+          row[field.name] = field.values[0];
         }
+      }
+      if (Object.keys(row).length > 0) {
+        return row;
       }
     }
   }
@@ -654,19 +652,21 @@ export function findMatchingIdsInTimeSeries(
 export function extractAllStringFieldNames(series: DataFrame[]): string[] {
   const fieldNames = new Set<string>();
 
-  series.forEach((frame) => {
-    frame.fields?.forEach((field) => {
-      if (field.name && field.type === 'string') {
-        fieldNames.add(field.name);
-      }
+  for (const frame of series) {
+    if (frame.fields) {
+      for (const field of frame.fields) {
+        if (field.name && field.type === 'string') {
+          fieldNames.add(field.name);
+        }
 
-      if (field.labels) {
-        Object.keys(field.labels).forEach((labelName) => {
-          fieldNames.add(labelName);
-        });
+        if (field.labels) {
+          for (const labelName of Object.keys(field.labels)) {
+            fieldNames.add(labelName);
+          }
+        }
       }
-    });
-  });
+    }
+  }
 
   return Array.from(fieldNames).sort();
 }

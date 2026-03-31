@@ -108,14 +108,14 @@ export function getSuggestionsForEdge(data: any, override: EdgeOverrideWithTarge
     return suggestions;
   }
 
-  Object.keys(matchedRow).forEach((fieldName) => {
+  for (const fieldName of Object.keys(matchedRow)) {
     if (fieldName === 'id') {
-      return;
+      continue;
     }
 
     const value = matchedRow[fieldName];
     if (value == null) {
-      return;
+      continue;
     }
 
     const fieldType = typeof value === 'number' ? 'number' : typeof value === 'string' ? 'string' : 'unknown';
@@ -127,7 +127,7 @@ export function getSuggestionsForEdge(data: any, override: EdgeOverrideWithTarge
       documentation: `Field: ${fieldName} (${fieldType})`,
       insertText: fieldName,
     });
-  });
+  }
 
   return suggestions;
 }
@@ -163,14 +163,14 @@ export function getSuggestionsForNode(data: any, override: NodeOverrideWithTarge
     return suggestions;
   }
 
-  Object.keys(matchedRow).forEach((fieldName) => {
+  for (const fieldName of Object.keys(matchedRow)) {
     if (fieldName === 'id') {
-      return;
+      continue;
     }
 
     const value = matchedRow[fieldName];
     if (value == null) {
-      return;
+      continue;
     }
 
     const fieldType = typeof value === 'number' ? 'number' : typeof value === 'string' ? 'string' : 'unknown';
@@ -182,7 +182,7 @@ export function getSuggestionsForNode(data: any, override: NodeOverrideWithTarge
       documentation: `Field: ${fieldName} (${fieldType})`,
       insertText: fieldName,
     });
-  });
+  }
 
   return suggestions;
 }

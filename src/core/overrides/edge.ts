@@ -16,7 +16,7 @@ export function applyEdgeStyleOverrides(dotString: string, edgeOverrides: EdgeOv
 
   const model = fromDot(dotString);
 
-  edgeOverrides.forEach((mapping) => {
+  for (const mapping of edgeOverrides) {
     const colorRules = mapping.rules.filter((r) => r.kind === RuleKind.STROKE_COLOR);
 
     colorRules.forEach((rule) => {
@@ -33,7 +33,7 @@ export function applyEdgeStyleOverrides(dotString: string, edgeOverrides: EdgeOv
         }
       }
     });
-  });
+  }
 
   return toDot(model);
 }
