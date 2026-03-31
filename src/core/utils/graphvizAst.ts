@@ -9,14 +9,6 @@ export interface GraphNode {
   };
 }
 
-export interface GraphEdge {
-  targets: any[];
-  attributes: {
-    get(key: string): any;
-    set(key: string, value: any): void;
-  };
-}
-
 export function getEdgeId(edge: any): string | null {
   const existingId = edge.attributes.get('id');
   if (existingId) {
