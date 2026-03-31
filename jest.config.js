@@ -10,6 +10,9 @@ module.exports = {
   // Jest configuration provided by Grafana scaffolding
   ...baseConfig,
 
+  // Silence console output during tests
+  silent: true,
+
   // Override transformIgnorePatterns to include ts-graphviz
   transformIgnorePatterns: [nodeModulesToTransform([...grafanaESModules, 'ts-graphviz', '@ts-graphviz'])],
 
