@@ -744,7 +744,8 @@ export function autodetectMatchField(series: DataFrame[], targetIds: string[]): 
   return undefined;
 }
 
-const DEFAULT_MAX_DOT_SIZE = 1024 * 1024;
+const BYTES_PER_KB = 1024;
+const DEFAULT_MAX_DOT_SIZE = BYTES_PER_KB * BYTES_PER_KB;
 
 export function findWideFormatFieldValue(frames: DataFrame[], fieldName: string): string | null {
   for (const frame of frames) {
@@ -772,8 +773,8 @@ export function findTimeseriesFieldValue(frames: DataFrame[], fieldName: string)
 export function validateDotSize(dotValue: string, maxSizeBytes: number): void {
   if (dotValue.length > maxSizeBytes) {
     throw new Error(
-      `DOT diagram too large: ${(dotValue.length / 1024).toFixed(1)} KB exceeds limit of ${(
-        maxSizeBytes / 1024
+      `DOT diagram too large: ${(dotValue.length / BYTES_PER_KB).toFixed(1)} KB exceeds limit of ${(
+        maxSizeBytes / BYTES_PER_KB
       ).toFixed(0)} KB`
     );
   }

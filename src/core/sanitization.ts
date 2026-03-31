@@ -35,17 +35,23 @@ export function applyGraphDefaults(dotString: string, theme: GrafanaTheme2): str
  * Uses graph-level defaults when possible to keep DOT output clean, but promotes implicit nodes
  * to explicit when necessary (e.g., when HTML labels require selective font attribute handling).
  */
+const DEFAULT_PEN_WIDTH = '1.0';
+const DEFAULT_MARGIN = '0.2';
+const DEFAULT_NODE_STYLE = 'rounded,filled';
+const DEFAULT_NODE_SHAPE = 'box';
+const FILL_COLOR_ALPHA = '60';
+
 function applyThemeDefaults(model: any, theme: GrafanaTheme2): void {
   const nodeDefaults: Record<string, string> = {
     fontname: theme.typography.fontFamily,
     fontsize: theme.typography.fontSize.toString(),
     fontcolor: theme.colors.secondary.contrastText,
     color: theme.colors.text.secondary,
-    fillcolor: `${theme.colors.secondary.main}60`,
-    style: 'rounded,filled',
-    shape: 'box',
-    penwidth: '1.0',
-    margin: '0.2',
+    fillcolor: `${theme.colors.secondary.main}${FILL_COLOR_ALPHA}`,
+    style: DEFAULT_NODE_STYLE,
+    shape: DEFAULT_NODE_SHAPE,
+    penwidth: DEFAULT_PEN_WIDTH,
+    margin: DEFAULT_MARGIN,
   };
 
   const edgeDefaults: Record<string, string> = {
@@ -53,7 +59,7 @@ function applyThemeDefaults(model: any, theme: GrafanaTheme2): void {
     fontsize: theme.typography.fontSize.toString(),
     fontcolor: theme.colors.secondary.contrastText,
     color: theme.colors.text.secondary,
-    penwidth: '1.0',
+    penwidth: DEFAULT_PEN_WIDTH,
   };
 
   const htmlLabelsExist = hasAnyHtmlLabels(model, isHtmlLabel);

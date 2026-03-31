@@ -5,6 +5,11 @@ import { findMatchedRow, getFirstDataRow } from '../../integrations/grafanaData'
 import { interpolateLabelWithVariables, hasInterpolation, interpolateLabelIfNeeded } from '../interpolation';
 import { getEdgeId, findNodeById } from '../utils/graphvizAst';
 
+const NODE_FIELD_NAMES_TO_TRY = ['node_id', 'server', 'hostname', 'name', 'id'] as const;
+const EDGE_FIELD_NAME_PRIMARY = 'edge_id';
+const EDGE_FIELD_NAME_SECONDARY = 'link_id';
+const EDGE_FIELD_NAME_TERTIARY = 'connection';
+
 function applyLabelToNode(
   model: any,
   nodeId: string,
@@ -152,10 +157,9 @@ export function interpolateAllNodeLabels(
       continue;
     }
 
-    const fieldNamesToTry = ['node_id', 'server', 'hostname', 'name', 'id'];
     let dataRow: Record<string, any> | undefined;
 
-    for (const fieldName of fieldNamesToTry) {
+    for (const fieldName of NODE_FIELD_NAMES_TO_TRY) {
       dataRow = findMatchedRow(data.series, fieldName, nodeId);
       if (dataRow) {
         break;
@@ -202,9 +206,9 @@ export function interpolateAllEdgeLabels(
     }
 
     let dataRow =
-      findMatchedRow(data.series, 'edge_id', edgeId) ||
-      findMatchedRow(data.series, 'link_id', edgeId) ||
-      findMatchedRow(data.series, 'connection', edgeId);
+      findMatchedRow(data.series, EDGE_FIELD_NAME_PRIMARY, edgeId) ||
+      findMatchedRow(data.series, EDGE_FIELD_NAME_SECONDARY, edgeId) ||
+      findMatchedRow(data.series, EDGE_FIELD_NAME_TERTIARY, edgeId);
 
     if (!dataRow) {
       dataRow = getFirstDataRow(data.series);

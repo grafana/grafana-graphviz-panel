@@ -3,9 +3,14 @@ import { EdgeOverride, RuleKind } from '../../types';
 import { DataDrivenWidths } from '../../integrations/grafanaData';
 import { getEdgeId } from '../utils/graphvizAst';
 
+const MIN_EDGE_WIDTH = 0.1;
+const MAX_EDGE_WIDTH = 5;
+const EDGE_WIDTH_DIVISOR = 1.0;
+const MAX_ARROW_SIZE = 1.5;
+
 export function calculateEdgeWidthAndArrowSize(width: number): { width: number; arrowSize: number } {
-  const clampedWidth = Math.min(Math.max(width, 0.1), 5);
-  const arrowSize = Math.min(clampedWidth / 1.0, 1.5);
+  const clampedWidth = Math.min(Math.max(width, MIN_EDGE_WIDTH), MAX_EDGE_WIDTH);
+  const arrowSize = Math.min(clampedWidth / EDGE_WIDTH_DIVISOR, MAX_ARROW_SIZE);
   return { width: clampedWidth, arrowSize };
 }
 

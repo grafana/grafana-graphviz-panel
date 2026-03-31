@@ -52,28 +52,34 @@ function applyUserNodeOverrides(model: any, nodeOverrides: NodeOverride[]): void
   }
 }
 
+const CLUSTER_PREFIX = 'cluster_';
+const DEFAULT_NODE_FONT_SIZE = '15';
+const DEFAULT_NODE_WIDTH = '1.6';
+const DEFAULT_NODE_HEIGHT = '0.8';
+const DEFAULT_NODE_FONT_NAME = 'Arial';
+
 function applyClusterStyleMappings(model: any): void {
   for (const node of model.nodes) {
-    if (node.id.startsWith('cluster_')) {
+    if (node.id.startsWith(CLUSTER_PREFIX)) {
       continue;
     }
 
     if (!node.attributes.get('fontsize')) {
-      node.attributes.set('fontsize', '15');
+      node.attributes.set('fontsize', DEFAULT_NODE_FONT_SIZE);
     }
 
     if (!node.attributes.get('width')) {
-      node.attributes.set('width', '1.6');
+      node.attributes.set('width', DEFAULT_NODE_WIDTH);
     }
     if (!node.attributes.get('height')) {
-      node.attributes.set('height', '0.8');
+      node.attributes.set('height', DEFAULT_NODE_HEIGHT);
     }
 
     // NOTE: margin is now set by applyGraphDefaults() in sanitization.ts
     // Don't override it here - graph-level defaults from sanitization should take precedence
 
     if (!node.attributes.get('fontname')) {
-      node.attributes.set('fontname', 'Arial');
+      node.attributes.set('fontname', DEFAULT_NODE_FONT_NAME);
     }
   }
 }
