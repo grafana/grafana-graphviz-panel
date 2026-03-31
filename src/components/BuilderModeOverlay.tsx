@@ -11,11 +11,8 @@ import {
   parseEdgesFromDot,
   getExistingEdgeIds,
   isDirectedGraph,
-} from '../builderMode';
-import { NodeFormModal } from './NodeFormModal';
-import { EdgeFormModal } from './EdgeFormModal';
-import { NodeEditModal } from './NodeEditModal';
-import { EdgeEditModal } from './EdgeEditModal';
+} from '../core/builderMode';
+import { NodeFormModal, EdgeFormModal, NodeEditModal, EdgeEditModal } from './modals';
 import { useConfirmation } from '../hooks/useConfirmation';
 import { useDragEdge } from '../hooks/useDragEdge';
 import {
@@ -23,7 +20,7 @@ import {
   calculateEdgePositions,
   NodePosition,
   EdgePosition,
-} from '../utils/svgPositionCalculator';
+} from '../core/utils/svgPositionCalculator';
 import { LayoutEngine, BuilderTool } from '../types';
 
 const MENU_POSITION_X_RATIO = 0.75;
