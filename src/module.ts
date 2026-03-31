@@ -1,6 +1,6 @@
 import { PanelPlugin } from '@grafana/data';
 import { PanelOptions, RankDirection, LayoutEngine, InputMode, SplineType } from './types';
-import { Panel } from './components/Panel';
+import { GraphvizPanel } from './components/GraphvizPanel';
 import {
   DotDiagramEditor,
   BuilderModeEditor,
@@ -10,7 +10,7 @@ import {
 } from './components/panel-options';
 import { AssistantHelpEditor } from './components/assistant';
 
-export const plugin = new PanelPlugin<PanelOptions>(Panel).useFieldConfig().setPanelOptions((builder) => {
+export const plugin = new PanelPlugin<PanelOptions>(GraphvizPanel).useFieldConfig().setPanelOptions((builder) => {
   return builder
     .addRadio({
       path: 'inputMode',

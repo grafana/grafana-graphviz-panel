@@ -10,7 +10,7 @@ import { ErrorDisplay, EmptyDiagramDisplay } from './states';
 import { BuilderModeOverlay } from './BuilderModeOverlay';
 import { isEmptyDiagram } from '../core/utils/graphvizDot';
 
-interface Props extends PanelProps<PanelOptions> {}
+interface GraphvizPanelProps extends PanelProps<PanelOptions> {}
 
 const getStyles = () => {
   return {
@@ -31,7 +31,7 @@ const getStyles = () => {
   };
 };
 
-export const Panel: React.FC<Props> = ({
+export const GraphvizPanel: React.FC<GraphvizPanelProps> = ({
   options,
   data,
   width,
