@@ -43,8 +43,14 @@ Define flowcharts and diagrams as code using Graphviz DOT language, connect your
 6. Run the E2E tests (using Playwright)
 
    ```bash
-   # Runs in a Docker container for consistency, generates a coverage report
+   # Default: Runs in Docker with HTML report and coverage
    npm run e2e
+
+   # Verbose list output: LLM-friendly, easier to debug failures
+   npm run e2e:llm
+
+   # Interactive UI mode: Visual debugging with time travel
+   npm run e2e:ui
    ```
 
 7. Run all tests and generate merged coverage report
