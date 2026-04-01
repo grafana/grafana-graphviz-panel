@@ -45,7 +45,7 @@ src/
 
 ### Rendering Pipeline
 
-The rendering pipeline transforms user DOT diagrams through multiple stages, each building on previous work without destroying it. Implemented in `src/hooks/useThemedDotSvg.ts`:
+The rendering pipeline transforms user DOT diagrams through multiple stages, each building on previous work without destroying it. Implemented in `src/hooks/useGraphvizRenderPipeline.ts`:
 
 ```
 ┌────────────────────────────┐
@@ -117,7 +117,7 @@ The rendering pipeline transforms user DOT diagrams through multiple stages, eac
 4. **Label interpolation:** [`src/core/overrides/label.ts`](src/core/overrides/label.ts)
 5. **SVG rendering:** [`src/core/dot.ts`](src/core/dot.ts)
 6. **Post-processing:** [`src/core/utils/svgFilters.ts`](src/core/utils/svgFilters.ts), [`src/integrations/grafanaTheme.ts`](src/integrations/grafanaTheme.ts)
-7. **React rendering:** [`src/hooks/useThemedDotSvg.ts`](src/hooks/useThemedDotSvg.ts)
+7. **React rendering:** [`src/hooks/useGraphvizRenderPipeline.ts`](src/hooks/useGraphvizRenderPipeline.ts)
 
 ## Guidelines for New Code
 

@@ -25,21 +25,26 @@ export interface RenderError {
 }
 
 /**
- * Hook that orchestrates the DOT diagram rendering pipeline.
- * Handles validation, enhancements, rendering DOT to SVG, and applying Grafana theme styling.
+ * Hook that orchestrates the Graphviz rendering pipeline.
+ * Transforms DOT diagrams through validation, styling, data-driven overrides,
+ * label interpolation, SVG rendering, and theme application.
  *
  * @param svgRef - React ref to the container element where SVG will be rendered
  * @param dotDiagram - The DOT notation string to render
+ * @param layoutEngine - Graphviz layout engine (dot, neato, fdp, etc.)
  * @param rankDirection - The direction of the graph layout (TB, BT, LR, RL)
+ * @param splineType - Edge routing style
  * @param edgeOverrides - Array of edge style mappings to apply
  * @param nodeOverrides - Array of node style mappings to apply
+ * @param namedThresholds - Named threshold sets for color mapping
  * @param data - Panel data from datasource
  * @param fieldConfig - Field configuration including thresholds
  * @param theme - The Grafana theme object for styling
+ * @param isEditMode - Whether panel is in edit mode
  * @param replaceVariables - Function to replace dashboard variables
  * @returns Error state if rendering fails
  */
-export function useThemedDotSvg(
+export function useGraphvizRenderPipeline(
   svgRef: RefObject<HTMLDivElement | null>,
   dotDiagram: string | undefined,
   layoutEngine: string,

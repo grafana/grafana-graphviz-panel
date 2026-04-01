@@ -76,7 +76,7 @@ npm run server       # Spin up local Grafana instance
 ```typescript
 // ✅ Good - Use barrel exports
 import { NodeFormModal, EdgeFormModal } from './modals';
-import { useThemedDotSvg } from '../hooks';
+import { useGraphvizRenderPipeline } from '../hooks';
 
 // ❌ Bad - Individual imports when barrel exists
 import { NodeFormModal } from './modals/NodeFormModal';
