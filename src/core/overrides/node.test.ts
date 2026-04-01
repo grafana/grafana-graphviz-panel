@@ -92,6 +92,34 @@ describe('overrides/node', () => {
 
       expect(result).toContain('A');
     });
+
+    it('should preserve graph-level style when applying fill color', () => {
+      const dot = `digraph G {
+        node [style="rounded,bold"]
+        A
+        B
+      }`;
+      const overrides = [
+        {
+          id: '1',
+          targetNodeIds: ['A'],
+          rules: [
+            {
+              kind: RuleKind.FILL_COLOR,
+              staticColor: '#FF0000',
+            },
+          ],
+        },
+      ];
+
+      const result = applyNodeStyleOverrides(dot, overrides);
+
+      expect(result).toContain('fillcolor');
+      expect(result).toContain('style');
+      expect(result).toContain('rounded');
+      expect(result).toContain('bold');
+      expect(result).toContain('filled');
+    });
   });
 
   describe('applyDataDrivenColors', () => {
@@ -198,6 +226,23 @@ describe('overrides/node', () => {
 
       expect(result).toContain('A');
       expect(result).toContain('B');
+    });
+
+    it('should preserve graph-level corner radius when applying data-driven fill color', () => {
+      const dot = `digraph G {
+        node [style="rounded"]
+        A
+      }`;
+      const colors = {
+        nodeBorderColors: new Map(),
+        nodeFillColors: new Map([['A', '#FF0000']]),
+        edgeColors: new Map(),
+      };
+
+      const result = applyDataDrivenColors(dot, colors);
+
+      expect(result).toContain('rounded');
+      expect(result).toContain('filled');
     });
   });
 });

@@ -4,7 +4,7 @@ import { PanelOptions, InputMode } from 'types';
 import { css, cx } from '@emotion/css';
 import { useStyles2, useTheme2 } from '@grafana/ui';
 import { PanelDataErrorView } from '@grafana/runtime';
-import { useThemedDotSvg } from '../hooks';
+import { useGraphvizRenderPipeline } from '../hooks';
 import { extractDotFromQuery } from '../integrations/grafanaData';
 import { ErrorDisplay, EmptyDiagramDisplay } from './states';
 import { BuilderModeOverlay } from './BuilderModeOverlay';
@@ -83,7 +83,7 @@ export const GraphvizPanel: React.FC<GraphvizPanelProps> = ({
   const isEmpty = isEmptyDiagram(effectiveDotDiagram);
   const isBuilderMode = options.inputMode === InputMode.BUILDER && isEditMode;
 
-  const renderError = useThemedDotSvg(
+  const renderError = useGraphvizRenderPipeline(
     svgRef,
     isEmpty ? undefined : effectiveDotDiagram,
     options.layoutEngine,
