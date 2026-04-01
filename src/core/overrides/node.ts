@@ -3,6 +3,7 @@ import { NodeOverride, RuleKind } from '../../types';
 import { DataDrivenColors } from '../../integrations/grafanaData';
 import { findNodeById, getEdgeId } from '../utils/graphvizAst';
 import { addStyleToCommaList } from './color';
+import { getEffectiveNodeAttribute } from '../utils/graphvizAttributes';
 
 export function applyNodeStyleOverrides(dotString: string, nodeOverrides: NodeOverride[]): string {
   return applyStyleMappings(dotString, nodeOverrides);
@@ -39,7 +40,7 @@ function applyUserNodeOverrides(model: any, nodeOverrides: NodeOverride[]): void
           mapping.targetNodeIds.forEach((nodeId: string) => {
             const node = findNodeById(model, nodeId);
             if (node) {
-              const existingStyle = node.attributes.get('style');
+              const existingStyle = getEffectiveNodeAttribute(node, model, 'style');
               const newStyle = addStyleToCommaList(existingStyle, 'filled');
 
               node.attributes.set('fillcolor', rule.staticColor);
@@ -97,7 +98,7 @@ export function applyDataDrivenColors(dotString: string, dataDrivenColors: DataD
   for (const [nodeId, color] of dataDrivenColors.nodeFillColors) {
     const node = findNodeById(model, nodeId);
     if (node) {
-      const existingStyle = node.attributes.get('style');
+      const existingStyle = getEffectiveNodeAttribute(node, model, 'style');
       const newStyle = addStyleToCommaList(existingStyle, 'filled');
 
       node.attributes.set('fillcolor', color);
