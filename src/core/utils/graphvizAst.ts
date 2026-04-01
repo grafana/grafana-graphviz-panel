@@ -39,6 +39,19 @@ export function collectAllNodeIds(model: GraphModel): Set<string> {
   return allNodeIds;
 }
 
+export function collectAllEdgeIds(model: GraphModel): Set<string> {
+  const edgeIds = new Set<string>();
+
+  for (const edge of model.edges) {
+    const edgeId = getEdgeId(edge);
+    if (edgeId) {
+      edgeIds.add(edgeId);
+    }
+  }
+
+  return edgeIds;
+}
+
 export function hasAnyHtmlLabels(model: GraphModel, isHtmlLabelFn: (label: any) => boolean): boolean {
   for (const node of model.nodes) {
     if (isHtmlLabelFn(node.attributes.get('label'))) {
