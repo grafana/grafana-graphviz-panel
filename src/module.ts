@@ -10,7 +10,7 @@ import {
 } from './components/panel-options';
 import { AssistantHelpEditor } from './components/assistant';
 
-export const plugin = new PanelPlugin<PanelOptions>(GraphvizPanel).useFieldConfig().setPanelOptions((builder) => {
+export const plugin = new PanelPlugin<PanelOptions>(GraphvizPanel).setPanelOptions((builder) => {
   return builder
     .addRadio({
       path: 'inputMode',
