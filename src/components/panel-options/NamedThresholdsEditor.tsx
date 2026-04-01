@@ -97,6 +97,7 @@ export const NamedThresholdsEditor: React.FC<Props> = ({ value, onChange }) => {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
               {editingNameId === threshold.id ? (
                 <Input
+                  data-testid={`threshold-name-input-${threshold.id}`}
                   value={threshold.name}
                   onChange={(e) => updateThreshold(threshold.id, { name: e.currentTarget.value })}
                   onBlur={() => setEditingNameId(null)}
@@ -142,12 +143,14 @@ export const NamedThresholdsEditor: React.FC<Props> = ({ value, onChange }) => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
                   <Input
                     type="number"
+                    data-testid={`threshold-${threshold.id}-step-${stepIndex}-value`}
                     value={step.value}
                     onChange={(e) =>
                       updateStep(threshold.id, stepIndex, { value: parseFloat(e.currentTarget.value) || 0 })
                     }
                   />
                   <ColorPicker
+                    data-testid={`threshold-${threshold.id}-step-${stepIndex}-color`}
                     color={step.color}
                     onChange={(color) => updateStep(threshold.id, stepIndex, { color })}
                   />
@@ -168,6 +171,7 @@ export const NamedThresholdsEditor: React.FC<Props> = ({ value, onChange }) => {
               variant="secondary"
               size="sm"
               style={{ marginTop: '8px' }}
+              data-testid={`add-threshold-step-${threshold.id}`}
             >
               Add Step
             </Button>
@@ -175,7 +179,7 @@ export const NamedThresholdsEditor: React.FC<Props> = ({ value, onChange }) => {
         </Collapse>
       ))}
 
-      <Button icon="plus" onClick={addThreshold} variant="secondary">
+      <Button icon="plus" onClick={addThreshold} variant="secondary" data-testid="add-threshold-set">
         Add Threshold Set
       </Button>
     </div>

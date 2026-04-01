@@ -129,6 +129,115 @@
       ],
       "title": "Static diagram (END)",
       "type": "grafana-graphviz-panel"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "id": 6,
+      "panels": [],
+      "title": "Node & Edge Overrides",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource"
+      },
+      "description": "Empty overrides for E2E test to configure",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
+      "id": 4,
+      "options": {
+        "dotDiagram": "digraph G {\n  Server1 [label=\"Server1\", shape=\"circle\"];\n  Server2 [shape=\"triangle\"];\n  Server1 -> Server2 [label=\"connects\"];\n  Server3 [label=\"Server 3\"];\n  Server2 -> Server3 [label=\"links to\"];\n  Server4 [label=\"Server4\"];\n  Database -> Server1 [label=\"data\"];\n}",
+        "edgeOverrides": [],
+        "inputMode": "code",
+        "layoutEngine": "dot",
+        "namedThresholds": [],
+        "nodeOverrides": [],
+        "rankDirection": "LR",
+        "splineType": "spline"
+      },
+      "pluginVersion": "0.0.1",
+      "targets": [
+        {
+          "csvContent": "node_id,cpu_usage,status,edge_id,bandwidth\nServer1,25,healthy,Server1__to__Server2,100\nServer2,75,warning,Server2__to__Server3,50\nServer3,95,critical,Database__to__Server1,200\nServer4,0,inactive,,",
+          "refId": "A",
+          "scenarioId": "csv_content"
+        }
+      ],
+      "title": "Overrides configuration (START)",
+      "type": "grafana-graphviz-panel"
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource"
+      },
+      "description": "Pre-configured panel with all overrides",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 12,
+        "y": 14
+      },
+      "id": 5,
+      "options": {
+        "dotDiagram": "digraph G {\n  Server1 [label=\"Server1\", shape=\"circle\"];\n  Server2 [shape=\"triangle\"];\n  Server1 -> Server2 [label=\"connects\"];\n  Server3 [label=\"Server 3\"];\n  Server2 -> Server3 [label=\"links to\"];\n  Server4 [label=\"Server4\"];\n  Database -> Server1 [label=\"data\"];\n}",
+        "edgeOverrides": [],
+        "inputMode": "code",
+        "layoutEngine": "dot",
+        "namedThresholds": [],
+        "nodeOverrides": [],
+        "rankDirection": "LR",
+        "splineType": "spline"
+      },
+      "pluginVersion": "0.0.1",
+      "targets": [
+        {
+          "csvContent": "node_id,cpu_usage,status,edge_id,bandwidth\nServer1,25,healthy,Server1__to__Server2,100\nServer2,75,warning,Server2__to__Server3,50\nServer3,95,critical,Database__to__Server1,200\nServer4,0,inactive,,",
+          "refId": "A",
+          "scenarioId": "csv_content"
+        }
+      ],
+      "title": "Overrides complete (END)",
+      "type": "grafana-graphviz-panel"
     }
   ],
   "schemaVersion": 39,
