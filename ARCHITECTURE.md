@@ -43,9 +43,81 @@ src/
 3. **Maintainability**: Platform updates are isolated to `integrations/`
 4. **Clarity**: Clear boundaries between "what" (core) and "how" (integrations)
 
-### Functional Diagram Rendering Pipeline
+### Rendering Pipeline
 
-The control flow of this panel's sanitization, overrides, and rendering of diagrams is orchestrated by `src/components/Panel.tsx` at the top level. This panel is a functional pipeline consistent with React's model of uni-directional data flow,to make this panel plugin simple to reason about and maintain.
+The rendering pipeline transforms user DOT diagrams through multiple stages, each building on previous work without destroying it. Implemented in `src/hooks/useThemedDotSvg.ts`:
+
+```
+┌────────────────────────────┐
+│    Start ..                │ ← String<DOT>
+│    - User defines diagram  │
+└────────────────────────────┘
+          │
+     String<DOT>
+          ↓
+┌──────────────────────────────────────────────────┐
+│ 1. Diagram defaults                              │
+│    - Sets: node [style="rounded,filled"]         │
+└──────────────────────────────────────────────────┘
+          │
+     String<DOT>
+          ↓
+┌──────────────────────────────────────────────────┐
+│ 2. Static overrides (panel options)              │ ← Panel options
+│    - Edge stroke colors                          │
+│    - Node stroke/fill colors                     │
+└──────────────────────────────────────────────────┘
+          │
+     String<DOT>
+          ↓
+┌──────────────────────────────────────────────────┐
+│ 3. Node/edge mappings (data-driven overrides)    │ ← Datasource
+│    - Colors from thresholds                      │ ← Panel options
+│    - Edge widths from data                       │
+└──────────────────────────────────────────────────┘
+          │
+     String<DOT>
+          ↓
+┌──────────────────────────────────────────────────┐
+│ 4. Labels (Interpolation)                        │ ← Dashboard variables
+│    - Node/edge label templates                   │
+│    - Dashboard variable substitution             │
+└──────────────────────────────────────────────────┘
+          │
+     String<DOT>
+          ↓
+┌──────────────────────────────────────────────────┐
+│ 5. Render diagram as SVG                         │
+└──────────────────────────────────────────────────┘
+          │
+     String<SVG>
+          ↓
+┌──────────────────────────────────────────────────┐
+│ 6. Post-Processing (gradient, glow SVG filters)  │
+└──────────────────────────────────────────────────┘
+          │
+     SVG DOM
+          ↓
+┌──────────────────────────────────────────────────┐
+│ 7. Render diagram in React component             │
+└──────────────────────────────────────────────────┘
+          │
+         DOM
+          ↓
+┌────────────────┐
+│     Finish!    │
+└────────────────┘
+```
+
+**Pipeline Implementation:**
+
+1. **Diagram defaults:** [`src/core/sanitization.ts`](src/core/sanitization.ts)
+2. **Static overrides:** [`src/core/overrides/edge.ts`](src/core/overrides/edge.ts), [`src/core/overrides/node.ts`](src/core/overrides/node.ts)
+3. **Data-driven overrides:** [`src/core/overrides/node.ts`](src/core/overrides/node.ts), [`src/core/overrides/edge.ts`](src/core/overrides/edge.ts)
+4. **Label interpolation:** [`src/core/overrides/label.ts`](src/core/overrides/label.ts)
+5. **SVG rendering:** [`src/core/dot.ts`](src/core/dot.ts)
+6. **Post-processing:** [`src/core/utils/svgFilters.ts`](src/core/utils/svgFilters.ts), [`src/integrations/grafanaTheme.ts`](src/integrations/grafanaTheme.ts)
+7. **React rendering:** [`src/hooks/useThemedDotSvg.ts`](src/hooks/useThemedDotSvg.ts)
 
 ## Guidelines for New Code
 
