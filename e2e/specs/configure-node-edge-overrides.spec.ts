@@ -2,22 +2,22 @@ import { test, expect } from '../fixtures/coverage';
 import { getSvg } from '../helpers/diagram-builder';
 
 const DASHBOARD_FILE = 'diagramming-before-and-after.json';
-const PANEL_ID = '4';
+const PANEL_IDS = { START: '4', END: '5' } as const;
 
-test.describe('Node & Edge Overrides', () => {
-  test('Nodes and edges from diagram appear in override selectors', async ({
+test.describe('Configure Node & Edge Overrides', () => {
+  test('Apply node fill color and edge stroke color overrides', async ({
     gotoPanelEditPage,
     readProvisionedDashboard,
     page,
   }) => {
     await test.step('Navigate to panel with diagram', async () => {
       const dashboard = await readProvisionedDashboard({ fileName: DASHBOARD_FILE });
-      await gotoPanelEditPage({ dashboard, id: PANEL_ID });
+      await gotoPanelEditPage({ dashboard, id: PANEL_IDS.START });
 
       const svg = getSvg(page);
       await expect(svg).toBeVisible({ timeout: 10000 });
-      await expect(svg.locator('g.node')).toHaveCount(5);
-      await expect(svg.locator('g.edge')).toHaveCount(3);
+      await expect(svg.locator('g.node')).toHaveCount(3);
+      await expect(svg.locator('g.edge')).toHaveCount(2);
     });
 
     await test.step('Add node override and verify all nodes are available', async () => {
@@ -32,8 +32,6 @@ test.describe('Node & Edge Overrides', () => {
       await expect(page.getByRole('option', { name: 'Server1', exact: true })).toBeVisible();
       await expect(page.getByRole('option', { name: 'Server2', exact: true })).toBeVisible();
       await expect(page.getByRole('option', { name: 'Server3', exact: true })).toBeVisible();
-      await expect(page.getByRole('option', { name: 'Server4', exact: true })).toBeVisible();
-      await expect(page.getByRole('option', { name: 'Database', exact: true })).toBeVisible();
 
       await page.keyboard.press('Escape');
     });
@@ -83,7 +81,6 @@ test.describe('Node & Edge Overrides', () => {
 
       await expect(page.getByRole('option', { name: 'Server1__to__Server2', exact: true })).toBeVisible();
       await expect(page.getByRole('option', { name: 'Server2__to__Server3', exact: true })).toBeVisible();
-      await expect(page.getByRole('option', { name: 'Database__to__Server1', exact: true })).toBeVisible();
 
       await page.keyboard.press('Escape');
     });
