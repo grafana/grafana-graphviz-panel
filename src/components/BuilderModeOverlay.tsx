@@ -122,10 +122,19 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
     setShowNodeForm(false);
   };
 
-  const handleEdgeFormSubmit = (sourceNodeId: string, targetNodeId: string, edgeId?: string, edgeLabel?: string) => {
+  const handleEdgeFormSubmit = (
+    sourceNodeId: string,
+    targetNodeId: string,
+    edgeId?: string,
+    edgeLabel?: string,
+    sourcePort?: string,
+    targetPort?: string
+  ) => {
     const newDot = addEdgeToDot(dotDiagram, {
       source: sourceNodeId,
+      sourcePort,
       target: targetNodeId,
+      targetPort,
       id: edgeId,
       label: edgeLabel,
     });

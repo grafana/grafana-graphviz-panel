@@ -46,6 +46,64 @@ describe('graphvizAst', () => {
 
       expect(getEdgeId(mockEdge)).toBeNull();
     });
+
+    describe('port support', () => {
+      it('should include target port in edge ID (Node -> Node:port)', () => {
+        const model = fromDot('digraph G { A -> B:port1; }');
+        const edge = Array.from(model.edges)[0];
+        expect(getEdgeId(edge)).toBe('A__to__B:port1');
+      });
+
+      it('should include both ports in edge ID (Node:port -> Node:port)', () => {
+        const model = fromDot('digraph G { A:port1 -> B:port2; }');
+        const edge = Array.from(model.edges)[0];
+        expect(getEdgeId(edge)).toBe('A:port1__to__B:port2');
+      });
+
+      it('should include source port in edge ID (Node:port -> Node)', () => {
+        const model = fromDot('digraph G { A:port1 -> B; }');
+        const edge = Array.from(model.edges)[0];
+        expect(getEdgeId(edge)).toBe('A:port1__to__B');
+      });
+
+      it('should generate unique IDs for multiple edges from same source to different ports', () => {
+        const model = fromDot('digraph G { A -> B:http; A -> B:https; }');
+        const edges = Array.from(model.edges);
+        const id1 = getEdgeId(edges[0]);
+        const id2 = getEdgeId(edges[1]);
+        expect(id1).toBe('A__to__B:http');
+        expect(id2).toBe('A__to__B:https');
+        expect(id1).not.toBe(id2);
+      });
+
+      it('should generate unique IDs for multiple edges from different ports to same target', () => {
+        const model = fromDot('digraph G { A:port1 -> B; A:port2 -> B; }');
+        const edges = Array.from(model.edges);
+        const id1 = getEdgeId(edges[0]);
+        const id2 = getEdgeId(edges[1]);
+        expect(id1).toBe('A:port1__to__B');
+        expect(id2).toBe('A:port2__to__B');
+        expect(id1).not.toBe(id2);
+      });
+
+      it('should work with record shape ports', () => {
+        const model = fromDot('digraph G { struct1 [shape=record, label="<f0> left|<f1> right"]; struct1:f1 -> B; }');
+        const edge = Array.from(model.edges)[0];
+        expect(getEdgeId(edge)).toBe('struct1:f1__to__B');
+      });
+
+      it('should work with HTML table PORT attributes', () => {
+        const model = fromDot('digraph G { A [label=<<TABLE><TR><TD PORT="p1">Cell</TD></TR></TABLE>>]; A:p1 -> B; }');
+        const edge = Array.from(model.edges)[0];
+        expect(getEdgeId(edge)).toBe('A:p1__to__B');
+      });
+
+      it('should prioritize custom ID over port-based ID', () => {
+        const model = fromDot('digraph G { A:port1 -> B:port2 [id="custom"]; }');
+        const edge = Array.from(model.edges)[0];
+        expect(getEdgeId(edge)).toBe('custom');
+      });
+    });
   });
 
   describe('findNodeById', () => {
@@ -177,6 +235,25 @@ describe('graphvizAst', () => {
       const model = fromDot('digraph G {}');
       const edgeIds = collectAllEdgeIds(model);
       expect(edgeIds.size).toBe(0);
+    });
+
+    describe('port support', () => {
+      it('should collect edge IDs with ports', () => {
+        const model = fromDot('digraph G { A:p1 -> B:p2; C -> D:p3; }');
+        const edgeIds = collectAllEdgeIds(model);
+        expect(edgeIds.size).toBe(2);
+        expect(edgeIds.has('A:p1__to__B:p2')).toBe(true);
+        expect(edgeIds.has('C__to__D:p3')).toBe(true);
+      });
+
+      it('should generate unique edge IDs for multi-port scenarios', () => {
+        const model = fromDot('digraph G { A -> B:http; A -> B:https; A -> B:admin; }');
+        const edgeIds = collectAllEdgeIds(model);
+        expect(edgeIds.size).toBe(3);
+        expect(edgeIds.has('A__to__B:http')).toBe(true);
+        expect(edgeIds.has('A__to__B:https')).toBe(true);
+        expect(edgeIds.has('A__to__B:admin')).toBe(true);
+      });
     });
   });
 

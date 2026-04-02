@@ -151,7 +151,9 @@ export function deriveEdgeIds(dotString: string): string {
     if (!edge.attributes.get('id')) {
       const targets: any[] = edge.targets;
       if (targets.length >= 2) {
-        const derivedId = `${targets[0].id}__to__${targets[1].id}`;
+        const sourceId = targets[0].port ? `${targets[0].id}:${targets[0].port}` : targets[0].id;
+        const targetId = targets[1].port ? `${targets[1].id}:${targets[1].port}` : targets[1].id;
+        const derivedId = `${sourceId}__to__${targetId}`;
         edge.attributes.set('id', derivedId);
       }
     }

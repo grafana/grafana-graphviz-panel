@@ -50,11 +50,40 @@ export const getShapeOptions = () =>
     icon: shapeIconMap[shape] || 'circle',
   }));
 
-export const formatEdgeId = (source: string, target: string) => `${source}__to__${target}`;
+export const formatEdgeId = (source: string, target: string, sourcePort?: string, targetPort?: string): string => {
+  const sourceId = sourcePort ? `${source}:${sourcePort}` : source;
+  const targetId = targetPort ? `${target}:${targetPort}` : target;
+  return `${sourceId}__to__${targetId}`;
+};
 
-export const parseEdgeId = (id: string): [string, string] | null => {
+export const parseEdgeId = (
+  id: string
+): { source: string; sourcePort?: string; target: string; targetPort?: string } | null => {
   const parts = id.split('__to__');
-  return parts.length === 2 ? [parts[0], parts[1]] : null;
+  if (parts.length !== 2) {
+    return null;
+  }
+
+  const parseNodeWithPort = (str: string): { node: string; port?: string } => {
+    const colonIndex = str.indexOf(':');
+    if (colonIndex === -1) {
+      return { node: str };
+    }
+    return {
+      node: str.substring(0, colonIndex),
+      port: str.substring(colonIndex + 1),
+    };
+  };
+
+  const sourceParsed = parseNodeWithPort(parts[0]);
+  const targetParsed = parseNodeWithPort(parts[1]);
+
+  return {
+    source: sourceParsed.node,
+    sourcePort: sourceParsed.port,
+    target: targetParsed.node,
+    targetPort: targetParsed.port,
+  };
 };
 
 export const toOptional = (value: string) => value || undefined;
@@ -67,7 +96,9 @@ export interface DrawNode {
 
 export interface DrawEdge {
   source: string;
+  sourcePort?: string;
   target: string;
+  targetPort?: string;
   label?: string;
   id?: string;
 }
@@ -102,7 +133,9 @@ export function parseEdgesFromDot(dotString: string): DrawEdge[] {
       if (targets.length >= 2) {
         edges.push({
           source: targets[0].id,
+          sourcePort: targets[0].port,
           target: targets[1].id,
+          targetPort: targets[1].port,
           label: edge.attributes.get('label'),
           id: edge.attributes.get('id'),
         });
@@ -127,11 +160,11 @@ export function getExistingEdgeIds(dotString: string): string[] {
   const edgeIds: string[] = [];
 
   for (const edge of edges) {
-    const edgeId = `${edge.source}__to__${edge.target}`;
+    const edgeId = formatEdgeId(edge.source, edge.target, edge.sourcePort, edge.targetPort);
     edgeIds.push(edgeId);
 
     if (!isDirected) {
-      const reverseEdgeId = `${edge.target}__to__${edge.source}`;
+      const reverseEdgeId = formatEdgeId(edge.target, edge.source, edge.targetPort, edge.sourcePort);
       edgeIds.push(reverseEdgeId);
     }
   }
@@ -200,7 +233,9 @@ export function updateEdgeInDot(
   dotString: string,
   source: string,
   target: string,
-  updates: { id?: string; label?: string }
+  updates: { id?: string; label?: string },
+  sourcePort?: string,
+  targetPort?: string
 ): string {
   try {
     const model = fromDot(dotString);
@@ -208,14 +243,21 @@ export function updateEdgeInDot(
     let foundEdge: any = null;
     for (const edge of model.edges) {
       const targets: any[] = edge.targets;
-      if (targets.length >= 2 && targets[0].id === source && targets[1].id === target) {
+      if (
+        targets.length >= 2 &&
+        targets[0].id === source &&
+        targets[1].id === target &&
+        targets[0].port === sourcePort &&
+        targets[1].port === targetPort
+      ) {
         foundEdge = edge;
         break;
       }
     }
 
     if (!foundEdge) {
-      console.error(`Edge from ${source} to ${target} not found in graph`);
+      const portInfo = sourcePort || targetPort ? ` (with ports)` : '';
+      console.error(`Edge from ${source} to ${target}${portInfo} not found in graph`);
       return dotString;
     }
 
@@ -244,7 +286,7 @@ export function updateEdgeInDot(
 
 export function addEdgeToDot(
   dotString: string,
-  edge: { source: string; target: string; label?: string; id?: string },
+  edge: { source: string; sourcePort?: string; target: string; targetPort?: string; label?: string; id?: string },
   newTargetNode?: { id: string; label?: string; shape?: string }
 ): string {
   try {
@@ -260,7 +302,10 @@ export function addEdgeToDot(
       }
     }
 
-    const newEdge = model.createEdge([edge.source, edge.target]);
+    const sourceTarget = edge.sourcePort ? `${edge.source}:${edge.sourcePort}` : edge.source;
+    const targetTarget = edge.targetPort ? `${edge.target}:${edge.targetPort}` : edge.target;
+
+    const newEdge = model.createEdge([sourceTarget, targetTarget]);
     if (edge.id) {
       newEdge.attributes.set('id', edge.id);
     }
@@ -291,13 +336,25 @@ export function deleteNodeFromDot(dotString: string, nodeId: string): string {
   }
 }
 
-export function deleteEdgeFromDot(dotString: string, source: string, target: string): string {
+export function deleteEdgeFromDot(
+  dotString: string,
+  source: string,
+  target: string,
+  sourcePort?: string,
+  targetPort?: string
+): string {
   try {
     const model = fromDot(dotString);
 
     for (const edge of model.edges) {
       const targets: any[] = edge.targets;
-      if (targets.length >= 2 && targets[0].id === source && targets[1].id === target) {
+      if (
+        targets.length >= 2 &&
+        targets[0].id === source &&
+        targets[1].id === target &&
+        targets[0].port === sourcePort &&
+        targets[1].port === targetPort
+      ) {
         model.removeEdge(edge);
         break;
       }
