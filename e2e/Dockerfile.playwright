@@ -4,4 +4,4 @@ WORKDIR /app
 
 RUN npm install "@playwright/test@1.58.2" "dotenv@^16.3.1" "@grafana/plugin-e2e" "monocart-reporter"
 
-CMD ["npx", "playwright", "test", "-c", "playwright.config.ts"]
+CMD ["sh", "-c", "npx playwright test -c playwright.config.ts ${PW_REPORTER:+--reporter=$PW_REPORTER} ${PW_WORKERS:+--workers=$PW_WORKERS}"]

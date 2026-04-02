@@ -26,23 +26,23 @@ async function verifyFinalDiagramState(page: Page) {
   await expect(svg.locator('text').filter({ hasText: 'links to' })).toBeVisible();
 }
 
-test.describe('Diagramming Before & After', () => {
-  test('Static diagram (END) - Verify final diagram state', async ({
+test.describe('Create Diagram From Scratch', () => {
+  test('Verify target diagram matches expected end state', async ({
     gotoPanelEditPage,
     readProvisionedDashboard,
     page,
   }) => {
-    await test.step('Navigate to static diagram panel', async () => {
+    await test.step('Navigate to target diagram panel', async () => {
       const dashboard = await readProvisionedDashboard({ fileName: DASHBOARD_FILE });
       await gotoPanelEditPage({ dashboard, id: PANEL_IDS.END });
     });
 
-    await test.step('Verify diagram structure', async () => {
+    await test.step('Verify final diagram structure', async () => {
       await verifyFinalDiagramState(page);
     });
   });
 
-  test('Empty diagram (START) - Build diagram from scratch', async ({
+  test('Build complete diagram using builder and code modes', async ({
     gotoPanelEditPage,
     readProvisionedDashboard,
     page,

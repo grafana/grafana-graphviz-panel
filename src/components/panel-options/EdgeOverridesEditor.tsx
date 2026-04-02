@@ -28,6 +28,8 @@ import {
   registerSingleLineKeyCommands,
   registerMatchValueCompletion,
 } from '../../core/utils/monacoConfig';
+import { fromDot } from 'ts-graphviz';
+import { collectAllEdgeIds } from '../../core/utils/graphvizAst';
 
 interface Props extends StandardEditorProps<EdgeOverride[]> {}
 
@@ -730,26 +732,14 @@ function extractEdgeIds(dotDiagram: string | undefined): string[] {
     return [];
   }
 
-  const edgeIdPattern = /(\w+)\s*-[->]\s*(\w+)(?:\s*\[([^\]]*)\])?/g;
-  const edgeIds: string[] = [];
-  let match;
-
-  while ((match = edgeIdPattern.exec(dotDiagram)) !== null) {
-    const source = match[1];
-    const target = match[2];
-    const attributes = match[3];
-
-    if (attributes && attributes.includes('id=')) {
-      const idMatch = attributes.match(/id\s*=\s*"?([^",\]]+)"?/);
-      if (idMatch) {
-        edgeIds.push(idMatch[1]);
-      }
-    } else {
-      edgeIds.push(`${source}__to__${target}`);
-    }
+  try {
+    const model = fromDot(dotDiagram);
+    const edgeIds = collectAllEdgeIds(model);
+    return Array.from(edgeIds);
+  } catch (error) {
+    console.error('Error extracting edge IDs from DOT:', error);
+    return [];
   }
-
-  return edgeIds;
 }
 
 function extractStringFields(data: any): Array<SelectableValue<string>> {

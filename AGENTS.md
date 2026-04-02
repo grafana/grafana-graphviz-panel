@@ -1,7 +1,7 @@
 ---
 title: AI Agent Guidelines
 purpose: Instructions for AI agents contributing to this codebase
-last_updated: 2026-03-26
+last_updated: 2026-04-01
 applies_to: All AI-assisted development (code generation, refactoring, documentation)
 ---
 
@@ -119,8 +119,50 @@ Types: src/types.ts (add to BuilderTool enum)
 
 ```bash
 npm run test:ci      # Jest unit tests with coverage
-npm run e2e          # Playwright E2E tests in Docker
+npm run e2e          # Playwright E2E tests in Docker (HTML report)
+npm run e2e:llm      # E2E tests with verbose list output (LLM-friendly)
+npm run e2e:ui       # Playwright UI mode (local only, not in Docker)
 npm run coverage     # Combined Jest + Playwright coverage report
+```
+
+### When to Run Which Tests
+
+**After modifying source code (`src/`):**
+
+- ✅ Run `npm run test:ci` - Validates your changes don't break unit tests
+- ✅ Run `npm run build` - Ensures code compiles without errors
+- ⚠️ Run `npm run e2e` - Only if you modified code that E2E tests depend on
+
+**After adding/modifying E2E tests (`e2e/specs/`):**
+
+- ✅ Run `npx tsc --noEmit e2e/specs/your-test.spec.ts` - Quick TypeScript check
+- ✅ Run `npm run build` - Build the plugin
+- ✅ Run single test during development:
+  ```bash
+  docker compose run --rm playwright npx playwright test --reporter=list --workers=1 e2e/specs/your-test.spec.ts
+  ```
+- ✅ Run `npm run e2e:llm` before committing - All tests with verbose output
+- ⚠️ Do NOT run only `npm run test:ci` - This won't validate E2E tests!
+
+**After modifying dashboard JSON (`provisioning/dashboards/`):**
+
+- ✅ Run `npm run e2e` - Dashboard changes require full E2E validation
+- ❌ Do NOT assume unit tests validate dashboard changes
+
+**Quick validation workflow for E2E work:**
+
+```bash
+# 1. TypeScript check (fast, catches syntax errors)
+npx tsc --noEmit e2e/specs/your-test.spec.ts
+
+# 2. Build source (E2E tests run against built plugin)
+npm run build
+
+# 3. Run only your test with verbose output (fastest iteration)
+docker compose run --rm playwright npx playwright test --reporter=list --workers=1 e2e/specs/your-test.spec.ts
+
+# 4. Before committing: Run all E2E tests
+npm run e2e:llm
 ```
 
 ### Test Strategy: Pure Unit Tests vs E2E
@@ -169,6 +211,88 @@ jest.mock('../../integrations/grafanaTheme', () => ({
   applyTheme: jest.fn(),
 }));
 ```
+
+### E2E Test Development Workflow
+
+**Fast iteration loop:**
+
+```bash
+# 1. TypeScript check (catches syntax errors instantly)
+npx tsc --noEmit e2e/specs/your-test.spec.ts
+
+# 2. Build plugin (E2E tests run against built artifacts)
+npm run build
+
+# 3. Run ONLY your test with verbose output
+docker compose run --rm playwright npx playwright test --reporter=list --workers=1 e2e/specs/your-test.spec.ts
+```
+
+**Key debugging tips:**
+
+- The `list` reporter shows exactly which line failed
+- Error context files (`error-context.md`) show the actual page structure
+- Use `page.getByText()` or `page.getByRole()` instead of complex CSS selectors
+- When selectors fail, check the error context to see the actual UI structure
+- Add `data-testid` attributes to components for reliable selectors
+
+**Common E2E patterns:**
+
+- Use `getSvg(page)` helper for SVG assertions
+- Use `page.waitForTimeout(500)` after UI interactions (Grafana needs time to update)
+- Use `.last()` when selecting from dynamic lists (overrides, thresholds)
+- Use `getByRole('option')` for dropdown selections after clicking
+- Use `getByText('Select nodes...')` for Grafana multiselect/combobox inputs
+- Check `e2e/helpers/` for reusable functions before writing custom selectors
+
+**When tests fail:**
+
+1. Read the error message - it shows the exact line and what was expected
+2. Check screenshots/videos in `test-results/` directory
+3. Read `error-context.md` to see the actual page structure
+4. Update selectors to match the actual UI (not what you assumed)
+5. **Don't change test requirements** - fix the test implementation
+
+**Provisioned dashboard tips:**
+
+- TestData datasource CSV format: each row must have all fields or use empty strings
+- Bad: `Server1,25,45,healthy,,,` (trailing commas may cause "No data")
+- Good: `Server1,25,45,healthy` (omit unused fields entirely)
+- Each panel needs `datasource`, `targets`, and `options` configured
+- Copy from working panels when adding new test fixtures
+
+**Choosing the right E2E command:**
+
+- **During development** - Run single test with verbose output:
+
+  ```bash
+  docker compose run --rm playwright npx playwright test --reporter=list --workers=1 e2e/specs/your-test.spec.ts
+  ```
+
+  - Fastest iteration (only runs your test)
+  - Verbose list reporter shows exactly what failed
+  - Serial execution (predictable, easier to debug)
+
+- `npm run e2e:ui` - **Interactive UI mode for visual debugging (LOCAL ONLY)**
+
+  - ⚠️ **Cannot run in Docker** - Requires local Playwright installation
+  - To use: Install dependencies locally (`npm install`) then run `npx playwright test --ui`
+  - Opens Playwright UI with time travel debugging
+  - Watch tests run step-by-step
+  - Inspect DOM at any point in the test
+  - Best for understanding test failures visually
+  - Note: You'll need to run Grafana separately (`npm run server`)
+
+- `npm run e2e:llm` - **Run all tests with verbose output**
+
+  - Same verbose list reporter as above
+  - Runs all E2E tests serially
+  - Use before committing changes
+
+- `npm run e2e` - **Full test suite with coverage**
+  - Parallel execution (faster)
+  - HTML report for visual inspection
+  - Coverage reports included
+  - Use for final validation
 
 ## Git & Commit Guidelines
 

@@ -1,4 +1,4 @@
-import { getEdgeId, findNodeById, collectAllNodeIds, hasAnyHtmlLabels } from './graphvizAst';
+import { getEdgeId, findNodeById, collectAllNodeIds, collectAllEdgeIds, hasAnyHtmlLabels } from './graphvizAst';
 import { fromDot } from 'ts-graphviz';
 
 describe('graphvizAst', () => {
@@ -119,6 +119,64 @@ describe('graphvizAst', () => {
       const model = fromDot('digraph G {}');
       const nodeIds = collectAllNodeIds(model);
       expect(nodeIds.size).toBe(0);
+    });
+  });
+
+  describe('collectAllEdgeIds', () => {
+    const testCases = [
+      {
+        name: 'should collect edge IDs from simple edges',
+        dot: 'digraph G { A -> B; B -> C; }',
+        expectedIds: ['A__to__B', 'B__to__C'],
+      },
+      {
+        name: 'should collect custom edge IDs when present',
+        dot: 'digraph G { A -> B [id="edge1"]; B -> C [id="edge2"]; }',
+        expectedIds: ['edge1', 'edge2'],
+      },
+      {
+        name: 'should handle mixed custom and auto-generated IDs',
+        dot: 'digraph G { A -> B [id="custom"]; B -> C; C -> D; }',
+        expectedIds: ['custom', 'B__to__C', 'C__to__D'],
+      },
+      {
+        name: 'should handle quoted node names in edges',
+        dot: 'digraph G { "Node 1" -> "Node 2"; }',
+        expectedIds: ['Node 1__to__Node 2'],
+      },
+      {
+        name: 'should handle edges with spaces in node names',
+        dot: 'digraph G { "Server A" -> "Server B" [id="connection"]; }',
+        expectedIds: ['connection'],
+      },
+      {
+        name: 'should not duplicate edge IDs',
+        dot: 'digraph G { A -> B; A -> C; B -> C; }',
+        expectedIds: ['A__to__B', 'A__to__C', 'B__to__C'],
+      },
+    ];
+
+    testCases.forEach(({ name, dot, expectedIds }) => {
+      it(name, () => {
+        const model = fromDot(dot);
+        const edgeIds = collectAllEdgeIds(model);
+        expect(edgeIds.size).toBe(expectedIds.length);
+        expectedIds.forEach((id) => {
+          expect(edgeIds.has(id)).toBe(true);
+        });
+      });
+    });
+
+    it('should handle empty graph with no edges', () => {
+      const model = fromDot('digraph G { A; B; C; }');
+      const edgeIds = collectAllEdgeIds(model);
+      expect(edgeIds.size).toBe(0);
+    });
+
+    it('should handle graph with only nodes', () => {
+      const model = fromDot('digraph G {}');
+      const edgeIds = collectAllEdgeIds(model);
+      expect(edgeIds.size).toBe(0);
     });
   });
 
