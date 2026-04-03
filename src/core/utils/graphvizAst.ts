@@ -16,7 +16,14 @@ export function getEdgeId(edge: any): string | null {
   }
 
   const targets: any[] = edge.targets;
-  return targets.length >= 2 ? `${targets[0].id}__to__${targets[1].id}` : null;
+  if (targets.length < 2) {
+    return null;
+  }
+
+  const sourceId = targets[0].port ? `${targets[0].id}:${targets[0].port}` : targets[0].id;
+  const targetId = targets[1].port ? `${targets[1].id}:${targets[1].port}` : targets[1].id;
+
+  return `${sourceId}__to__${targetId}`;
 }
 
 export function findNodeById(model: GraphModel, nodeId: string): GraphNode | undefined {

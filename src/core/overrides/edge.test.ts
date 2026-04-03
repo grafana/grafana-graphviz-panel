@@ -162,6 +162,36 @@ describe('overrides/edge', () => {
 
       expect(result).toContain('#FF0000');
     });
+
+    it('should apply overrides to edges with target ports', () => {
+      const dot = 'digraph G { node [shape=record]; A [label="<f0> port"]; B -> A:f0; }';
+      const overrides = [
+        {
+          id: '1',
+          targetEdgeIds: ['B__to__A:f0'],
+          rules: [{ kind: RuleKind.STROKE_COLOR, staticColor: '#00FF00' }],
+        },
+      ];
+
+      const result = applyEdgeStyleOverrides(dot, overrides);
+
+      expect(result).toContain('#00FF00');
+    });
+
+    it('should apply overrides to edges with source and target ports', () => {
+      const dot = 'digraph G { node [shape=record]; A [label="<out> out"]; B [label="<in> in"]; A:out -> B:in; }';
+      const overrides = [
+        {
+          id: '1',
+          targetEdgeIds: ['A:out__to__B:in'],
+          rules: [{ kind: RuleKind.STROKE_COLOR, staticColor: '#0000FF' }],
+        },
+      ];
+
+      const result = applyEdgeStyleOverrides(dot, overrides);
+
+      expect(result).toContain('#0000FF');
+    });
   });
 
   describe('applyDataDrivenWidths', () => {

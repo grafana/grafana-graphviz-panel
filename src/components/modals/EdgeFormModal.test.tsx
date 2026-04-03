@@ -125,7 +125,7 @@ describe('EdgeFormModal', () => {
 
       fireEvent.click(screen.getByRole('button', { name: /add edge/i }));
 
-      expect(defaultProps.onSubmit).toHaveBeenCalledWith('A', 'B', undefined, undefined);
+      expect(defaultProps.onSubmit).toHaveBeenCalledWith('A', 'B', undefined, undefined, undefined, undefined);
     });
 
     it('should submit with custom edge ID and label', () => {
@@ -144,7 +144,7 @@ describe('EdgeFormModal', () => {
 
       fireEvent.click(screen.getByRole('button', { name: /add edge/i }));
 
-      expect(defaultProps.onSubmit).toHaveBeenCalledWith('A', 'B', 'custom_edge', 'Custom Label');
+      expect(defaultProps.onSubmit).toHaveBeenCalledWith('A', 'B', 'custom_edge', 'Custom Label', undefined, undefined);
     });
   });
 

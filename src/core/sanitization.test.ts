@@ -198,5 +198,31 @@ describe('sanitization', () => {
       expect(result).toContain('A__to__B');
       expect(result).toContain('second');
     });
+
+    it('should include target port in derived edge ID', () => {
+      const dot = 'digraph G { node [shape=record]; A [label="<p1> port"]; B -> A:p1; }';
+
+      const result = deriveEdgeIds(dot);
+
+      expect(result).toContain('B__to__A:p1');
+    });
+
+    it('should include both source and target ports in derived edge ID', () => {
+      const dot = 'digraph G { node [shape=record]; A [label="<out> out"]; B [label="<in> in"]; A:out -> B:in; }';
+
+      const result = deriveEdgeIds(dot);
+
+      expect(result).toContain('A:out__to__B:in');
+    });
+
+    it('should create unique IDs for multiple edges to different ports', () => {
+      const dot = 'digraph G { node [shape=record]; A [label="<p1> p1|<p2> p2"]; B -> A:p1; B -> A:p2; }';
+
+      const result = deriveEdgeIds(dot);
+
+      expect(result).toContain('B__to__A:p1');
+      expect(result).toContain('B__to__A:p2');
+      expect(result).not.toContain('B__to__A"');
+    });
   });
 });

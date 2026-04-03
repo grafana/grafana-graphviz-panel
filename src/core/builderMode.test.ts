@@ -42,14 +42,44 @@ describe('builderMode pure functions', () => {
         expect(formatEdgeId(source, target)).toBe(expected);
       });
     });
+
+    describe('port support', () => {
+      it('should format edge with target port', () => {
+        expect(formatEdgeId('A', 'B', undefined, 'port1')).toBe('A__to__B:port1');
+      });
+
+      it('should format edge with source port', () => {
+        expect(formatEdgeId('A', 'B', 'port1', undefined)).toBe('A:port1__to__B');
+      });
+
+      it('should format edge with both ports', () => {
+        expect(formatEdgeId('A', 'B', 'port1', 'port2')).toBe('A:port1__to__B:port2');
+      });
+
+      it('should handle record-style port names', () => {
+        expect(formatEdgeId('struct1', 'struct2', 'f0', 'f1')).toBe('struct1:f0__to__struct2:f1');
+      });
+    });
   });
 
   describe('parseEdgeId', () => {
     const testCases = [
-      { name: 'should parse simple edge ID', input: 'A__to__B', expected: ['A', 'B'] },
-      { name: 'should parse with spaces', input: 'Node 1__to__Node 2', expected: ['Node 1', 'Node 2'] },
-      { name: 'should parse with special chars', input: 'Server-1__to__Server-2', expected: ['Server-1', 'Server-2'] },
-      { name: 'should handle empty parts', input: 'A__to__', expected: ['A', ''] },
+      {
+        name: 'should parse simple edge ID',
+        input: 'A__to__B',
+        expected: { source: 'A', target: 'B' },
+      },
+      {
+        name: 'should parse with spaces',
+        input: 'Node 1__to__Node 2',
+        expected: { source: 'Node 1', target: 'Node 2' },
+      },
+      {
+        name: 'should parse with special chars',
+        input: 'Server-1__to__Server-2',
+        expected: { source: 'Server-1', target: 'Server-2' },
+      },
+      { name: 'should handle empty parts', input: 'A__to__', expected: { source: 'A', target: '' } },
       { name: 'should return null without separator', input: 'A-B', expected: null },
       { name: 'should return null with multiple separators', input: 'A__to__B__to__C', expected: null },
     ];
@@ -57,6 +87,28 @@ describe('builderMode pure functions', () => {
     testCases.forEach(({ name, input, expected }) => {
       it(name, () => {
         expect(parseEdgeId(input)).toEqual(expected);
+      });
+    });
+
+    describe('port support', () => {
+      it('should parse edge with target port', () => {
+        const result = parseEdgeId('A__to__B:port1');
+        expect(result).toEqual({ source: 'A', target: 'B', targetPort: 'port1' });
+      });
+
+      it('should parse edge with source port', () => {
+        const result = parseEdgeId('A:port1__to__B');
+        expect(result).toEqual({ source: 'A', sourcePort: 'port1', target: 'B' });
+      });
+
+      it('should parse edge with both ports', () => {
+        const result = parseEdgeId('A:port1__to__B:port2');
+        expect(result).toEqual({ source: 'A', sourcePort: 'port1', target: 'B', targetPort: 'port2' });
+      });
+
+      it('should handle record-style port names', () => {
+        const result = parseEdgeId('struct1:f0__to__struct2:f1');
+        expect(result).toEqual({ source: 'struct1', sourcePort: 'f0', target: 'struct2', targetPort: 'f1' });
       });
     });
   });
@@ -154,6 +206,39 @@ describe('builderMode pure functions', () => {
 
       expect(result).toContain('custom-id');
       expect(result).toContain('Link');
+    });
+
+    describe('port support', () => {
+      it('should add edge with target port', () => {
+        const validDot = 'digraph G { A; B [shape=record, label="<p1> Port1|<p2> Port2"]; }';
+        const result = addEdgeToDot(validDot, { source: 'A', target: 'B', targetPort: 'p1' });
+
+        expect(result).toContain('B');
+        expect(result).toContain('p1');
+      });
+
+      it('should add edge with source port', () => {
+        const validDot = 'digraph G { A [shape=record, label="<p1> Port1"]; B; }';
+        const result = addEdgeToDot(validDot, { source: 'A', sourcePort: 'p1', target: 'B' });
+
+        expect(result).toContain('A');
+        expect(result).toContain('p1');
+      });
+
+      it('should add edge with both ports', () => {
+        const validDot = 'digraph G { A [shape=record, label="<out> Out"]; B [shape=record, label="<in> In"]; }';
+        const result = addEdgeToDot(validDot, {
+          source: 'A',
+          sourcePort: 'out',
+          target: 'B',
+          targetPort: 'in',
+        });
+
+        expect(result).toContain('A');
+        expect(result).toContain('out');
+        expect(result).toContain('B');
+        expect(result).toContain('in');
+      });
     });
   });
 

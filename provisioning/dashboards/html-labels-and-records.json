@@ -202,14 +202,128 @@
       ],
       "title": "Record Shape with Ports",
       "type": "grafana-graphviz-panel"
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "description": "Demonstrates port-based edge overrides with both data-driven and manual styling. Uses Record shapes (LoadBalancer, APIGateway) and HTML table PORT attributes (Server, Database) to show port-to-port connections with dynamic color, width, and label overrides based on real-time metrics.",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "id": 6,
+      "options": {
+        "dotDiagram": "digraph ports_demo {\n  rankdir=LR;\n  node [shape=record];\n  \n  LoadBalancer [label=\"<in> Input|<proc> Processor|<out> Output\"];\n  APIGateway [label=\"<api> REST API|<auth> Auth\"];\n  \n  Server [shape=none, label=<<TABLE CELLSPACING=\"0\" CELLPADDING=\"8\" BORDER=\"1\">\n    <TR><TD COLSPAN=\"2\"><B>Web Server</B></TD></TR>\n    <TR><TD PORT=\"http\">HTTP :80</TD><TD PORT=\"https\">HTTPS :443</TD></TR>\n  </TABLE>>];\n  \n  Database [shape=none, label=<<TABLE CELLSPACING=\"0\" CELLPADDING=\"8\" BORDER=\"1\">\n    <TR><TD COLSPAN=\"2\"><B>Database</B></TD></TR>\n    <TR><TD PORT=\"read\">Read Replica</TD><TD PORT=\"write\">Write Primary</TD></TR>\n  </TABLE>>];\n  \n  Client [shape=ellipse, label=\"Client\"];\n  \n  Client -> Server:https;\n  Server:http -> Database:read;\n  LoadBalancer:out -> APIGateway:api;\n  APIGateway:auth -> LoadBalancer:in [style=dashed];\n  LoadBalancer:proc -> Client;\n}",
+        "layoutEngine": "dot",
+        "rankDirection": "LR",
+        "namedThresholds": [
+          {
+            "id": "bandwidth-threshold",
+            "name": "Bandwidth Levels",
+            "steps": [
+              {
+                "color": "#73BF69",
+                "value": 0
+              },
+              {
+                "color": "#FADE2A",
+                "value": 50
+              },
+              {
+                "color": "#F2495C",
+                "value": 90
+              }
+            ]
+          }
+        ],
+        "edgeOverrides": [
+          {
+            "id": "data-driven-1",
+            "targetEdgeIds": ["Client__to__Server:https"],
+            "matchFieldName": "edge_id",
+            "matchPattern": "${id}",
+            "rules": [
+              {
+                "kind": "strokeColor",
+                "colorFieldName": "bandwidth_percent",
+                "thresholdId": "bandwidth-threshold"
+              },
+              {
+                "kind": "strokeWidth",
+                "widthFieldName": "link_width"
+              },
+              {
+                "kind": "label",
+                "labelTemplate": "${protocol} - ${bandwidth}"
+              }
+            ]
+          },
+          {
+            "id": "data-driven-2",
+            "targetEdgeIds": ["Server:http__to__Database:read"],
+            "matchFieldName": "edge_id",
+            "matchPattern": "${id}",
+            "rules": [
+              {
+                "kind": "strokeColor",
+                "colorFieldName": "bandwidth_percent",
+                "thresholdId": "bandwidth-threshold"
+              }
+            ]
+          },
+          {
+            "id": "manual-override-1",
+            "targetEdgeIds": ["LoadBalancer:out__to__APIGateway:api"],
+            "rules": [
+              {
+                "kind": "strokeColor",
+                "staticColor": "#FF6B6B"
+              },
+              {
+                "kind": "strokeWidth",
+                "staticWidth": 4
+              }
+            ]
+          }
+        ]
+      },
+      "pluginVersion": "0.0.1",
+      "targets": [
+        {
+          "csvContent": "edge_id,bandwidth_percent,link_width,protocol,bandwidth\nClient__to__Server:https,95,5,HTTPS,1.2 Gbps\nServer:http__to__Database:read,45,2,HTTP,500 Mbps",
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "refId": "A",
+          "scenarioId": "csv_content"
+        }
+      ],
+      "title": "Edge Overrides Connecting Node Ports (Record & HTML)",
+      "type": "grafana-graphviz-panel"
     }
   ],
   "schemaVersion": 39,
-  "tags": [
-    "graphviz",
-    "html",
-    "demo"
-  ],
+  "tags": ["graphviz", "html", "demo"],
   "templating": {
     "list": []
   },
