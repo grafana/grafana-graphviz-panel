@@ -139,7 +139,7 @@ npm run coverage     # Combined Jest + Playwright coverage report
 - ✅ Run `npm run build` - Build the plugin
 - ✅ Run single test during development:
   ```bash
-  docker compose run --rm playwright npx playwright test --reporter=list --workers=1 e2e/specs/your-test.spec.ts
+  npm run e2e:llm e2e/specs/your-test.spec.ts
   ```
 - ✅ Run `npm run e2e:llm` before committing - All tests with verbose output
 - ⚠️ Do NOT run only `npm run test:ci` - This won't validate E2E tests!
@@ -159,7 +159,7 @@ npx tsc --noEmit e2e/specs/your-test.spec.ts
 npm run build
 
 # 3. Run only your test with verbose output (fastest iteration)
-docker compose run --rm playwright npx playwright test --reporter=list --workers=1 e2e/specs/your-test.spec.ts
+npm run e2e:llm e2e/specs/your-test.spec.ts
 
 # 4. Before committing: Run all E2E tests
 npm run e2e:llm
@@ -224,7 +224,7 @@ npx tsc --noEmit e2e/specs/your-test.spec.ts
 npm run build
 
 # 3. Run ONLY your test with verbose output
-docker compose run --rm playwright npx playwright test --reporter=list --workers=1 e2e/specs/your-test.spec.ts
+npm run e2e:llm e2e/specs/your-test.spec.ts
 ```
 
 **Key debugging tips:**
@@ -237,8 +237,33 @@ docker compose run --rm playwright npx playwright test --reporter=list --workers
 
 **Common E2E patterns:**
 
+```typescript
+// ✅ Good - Use test.step() for grouping related actions
+test('should display tooltip on hover', async ({ page }) => {
+  await test.step('Hover over element', async () => {
+    const node = page.locator('g.node').first();
+    await node.hover();
+  });
+
+  await test.step('Verify tooltip appears', async () => {
+    const tooltip = page.locator('[data-portal="tooltip"]');
+    await expect(tooltip).toBeVisible(); // Auto-waits up to 5s
+  });
+});
+
+// ✅ Good - Let Playwright auto-wait, no manual timeouts
+await element.click();
+await expect(page.locator('.result')).toBeVisible(); // Waits automatically
+
+// ❌ Bad - Arbitrary timeouts are unnecessary
+await element.click();
+await page.waitForTimeout(500); // Don't do this!
+await expect(page.locator('.result')).toBeVisible();
+```
+
+**Additional patterns:**
+
 - Use `getSvg(page)` helper for SVG assertions
-- Use `page.waitForTimeout(500)` after UI interactions (Grafana needs time to update)
 - Use `.last()` when selecting from dynamic lists (overrides, thresholds)
 - Use `getByRole('option')` for dropdown selections after clicking
 - Use `getByText('Select nodes...')` for Grafana multiselect/combobox inputs
@@ -265,12 +290,13 @@ docker compose run --rm playwright npx playwright test --reporter=list --workers
 - **During development** - Run single test with verbose output:
 
   ```bash
-  docker compose run --rm playwright npx playwright test --reporter=list --workers=1 e2e/specs/your-test.spec.ts
+  npm run e2e:llm e2e/specs/your-test.spec.ts
   ```
 
   - Fastest iteration (only runs your test)
   - Verbose list reporter shows exactly what failed
   - Serial execution (predictable, easier to debug)
+  - **Always use npm scripts** so the command is clear and standardized
 
 - `npm run e2e:ui` - **Interactive UI mode for visual debugging (LOCAL ONLY)**
 
