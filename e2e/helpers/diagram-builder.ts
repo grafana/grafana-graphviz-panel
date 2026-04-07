@@ -232,3 +232,13 @@ export async function editEdge(
 export function getSvg(page: Page) {
   return page.getByTestId('graphviz-panel-rendered-svg').locator('svg');
 }
+
+export function getNodeById(page: Page, nodeId: string) {
+  const svg = getSvg(page);
+  return svg.locator(`g.node[id="${nodeId}"]`);
+}
+
+export function getEdgeById(page: Page, edgeId: string) {
+  const svg = getSvg(page);
+  return svg.locator(`g.edge[id="${edgeId}"]`);
+}
