@@ -92,3 +92,60 @@ export function interpolateLabelIfNeeded(
   }
   return interpolateLabelWithVariables(label, dataRow, replaceVariables);
 }
+
+export interface ResolvedDataLink {
+  title: string;
+  url: string;
+  openInNewTab: boolean;
+}
+
+export interface NodeEdgeContext {
+  nodeId?: string;
+  edgeId?: string;
+  source?: string;
+  target?: string;
+}
+
+function replaceContextVariables(text: string, context: NodeEdgeContext): string {
+  return text
+    .replace(/\$\{__nodeId\}/g, context.nodeId || '')
+    .replace(/\$\{__edgeId\}/g, context.edgeId || '')
+    .replace(/\$\{__source\}/g, context.source || '')
+    .replace(/\$\{__target\}/g, context.target || '');
+}
+
+export function resolveTemplate(
+  template: string,
+  rowData: Record<string, any>,
+  context: NodeEdgeContext,
+  replaceVariables: (str: string) => string
+): string {
+  let result = template;
+
+  result = replaceVariables(result);
+
+  result = replaceContextVariables(result, context);
+
+  result = result.replace(INTERPOLATION_REGEX, (_match, fieldName) => {
+    const value = rowData[fieldName];
+    if (value == null) {
+      return '';
+    }
+    return String(value);
+  });
+
+  return result;
+}
+
+export function resolveDataLinks(
+  links: Array<{ title: string; url: string; openInNewTab?: boolean }>,
+  rowData: Record<string, any>,
+  context: NodeEdgeContext,
+  replaceVariables: (str: string) => string
+): ResolvedDataLink[] {
+  return links.map((link) => ({
+    title: resolveTemplate(link.title, rowData, context, replaceVariables),
+    url: resolveTemplate(link.url, rowData, context, replaceVariables),
+    openInNewTab: link.openInNewTab ?? false,
+  }));
+}

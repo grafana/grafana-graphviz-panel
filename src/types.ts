@@ -38,6 +38,7 @@ export enum RuleKind {
   FILL_COLOR = 'fillColor',
   STROKE_WIDTH = 'strokeWidth',
   LABEL = 'label',
+  TOOLTIP = 'tooltip',
 }
 
 export enum DataFormatStrategy {
@@ -87,7 +88,27 @@ export interface LabelRule {
   labelTemplate?: string;
 }
 
-export type Rule = StrokeColorRule | FillColorRule | StrokeWidthRule | LabelRule;
+export interface TooltipRule {
+  kind: RuleKind.TOOLTIP;
+  header?: {
+    showId?: boolean;
+    showTimestamp?: boolean;
+  };
+  content?: {
+    templates?: string[];
+  };
+  footer?: {
+    links?: DataLink[];
+  };
+}
+
+export type Rule = StrokeColorRule | FillColorRule | StrokeWidthRule | LabelRule | TooltipRule;
+
+export interface DataLink {
+  title: string;
+  url: string;
+  openInNewTab?: boolean;
+}
 
 export interface EdgeOverride {
   id: string;

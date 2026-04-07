@@ -373,11 +373,11 @@ describe('EdgeOverridesEditor', () => {
       ]);
     });
 
-    it('should disable add rule button when all rules added', () => {
+    it('should not disable add rule button when some rules added', () => {
       const overrides: EdgeOverride[] = [
         {
           id: 'edge-mapping-1',
-          targetEdgeIds: ['Server1__to__Server2'],
+          targetEdgeIds: ['A__to__B'],
           matchMode: MatchMode.MANUAL,
           rules: [
             { kind: RuleKind.STROKE_COLOR, staticColor: '#FF0000' },
@@ -390,7 +390,7 @@ describe('EdgeOverridesEditor', () => {
       render(<EdgeOverridesEditor {...defaultProps} value={overrides} />);
 
       const overrideButton = screen.getByRole('button', { name: /override edge property/i });
-      expect(overrideButton).toBeDisabled();
+      expect(overrideButton).toBeEnabled();
     });
 
     it('should disable add rule button when no edges matched', () => {

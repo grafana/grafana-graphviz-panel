@@ -5,6 +5,8 @@ import {
   hasInterpolation,
   extractFieldReferences,
   interpolateLabelIfNeeded,
+  resolveTemplate,
+  resolveDataLinks,
 } from './interpolation';
 
 describe('interpolation', () => {
@@ -418,6 +420,166 @@ describe('interpolation', () => {
       const label = '';
       const dataRow = { server: 'web-01' };
       expect(interpolateLabelIfNeeded(label, dataRow)).toBe('');
+    });
+  });
+
+  describe('resolveTemplate', () => {
+    const mockReplaceVariables = (str: string) => str.replace('${var-region}', 'us-east');
+
+    it('should replace field references from row data', () => {
+      const template = 'CPU: ${cpu}%, Memory: ${memory}%';
+      const rowData = { cpu: 45, memory: 78 };
+      const context = { nodeId: 'Server1' };
+
+      expect(resolveTemplate(template, rowData, context, (s) => s)).toBe('CPU: 45%, Memory: 78%');
+    });
+
+    it('should replace node context variables', () => {
+      const template = 'Node: ${__nodeId}';
+      const context = { nodeId: 'Server1' };
+
+      expect(resolveTemplate(template, {}, context, (s) => s)).toBe('Node: Server1');
+    });
+
+    it('should replace edge context variables', () => {
+      const template = 'Edge: ${__edgeId} (${__source} -> ${__target})';
+      const context = { edgeId: 'Server1__to__Server2', source: 'Server1', target: 'Server2' };
+
+      expect(resolveTemplate(template, {}, context, (s) => s)).toBe('Edge: Server1__to__Server2 (Server1 -> Server2)');
+    });
+
+    it('should replace dashboard variables', () => {
+      const template = 'Region: ${var-region}, Server: ${server}';
+      const rowData = { server: 'web-01' };
+      const context = { nodeId: 'Server1' };
+
+      expect(resolveTemplate(template, rowData, context, mockReplaceVariables)).toBe('Region: us-east, Server: web-01');
+    });
+
+    it('should handle missing field values by replacing with empty string', () => {
+      const template = 'CPU: ${cpu}%, Missing: ${missing}';
+      const rowData = { cpu: 45 };
+      const context = {};
+
+      expect(resolveTemplate(template, rowData, context, (s) => s)).toBe('CPU: 45%, Missing: ');
+    });
+
+    it('should handle null field values by replacing with empty string', () => {
+      const template = 'Value: ${value}';
+      const rowData = { value: null };
+      const context = {};
+
+      expect(resolveTemplate(template, rowData, context, (s) => s)).toBe('Value: ');
+    });
+
+    it('should replace all variable types together', () => {
+      const template = 'Region: ${var-region}, Node: ${__nodeId}, CPU: ${cpu}%';
+      const rowData = { cpu: 45 };
+      const context = { nodeId: 'Server1' };
+
+      expect(resolveTemplate(template, rowData, context, mockReplaceVariables)).toBe(
+        'Region: us-east, Node: Server1, CPU: 45%'
+      );
+    });
+
+    it('should handle empty context', () => {
+      const template = 'Node: ${__nodeId}, CPU: ${cpu}%';
+      const rowData = { cpu: 45 };
+      const context = {};
+
+      expect(resolveTemplate(template, rowData, context, (s) => s)).toBe('Node: , CPU: 45%');
+    });
+
+    it('should not escape HTML in template resolution', () => {
+      const template = 'Status: ${status}';
+      const rowData = { status: '<healthy>' };
+      const context = {};
+
+      expect(resolveTemplate(template, rowData, context, (s) => s)).toBe('Status: <healthy>');
+    });
+  });
+
+  describe('resolveDataLinks', () => {
+    const mockReplaceVariables = (str: string) => str.replace('${var-region}', 'us-east');
+
+    it('should resolve single data link', () => {
+      const links = [{ title: 'Dashboard', url: 'https://example.com/d/abc?server=${server}', openInNewTab: true }];
+      const rowData = { server: 'web-01' };
+      const context = { nodeId: 'Server1' };
+
+      const result = resolveDataLinks(links, rowData, context, (s) => s);
+
+      expect(result).toEqual([
+        { title: 'Dashboard', url: 'https://example.com/d/abc?server=web-01', openInNewTab: true },
+      ]);
+    });
+
+    it('should resolve multiple data links', () => {
+      const links = [
+        { title: 'Dashboard', url: 'https://example.com/d/abc?server=${server}' },
+        { title: 'Logs', url: 'https://example.com/logs?node=${__nodeId}' },
+      ];
+      const rowData = { server: 'web-01' };
+      const context = { nodeId: 'Server1' };
+
+      const result = resolveDataLinks(links, rowData, context, (s) => s);
+
+      expect(result).toEqual([
+        { title: 'Dashboard', url: 'https://example.com/d/abc?server=web-01', openInNewTab: false },
+        { title: 'Logs', url: 'https://example.com/logs?node=Server1', openInNewTab: false },
+      ]);
+    });
+
+    it('should default openInNewTab to false', () => {
+      const links = [{ title: 'Link', url: 'https://example.com' }];
+      const result = resolveDataLinks(links, {}, {}, (s) => s);
+
+      expect(result[0].openInNewTab).toBe(false);
+    });
+
+    it('should resolve dashboard variables in URLs', () => {
+      const links = [{ title: 'Dashboard', url: 'https://example.com?region=${var-region}&server=${server}' }];
+      const rowData = { server: 'web-01' };
+      const context = {};
+
+      const result = resolveDataLinks(links, rowData, context, mockReplaceVariables);
+
+      expect(result[0].url).toBe('https://example.com?region=us-east&server=web-01');
+    });
+
+    it('should resolve edge context variables in URLs', () => {
+      const links = [{ title: 'Link', url: 'https://example.com?edge=${__edgeId}&from=${__source}&to=${__target}' }];
+      const rowData = {};
+      const context = { edgeId: 'A__to__B', source: 'A', target: 'B' };
+
+      const result = resolveDataLinks(links, rowData, context, (s) => s);
+
+      expect(result[0].url).toBe('https://example.com?edge=A__to__B&from=A&to=B');
+    });
+
+    it('should resolve template in link title', () => {
+      const links = [{ title: 'Dashboard for ${server}', url: 'https://example.com' }];
+      const rowData = { server: 'web-01' };
+      const context = {};
+
+      const result = resolveDataLinks(links, rowData, context, (s) => s);
+
+      expect(result[0].title).toBe('Dashboard for web-01');
+    });
+
+    it('should handle empty links array', () => {
+      const result = resolveDataLinks([], {}, {}, (s) => s);
+      expect(result).toEqual([]);
+    });
+
+    it('should handle missing field values in URLs', () => {
+      const links = [{ title: 'Link', url: 'https://example.com?server=${server}&missing=${missing}' }];
+      const rowData = { server: 'web-01' };
+      const context = {};
+
+      const result = resolveDataLinks(links, rowData, context, (s) => s);
+
+      expect(result[0].url).toBe('https://example.com?server=web-01&missing=');
     });
   });
 });

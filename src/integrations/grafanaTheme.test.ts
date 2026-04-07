@@ -147,48 +147,31 @@ describe('theming', () => {
       });
     });
 
-    describe('edit mode', () => {
-      it('should add tooltips to nodes in edit mode', () => {
-        const svg = createSvgElement('<g class="node"><title>NodeA</title></g>');
-
-        applySvgTheming(svg, darkTheme, true);
-
-        const title = svg.querySelector('g.node title');
-        expect(title?.textContent).toBe('Node ID: NodeA');
-      });
-
-      it('should add tooltips to edges in edit mode', () => {
-        const svg = createSvgElement('<g class="edge"><title>A->B</title></g>');
-
-        applySvgTheming(svg, darkTheme, true);
-
-        const title = svg.querySelector('g.edge title');
-        expect(title?.textContent).toBe('Edge ID: A__to__B');
-      });
-
-      it('should remove all other titles in edit mode', () => {
+    describe('native SVG tooltips', () => {
+      it('should remove all title elements to prevent native browser tooltips', () => {
         const svg = createSvgElement(`
           <g class="graph"><title>G</title></g>
-          <g class="node"><title>A</title></g>
+          <g class="node"><title>NodeA</title></g>
+          <g class="edge"><title>A->B</title></g>
+          <title>Root</title>
         `);
 
-        applySvgTheming(svg, darkTheme, true);
+        applySvgTheming(svg, darkTheme);
 
-        const titles = svg.querySelectorAll('title');
-        expect(titles.length).toBe(1);
-        expect(titles[0].textContent).toBe('Node ID: A');
+        const allTitles = svg.querySelectorAll('title');
+        expect(allTitles.length).toBe(0);
       });
 
-      it('should remove all titles when not in edit mode', () => {
+      it('should remove title elements from nodes and edges', () => {
         const svg = createSvgElement(`
-          <g class="node"><title>A</title></g>
+          <g class="node"><title>NodeA</title></g>
           <g class="edge"><title>A->B</title></g>
-          <title>Graph</title>
         `);
 
-        applySvgTheming(svg, darkTheme, false);
+        applySvgTheming(svg, darkTheme);
 
-        expect(svg.querySelectorAll('title').length).toBe(0);
+        const allTitles = svg.querySelectorAll('title');
+        expect(allTitles.length).toBe(0);
       });
     });
   });

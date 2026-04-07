@@ -410,7 +410,7 @@ describe('NodeOverridesEditor', () => {
       ]);
     });
 
-    it('should disable add rule button when all rules added', () => {
+    it('should not disable add rule button when some rules added', () => {
       const overrides: NodeOverride[] = [
         {
           id: 'node-mapping-1',
@@ -427,7 +427,7 @@ describe('NodeOverridesEditor', () => {
       render(<NodeOverridesEditor {...defaultProps} value={overrides} />);
 
       const overrideButton = screen.getByRole('button', { name: /override node property/i });
-      expect(overrideButton).toBeDisabled();
+      expect(overrideButton).toBeEnabled();
     });
 
     it('should disable add rule button when no nodes matched', () => {

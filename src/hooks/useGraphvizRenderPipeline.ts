@@ -2,7 +2,7 @@ import { useEffect, RefObject, useState } from 'react';
 import { GrafanaTheme2, PanelData, FieldConfigSource } from '@grafana/data';
 import * as d3 from 'd3-selection';
 import { validateDotSyntax, ValidationErrorInfo } from '../core/validation';
-import { applyGraphDefaults, normalizeNodePathStyling, deriveEdgeIds } from '../core/sanitization';
+import { applyGraphDefaults, normalizeNodePathStyling, deriveNodeIds, deriveEdgeIds } from '../core/sanitization';
 import {
   applyEdgeStyleOverrides,
   applyNodeStyleOverrides,
@@ -79,7 +79,8 @@ export function useGraphvizRenderPipeline(
         }
 
         const defaultedDot = applyGraphDefaults(dotDiagram, theme);
-        const dotWithEdgeIds = deriveEdgeIds(defaultedDot);
+        const dotWithNodeIds = deriveNodeIds(defaultedDot);
+        const dotWithEdgeIds = deriveEdgeIds(dotWithNodeIds);
         const dotWithEdgeStyles = applyEdgeStyleOverrides(dotWithEdgeIds, edgeOverrides);
         const dotWithNodeStyles = applyNodeStyleOverrides(dotWithEdgeStyles, nodeOverrides);
 
@@ -114,7 +115,7 @@ export function useGraphvizRenderPipeline(
         if (svgElement) {
           const d3Svg = d3.select(svgElement);
           normalizeNodePathStyling(d3Svg);
-          applySvgTheming(svgElement, theme, isEditMode);
+          applySvgTheming(svgElement, theme);
 
           const svgDefinitions = getOrCreateSvgDefinitions(svgElement);
           applyBlurGlowFilter(svgDefinitions, svgElement);

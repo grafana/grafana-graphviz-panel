@@ -18,8 +18,13 @@ import {
   Alert,
   Icon,
   getFieldTypeIconName,
+  TextArea,
+  Input,
+  InlineSwitch,
+  InlineField,
+  FieldSet,
 } from '@grafana/ui';
-import { EdgeOverride, StrokeColorRule, StrokeWidthRule, Rule, RuleKind, MatchMode } from '../../types';
+import { EdgeOverride, StrokeColorRule, StrokeWidthRule, TooltipRule, Rule, RuleKind, MatchMode } from '../../types';
 import { autodetectMatchField, MatchDetectionResult, findMatchedRow } from '../../integrations/grafanaData';
 import { css } from '@emotion/css';
 import {
@@ -85,6 +90,63 @@ export const EdgeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
         labelTemplate: '${field}',
       };
       updateMapping(mappingId, { rules: [...mapping.rules, newRule] });
+    }
+  };
+
+  const addTooltipRule = (mappingId: string) => {
+    const mapping = mappings.find((m) => m.id === mappingId);
+    if (mapping) {
+      const newRule: TooltipRule = {
+        kind: RuleKind.TOOLTIP,
+        header: { showId: true, showTimestamp: false },
+        content: { templates: [''] },
+        footer: { links: [] },
+      };
+      updateMapping(mappingId, { rules: [...mapping.rules, newRule] });
+    }
+  };
+
+  const addDataLinkToTooltip = (mappingId: string, ruleIndex: number) => {
+    const mapping = mappings.find((m) => m.id === mappingId);
+    if (mapping) {
+      const rule = mapping.rules[ruleIndex];
+      if (rule.kind === RuleKind.TOOLTIP) {
+        const newLink = {
+          title: 'Open Dashboard',
+          url: 'https://example.com?edge=${__edgeId}',
+          openInNewTab: true,
+        };
+        const currentLinks = rule.footer?.links || [];
+        updateRule(mappingId, ruleIndex, { footer: { links: [...currentLinks, newLink] } });
+      }
+    }
+  };
+
+  const updateDataLinkInTooltip = (
+    mappingId: string,
+    ruleIndex: number,
+    linkIndex: number,
+    updates: Partial<{ title: string; url: string; openInNewTab: boolean }>
+  ) => {
+    const mapping = mappings.find((m) => m.id === mappingId);
+    if (mapping) {
+      const rule = mapping.rules[ruleIndex];
+      if (rule.kind === RuleKind.TOOLTIP) {
+        const currentLinks = rule.footer?.links || [];
+        const updatedLinks = currentLinks.map((link, idx) => (idx === linkIndex ? { ...link, ...updates } : link));
+        updateRule(mappingId, ruleIndex, { footer: { links: updatedLinks } });
+      }
+    }
+  };
+
+  const removeDataLinkFromTooltip = (mappingId: string, ruleIndex: number, linkIndex: number) => {
+    const mapping = mappings.find((m) => m.id === mappingId);
+    if (mapping) {
+      const rule = mapping.rules[ruleIndex];
+      if (rule.kind === RuleKind.TOOLTIP) {
+        const currentLinks = rule.footer?.links || [];
+        updateRule(mappingId, ruleIndex, { footer: { links: currentLinks.filter((_, idx) => idx !== linkIndex) } });
+      }
     }
   };
 
@@ -511,6 +573,7 @@ export const EdgeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
                   {rule.kind === RuleKind.STROKE_COLOR && 'Stroke Color Override'}
                   {rule.kind === RuleKind.STROKE_WIDTH && 'Stroke Width Override'}
                   {rule.kind === RuleKind.LABEL && 'Label Override'}
+                  {rule.kind === RuleKind.TOOLTIP && 'Tooltip'}
                 </strong>
                 <IconButton
                   name="trash-alt"
@@ -663,6 +726,124 @@ export const EdgeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
                   />
                 </Field>
               )}
+
+              {rule.kind === RuleKind.TOOLTIP && (
+                <>
+                  <FieldSet label="Header">
+                    <InlineField label="Show timestamp" labelWidth={20}>
+                      <InlineSwitch
+                        value={rule.header?.showTimestamp ?? false}
+                        onChange={(e) => {
+                          updateRule(mapping.id, ruleIndex, {
+                            header: { ...rule.header, showTimestamp: e.currentTarget.checked },
+                          });
+                        }}
+                      />
+                    </InlineField>
+
+                    <InlineField label="Show edge ID" labelWidth={20}>
+                      <InlineSwitch
+                        value={rule.header?.showId ?? true}
+                        onChange={(e) => {
+                          updateRule(mapping.id, ruleIndex, {
+                            header: { ...rule.header, showId: e.currentTarget.checked },
+                          });
+                        }}
+                      />
+                    </InlineField>
+                  </FieldSet>
+
+                  <FieldSet label="Content">
+                    <Field
+                      label="Content template (optional)"
+                      description="Use ${field_name} for data fields, ${__edgeId} for edge ID, ${__source} / ${__target} for endpoints"
+                    >
+                      <TextArea
+                        value={rule.content?.templates?.[0] || ''}
+                        placeholder="Edge: ${__source} → ${__target}&#10;Traffic: ${traffic}&#10;Status: ${status}"
+                        rows={3}
+                        onChange={(e) => {
+                          updateRule(mapping.id, ruleIndex, {
+                            content: { templates: [e.currentTarget.value] },
+                          });
+                        }}
+                      />
+                    </Field>
+                  </FieldSet>
+
+                  <FieldSet label="Footer">
+                    {rule.footer?.links && rule.footer.links.length > 0 && (
+                      <div style={{ marginBottom: 12 }}>
+                        {rule.footer.links.map((link, linkIndex) => (
+                          <div
+                            key={linkIndex}
+                            style={{
+                              marginBottom: 8,
+                              padding: 8,
+                              background: 'rgba(80, 80, 80, 0.1)',
+                              borderRadius: 4,
+                            }}
+                          >
+                            <div className={headerStyle}>
+                              <strong>Link {linkIndex + 1}</strong>
+                              <IconButton
+                                name="trash-alt"
+                                onClick={() => removeDataLinkFromTooltip(mapping.id, ruleIndex, linkIndex)}
+                                tooltip="Remove link"
+                                size="sm"
+                              />
+                            </div>
+                            <Field label="Title">
+                              <Input
+                                value={link.title}
+                                placeholder="Open Dashboard"
+                                onChange={(e) =>
+                                  updateDataLinkInTooltip(mapping.id, ruleIndex, linkIndex, {
+                                    title: e.currentTarget.value,
+                                  })
+                                }
+                              />
+                            </Field>
+                            <Field
+                              label="URL"
+                              description="Use ${field_name} for data, ${__edgeId}, ${__source}, ${__target}, ${var-name} for dashboard variables"
+                            >
+                              <Input
+                                value={link.url}
+                                placeholder="https://example.com?edge=${__edgeId}"
+                                onChange={(e) =>
+                                  updateDataLinkInTooltip(mapping.id, ruleIndex, linkIndex, {
+                                    url: e.currentTarget.value,
+                                  })
+                                }
+                              />
+                            </Field>
+                            <InlineField label="Open in new tab" labelWidth={20}>
+                              <InlineSwitch
+                                value={link.openInNewTab ?? false}
+                                onChange={(e) =>
+                                  updateDataLinkInTooltip(mapping.id, ruleIndex, linkIndex, {
+                                    openInNewTab: e.currentTarget.checked,
+                                  })
+                                }
+                              />
+                            </InlineField>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <Button
+                      icon="plus"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => addDataLinkToTooltip(mapping.id, ruleIndex)}
+                    >
+                      Add link
+                    </Button>
+                  </FieldSet>
+                </>
+              )}
             </div>
           ))}
 
@@ -681,9 +862,9 @@ export const EdgeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
               const hasStrokeColor = mapping.rules.some((r) => r.kind === RuleKind.STROKE_COLOR);
               const hasStrokeWidth = mapping.rules.some((r) => r.kind === RuleKind.STROKE_WIDTH);
               const hasLabel = mapping.rules.some((r) => r.kind === RuleKind.LABEL);
-              const allRulesAdded = hasStrokeColor && hasStrokeWidth && hasLabel;
+              const hasTooltip = mapping.rules.some((r) => r.kind === RuleKind.TOOLTIP);
 
-              const isButtonDisabled = !hasMatchedEdges || allRulesAdded;
+              const isButtonDisabled = !hasMatchedEdges;
 
               return (
                 <Dropdown
@@ -706,6 +887,12 @@ export const EdgeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
                         icon="font"
                         onClick={() => addLabelRule(mapping.id)}
                         disabled={hasLabel}
+                      />
+                      <Menu.Item
+                        label="Tooltip"
+                        icon="comment-alt"
+                        onClick={() => addTooltipRule(mapping.id)}
+                        disabled={hasTooltip}
                       />
                     </Menu>
                   }
