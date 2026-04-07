@@ -21,7 +21,7 @@ import {
   NodePosition,
   EdgePosition,
 } from '../core/utils/svgPositionCalculator';
-import { LayoutEngine, BuilderTool } from '../types';
+import { LayoutEngine, BuilderTool, RankDirection, SplineType } from '../types';
 
 const MENU_POSITION_X_RATIO = 0.75;
 const MENU_POSITION_Y_RATIO = 0.25;
@@ -36,6 +36,8 @@ export interface BuilderModeOverlayProps {
   onClearTriggers?: () => void;
   addNodeTrigger?: number;
   layoutEngine: LayoutEngine;
+  rankDirection?: RankDirection;
+  splineType?: SplineType;
   activeTool?: BuilderTool;
 }
 
@@ -46,6 +48,8 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
   onClearTriggers,
   addNodeTrigger,
   layoutEngine,
+  rankDirection,
+  splineType,
   activeTool = BuilderTool.EDIT,
 }) => {
   const theme = useTheme2();
@@ -110,7 +114,7 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
     const timeoutId = setTimeout(updatePositions, POSITION_CALCULATION_DELAY_MS);
 
     return () => clearTimeout(timeoutId);
-  }, [svgRef, dotDiagram, activeTool]);
+  }, [svgRef, dotDiagram, activeTool, layoutEngine, rankDirection, splineType]);
 
   const handleNodeFormSubmit = (id: string, label?: string, shape?: string) => {
     const newDot = addNodeToDot(dotDiagram, { id, label, shape });
@@ -423,7 +427,7 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
               </div>
             )}
 
-            {!dragState.isDragging && activeTool === BuilderTool.EDIT && (
+            {hoveredNodeId === pos.id && !dragState.isDragging && activeTool === BuilderTool.EDIT && (
               <div
                 style={{
                   position: 'absolute',
@@ -514,7 +518,7 @@ export const BuilderModeOverlay: React.FC<BuilderModeOverlayProps> = ({
 
       {edgePositions.map((edge) => {
         const edgeKey = `${edge.source}-${edge.target}`;
-        const showEditButton = !dragState.isDragging && activeTool === BuilderTool.EDIT;
+        const showEditButton = hoveredEdgeKey === edgeKey && !dragState.isDragging && activeTool === BuilderTool.EDIT;
         const showDeleteButton =
           hoveredEdgeKey === edgeKey && !dragState.isDragging && activeTool === BuilderTool.DELETE;
 
