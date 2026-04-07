@@ -170,6 +170,11 @@ export async function editNode(
 ) {
   const editToolButton = page.getByTestId('diagram-edit-elements');
   await editToolButton.click();
+  await page.waitForTimeout(TIMING.TOOL_ACTIVATE);
+
+  const svg = page.getByTestId('graphviz-panel-rendered-svg').locator('svg');
+  const nodeText = svg.locator(`g.node#${options.nodeId}`).locator('text').first();
+  await nodeText.hover({ force: true });
 
   const editButton = page.getByTestId(`edit-node-${options.nodeId}`);
   await expect(editButton).toBeVisible();
@@ -180,6 +185,7 @@ export async function editNode(
   if (options.testDismissal) {
     await dismissModal(page, 'Cancel');
     await verifyModalDismissed(page, 'Edit Node');
+    await nodeText.hover({ force: true });
     await editButton.click();
     await verifyModalHeading(page, 'Edit Node');
   }
@@ -211,6 +217,13 @@ export async function editEdge(
     newLabel: string;
   }
 ) {
+  const svg = page.getByTestId('graphviz-panel-rendered-svg').locator('svg');
+  const edgeIdParts = options.edgeId.replace('edit-edge-', '').split('-');
+  const sourceNode = edgeIdParts[0];
+  const targetNode = edgeIdParts.slice(1).join('-');
+  const edgePath = svg.locator(`g.edge#${sourceNode}__to__${targetNode}`).locator('path').first();
+  await edgePath.hover({ force: true });
+
   const editButton = page.getByTestId(options.edgeId);
   await expect(editButton).toBeVisible({ timeout: 5000 });
   await editButton.click();
