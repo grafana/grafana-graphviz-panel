@@ -14,6 +14,7 @@ on:
         options:
           - 'dev'
           - 'ops'
+          - 'prod-canary'
           - 'prod'
       docs-only:
         description: Only publish docs, do not publish the plugin
@@ -37,4 +38,9 @@ jobs:
       docs-only: ${{ fromJSON(github.event.inputs.docs-only) }}
       attestation: true
       signature-type: grafana
+      scopes: universal
       run-playwright: false
+      run-playwright-docker: true
+      playwright-docker-compose-file: docker-compose.yaml
+      upload-playwright-artifacts: true
+      run-playwright-with-skip-grafana-dev-image: true
