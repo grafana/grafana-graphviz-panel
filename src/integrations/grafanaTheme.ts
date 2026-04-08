@@ -6,13 +6,12 @@ import { isDefaultColor } from '../core/utils/graphvizColors';
  * Applies Grafana theme styling to a rendered SVG element.
  * Modifies the SVG DOM to use theme colors for backgrounds, borders, and text.
  * Preserves custom colors that were set via Graphviz (e.g., from style mappings).
- * In edit mode, adds tooltips to nodes and edges showing their IDs.
+ * Removes native SVG title elements to prevent browser tooltips (custom Grafana tooltips are used instead).
  *
  * @param svgElement - The SVG DOM element to apply theming to
  * @param theme - The Grafana theme object containing color and typography settings
- * @param isEditMode - Whether the panel is in edit mode (adds tooltips if true)
  */
-export function applySvgTheming(svgElement: SVGSVGElement, theme: GrafanaTheme2, isEditMode = false): void {
+export function applySvgTheming(svgElement: SVGSVGElement, theme: GrafanaTheme2): void {
   const svg = d3.select(svgElement);
 
   const edgeColor = theme.colors.text.secondary;
@@ -115,40 +114,5 @@ export function applySvgTheming(svgElement: SVGSVGElement, theme: GrafanaTheme2,
       .attr('stroke-opacity', '0.3');
   });
 
-  if (isEditMode) {
-    svg.selectAll('g.node').each(function () {
-      const nodeGroup = d3.select(this);
-      const existingTitle = nodeGroup.select('title');
-      const nodeId = existingTitle.text() || 'Unknown';
-      nodeGroup.selectAll('title').remove();
-      nodeGroup.append('title').text(`Node ID: ${nodeId}`);
-    });
-
-    svg.selectAll('g.edge').each(function () {
-      const edgeGroup = d3.select(this);
-      const existingTitle = edgeGroup.select('title');
-
-      let edgeId = 'Unknown';
-      if (!existingTitle.empty()) {
-        const titleText = existingTitle.text();
-        edgeId = titleText.replace(/→/g, '__to__').replace(/->/g, '__to__');
-      }
-
-      edgeGroup.selectAll('title').remove();
-      edgeGroup.append('title').text(`Edge ID: ${edgeId}`);
-    });
-
-    svg.selectAll('title').each(function () {
-      const elem = this as SVGTitleElement;
-      const parent = elem.parentNode as Element | null;
-      if (parent) {
-        const parentSelection = d3.select(parent);
-        if (!parentSelection.classed('node') && !parentSelection.classed('edge')) {
-          d3.select(elem).remove();
-        }
-      }
-    });
-  } else {
-    svg.selectAll('title').remove();
-  }
+  svg.selectAll('title').remove();
 }

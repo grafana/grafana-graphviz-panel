@@ -137,6 +137,26 @@ function applyThemeDefaults(model: any, theme: GrafanaTheme2): void {
 }
 
 /**
+ * Derives and assigns IDs to nodes that don't have them.
+ * Uses the node's name as its ID to ensure consistent identification.
+ * Preserves existing node IDs.
+ *
+ * @param dotString - The DOT notation string to process
+ * @returns DOT string with node IDs added to nodes that didn't have them
+ */
+export function deriveNodeIds(dotString: string): string {
+  const model = fromDot(dotString);
+
+  for (const node of model.nodes) {
+    if (!node.attributes.get('id')) {
+      node.attributes.set('id', node.id);
+    }
+  }
+
+  return toDot(model);
+}
+
+/**
  * Derives and assigns IDs to edges that don't have them.
  * Generates IDs based on the source and target node names in the format: "source__to__target"
  * Preserves existing edge IDs.

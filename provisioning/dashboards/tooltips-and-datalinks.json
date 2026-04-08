@@ -1,0 +1,237 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "description": "Demonstrates tooltips with content templates and datalinks. Hover over nodes and edges to see tooltips, click links to navigate.",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "dotDiagram": "digraph TooltipDemo {\n  rankdir=LR;\n  \n  WebServer [shape=box, style=filled, fillcolor=lightblue];\n  API [shape=hexagon, style=filled, fillcolor=lightgreen];\n  Database [shape=cylinder, style=filled, fillcolor=lightyellow];\n  Cache [shape=ellipse, style=filled, fillcolor=lightpink];\n  \n  WebServer -> API [label=\"HTTPS\"];\n  API -> Database [label=\"SQL\"];\n  API -> Cache [label=\"Redis\"];\n  Cache -> Database [style=dashed, label=\"sync\"];\n}",
+        "edgeOverrides": [
+          {
+            "id": "edge-tooltip-with-links",
+            "targetEdgeIds": ["WebServer__to__API", "API__to__Database"],
+            "matchFieldName": "edge_id",
+            "matchPattern": "${id}",
+            "rules": [
+              {
+                "kind": "tooltip",
+                "header": {
+                  "showId": true,
+                  "showTimestamp": true
+                },
+                "content": {
+                  "templates": ["Latency: ${latency_ms}ms\nRequests/sec: ${requests_per_sec}"]
+                },
+                "footer": {
+                  "links": [
+                    {
+                      "title": "View Traffic Dashboard",
+                      "url": "https://grafana.com/docs?edge=${__edgeId}",
+                      "openInNewTab": true
+                    },
+                    {
+                      "title": "View Latency Metrics",
+                      "url": "https://grafana.com/docs?from=${__source}&to=${__target}",
+                      "openInNewTab": false
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "edge-tooltip-no-links",
+            "targetEdgeIds": ["API__to__Cache", "Cache__to__Database"],
+            "matchFieldName": "edge_id",
+            "matchPattern": "${id}",
+            "rules": [
+              {
+                "kind": "tooltip",
+                "header": {
+                  "showId": false,
+                  "showTimestamp": false
+                },
+                "content": {
+                  "templates": ["Type: ${connection_type}\nStatus: ${status}"]
+                }
+              }
+            ]
+          }
+        ],
+        "layoutEngine": "dot",
+        "namedThresholds": [
+          {
+            "id": "cpu-threshold",
+            "name": "CPU Usage",
+            "steps": [
+              {
+                "color": "#73BF69",
+                "value": 0
+              },
+              {
+                "color": "#FADE2A",
+                "value": 50
+              },
+              {
+                "color": "#FF9830",
+                "value": 75
+              },
+              {
+                "color": "#F2495C",
+                "value": 90
+              }
+            ]
+          }
+        ],
+        "nodeOverrides": [
+          {
+            "id": "node-tooltip-with-links",
+            "targetNodeIds": ["WebServer", "API"],
+            "matchFieldName": "node_id",
+            "matchPattern": "${id}",
+            "rules": [
+              {
+                "kind": "fillColor",
+                "colorFieldName": "cpu_usage",
+                "thresholdId": "cpu-threshold"
+              },
+              {
+                "kind": "tooltip",
+                "header": {
+                  "showId": true,
+                  "showTimestamp": false
+                },
+                "content": {
+                  "templates": ["CPU: ${cpu_usage}%\nMemory: ${memory_usage}%\nStatus: ${status}"]
+                },
+                "footer": {
+                  "links": [
+                    {
+                      "title": "Server Dashboard",
+                      "url": "https://grafana.com/docs?server=${__nodeId}",
+                      "openInNewTab": true
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "node-tooltip-no-content",
+            "targetNodeIds": ["Database", "Cache"],
+            "matchFieldName": "node_id",
+            "matchPattern": "${id}",
+            "rules": [
+              {
+                "kind": "fillColor",
+                "colorFieldName": "cpu_usage",
+                "thresholdId": "cpu-threshold"
+              },
+              {
+                "kind": "tooltip",
+                "header": {
+                  "showId": false,
+                  "showTimestamp": false
+                },
+                "footer": {
+                  "links": [
+                    {
+                      "title": "View Logs",
+                      "url": "https://grafana.com/docs/logs?id=${__nodeId}",
+                      "openInNewTab": false
+                    },
+                    {
+                      "title": "View Metrics",
+                      "url": "https://grafana.com/docs/metrics?id=${__nodeId}",
+                      "openInNewTab": true
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "rankDirection": "LR"
+      },
+      "pluginVersion": "1.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "db84e60d-b92a-4089-82cb-34842fb1754b"
+          },
+          "rawFrameContent": "[\n  {\n    \"columns\": [\n      {\"text\": \"Time\", \"type\": \"time\"},\n      {\"text\": \"node_id\", \"type\": \"string\"},\n      {\"text\": \"cpu_usage\", \"type\": \"number\"},\n      {\"text\": \"memory_usage\", \"type\": \"number\"},\n      {\"text\": \"status\", \"type\": \"string\"}\n    ],\n    \"rows\": [\n      [1609459200000, \"WebServer\", 45, 62, \"healthy\"],\n      [1609459200000, \"API\", 78, 71, \"healthy\"],\n      [1609459200000, \"Database\", 92, 88, \"warning\"],\n      [1609459200000, \"Cache\", 23, 34, \"healthy\"]\n    ]\n  },\n  {\n    \"columns\": [\n      {\"text\": \"Time\", \"type\": \"time\"},\n      {\"text\": \"edge_id\", \"type\": \"string\"},\n      {\"text\": \"latency_ms\", \"type\": \"number\"},\n      {\"text\": \"requests_per_sec\", \"type\": \"number\"},\n      {\"text\": \"connection_type\", \"type\": \"string\"},\n      {\"text\": \"status\", \"type\": \"string\"}\n    ],\n    \"rows\": [\n      [1609459200000, \"WebServer__to__API\", 12, 450, \"HTTPS\", \"active\"],\n      [1609459200000, \"API__to__Database\", 8, 320, \"SQL\", \"active\"],\n      [1609459200000, \"API__to__Cache\", 2, 850, \"Redis\", \"active\"],\n      [1609459200000, \"Cache__to__Database\", 15, 45, \"sync\", \"idle\"]\n    ]\n  }\n]",
+          "refId": "A",
+          "scenarioId": "raw_frame"
+        }
+      ],
+      "title": "Tooltips & Datalinks Demo",
+      "type": "grafana-graphviz-panel"
+    }
+  ],
+  "preload": false,
+  "refresh": "",
+  "schemaVersion": 42,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Tooltips & Datalinks",
+  "uid": "tooltips-datalinks",
+  "version": 1
+}

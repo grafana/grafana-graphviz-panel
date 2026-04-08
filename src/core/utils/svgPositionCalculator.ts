@@ -20,8 +20,6 @@ export interface EdgePosition {
   label?: string;
 }
 
-const NODE_ID_PREFIX = 'Node ID: ';
-const EDGE_ID_PREFIX = 'Edge ID: ';
 const EDGE_ID_SEPARATOR = '__to__';
 
 export function calculateNodePositions(
@@ -36,23 +34,13 @@ export function calculateNodePositions(
     return [];
   }
 
-  const titleElements = svgElement.querySelectorAll('g.node title');
+  const nodeGroups = Array.from(svgElement.querySelectorAll('g.node'));
   const positions: NodePosition[] = [];
 
-  for (const titleEl of titleElements) {
-    let nodeId = titleEl.textContent || '';
-
-    if (nodeId.startsWith(NODE_ID_PREFIX)) {
-      nodeId = nodeId.substring(NODE_ID_PREFIX.length);
-    }
+  for (const nodeGroup of nodeGroups) {
+    const nodeId = nodeGroup.getAttribute('id');
 
     if (!nodeId) {
-      continue;
-    }
-
-    const nodeGroup = titleEl.parentElement;
-
-    if (!nodeGroup) {
       continue;
     }
 
@@ -106,36 +94,23 @@ export function calculateEdgePositions(svgRef: RefObject<HTMLDivElement | null>,
     return [];
   }
 
-  const edgeTitleElements = svgElement.querySelectorAll('g.edge title');
+  const edgeGroups = Array.from(svgElement.querySelectorAll('g.edge'));
   const edgePositions: EdgePosition[] = [];
   const edgesData = parseEdgesFromDot(dotDiagram);
 
-  for (const titleEl of edgeTitleElements) {
-    const titleText = titleEl.textContent || '';
+  for (const edgeGroup of edgeGroups) {
+    const edgeId = edgeGroup.getAttribute('id');
 
-    let source: string;
-    let target: string;
-
-    if (titleText.startsWith(EDGE_ID_PREFIX)) {
-      const edgeId = titleText.substring(EDGE_ID_PREFIX.length);
-      const parts = edgeId.split(EDGE_ID_SEPARATOR);
-      if (parts.length !== 2) {
-        continue;
-      }
-      [source, target] = parts;
-    } else {
-      const parts = titleText.split('->').map((p) => p.trim());
-      if (parts.length !== 2) {
-        continue;
-      }
-      [source, target] = parts;
-    }
-
-    const edgeGroup = titleEl.parentElement;
-
-    if (!edgeGroup) {
+    if (!edgeId) {
       continue;
     }
+
+    const parts = edgeId.split(EDGE_ID_SEPARATOR);
+    if (parts.length !== 2) {
+      continue;
+    }
+
+    const [source, target] = parts;
 
     try {
       const pathElement = edgeGroup.querySelector('path');

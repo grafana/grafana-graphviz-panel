@@ -39,9 +39,9 @@ test.describe('Complex HTML Labels and Records with Port-Based Edge Overrides', 
       let foundHttpsEdge = false;
       for (let i = 0; i < edgeCount; i++) {
         const edge = edges.nth(i);
-        const titleText = await edge.locator('title').textContent();
+        const edgeId = await edge.getAttribute('id');
 
-        if (titleText && titleText.includes('Client__to__Server:https')) {
+        if (edgeId && edgeId.includes('Client__to__Server:https')) {
           const edgePath = edge.locator('path').first();
           const strokeColor = await edgePath.getAttribute('stroke');
           const strokeWidth = await edgePath.getAttribute('stroke-width');
@@ -73,9 +73,9 @@ test.describe('Complex HTML Labels and Records with Port-Based Edge Overrides', 
       let foundReadEdge = false;
       for (let i = 0; i < edgeCount; i++) {
         const edge = edges.nth(i);
-        const titleText = await edge.locator('title').textContent();
+        const edgeId = await edge.getAttribute('id');
 
-        if (titleText && titleText.includes('Server:http__to__Database:read')) {
+        if (edgeId && edgeId.includes('Server:http__to__Database:read')) {
           const edgePath = edge.locator('path').first();
           await expect(edgePath).toBeVisible();
 
@@ -99,9 +99,9 @@ test.describe('Complex HTML Labels and Records with Port-Based Edge Overrides', 
       let foundManualEdge = false;
       for (let i = 0; i < edgeCount; i++) {
         const edge = edges.nth(i);
-        const titleText = await edge.locator('title').textContent();
+        const edgeId = await edge.getAttribute('id');
 
-        if (titleText && titleText.includes('LoadBalancer:out__to__APIGateway:api')) {
+        if (edgeId && edgeId.includes('LoadBalancer:out__to__APIGateway:api')) {
           const edgePath = edge.locator('path').first();
           const strokeColor = await edgePath.getAttribute('stroke');
           const strokeWidth = await edgePath.getAttribute('stroke-width');

@@ -420,7 +420,7 @@
         "type": "grafana-testdata-datasource",
         "uid": "trlxrdZVk"
       },
-      "description": "Demonstrates autodetect partial match UX - some nodes match, others don't",
+      "description": "Demonstrates tooltips with content templates and datalinks. Hover over nodes and edges to see tooltips, click links to navigate.",
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -443,39 +443,129 @@
       "gridPos": {
         "h": 14,
         "w": 12,
-        "x": 0,
+        "x": 12,
         "y": 28
       },
       "id": 4,
       "options": {
-        "dotDiagram": "digraph PartialMatch {\n  ServerA [shape=box];\n  ServerB [shape=box];\n  ServerC [shape=box];\n  ServerD [shape=box];\n  ServerE [shape=box];\n  \n  ServerA -> ServerB;\n  ServerB -> ServerC;\n  ServerC -> ServerD;\n  ServerD -> ServerE;\n}",
-        "edgeOverrides": [],
-        "layoutEngine": "dot",
-        "namedThresholds": [
+        "dotDiagram": "digraph TooltipDemo {\n  rankdir=LR;\n  \n  WebServer [shape=box, style=filled, fillcolor=lightblue];\n  API [shape=hexagon, style=filled, fillcolor=lightgreen];\n  Database [shape=cylinder, style=filled, fillcolor=lightyellow];\n  Cache [shape=ellipse, style=filled, fillcolor=lightpink];\n  \n  WebServer -> API [label=\"HTTPS\"];\n  API -> Database [label=\"SQL\"];\n  API -> Cache [label=\"Redis\"];\n  Cache -> Database [style=dashed, label=\"sync\"];\n}",
+        "edgeOverrides": [
           {
-            "id": "health-threshold",
-            "name": "Health Status",
-            "steps": [
+            "id": "edge-tooltip-with-links",
+            "targetEdgeIds": ["WebServer__to__API", "API__to__Database"],
+            "matchFieldName": "edge_id",
+            "matchPattern": "${id}",
+            "rules": [
               {
-                "color": "#F2495C",
-                "value": 0
-              },
+                "kind": "tooltip",
+                "contentTemplate": "Connection: ${__source} → ${__target}\nLatency: ${latency_ms}ms\nRequests/sec: ${requests_per_sec}",
+                "links": [
+                  {
+                    "title": "View Traffic Dashboard",
+                    "url": "https://grafana.com/docs?edge=${__edgeId}",
+                    "openInNewTab": true
+                  },
+                  {
+                    "title": "View Latency Metrics",
+                    "url": "https://grafana.com/docs?from=${__source}&to=${__target}",
+                    "openInNewTab": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "edge-tooltip-no-links",
+            "targetEdgeIds": ["API__to__Cache", "Cache__to__Database"],
+            "matchFieldName": "edge_id",
+            "matchPattern": "${id}",
+            "rules": [
               {
-                "color": "#FF9830",
-                "value": 30
-              },
-              {
-                "color": "#FADE2A",
-                "value": 60
-              },
-              {
-                "color": "#73BF69",
-                "value": 80
+                "kind": "tooltip",
+                "contentTemplate": "Edge: ${__source} → ${__target}\nType: ${connection_type}\nStatus: ${status}"
               }
             ]
           }
         ],
-        "nodeOverrides": [],
+        "layoutEngine": "dot",
+        "namedThresholds": [
+          {
+            "id": "cpu-threshold",
+            "name": "CPU Usage",
+            "steps": [
+              {
+                "color": "#73BF69",
+                "value": 0
+              },
+              {
+                "color": "#FADE2A",
+                "value": 50
+              },
+              {
+                "color": "#FF9830",
+                "value": 75
+              },
+              {
+                "color": "#F2495C",
+                "value": 90
+              }
+            ]
+          }
+        ],
+        "nodeOverrides": [
+          {
+            "id": "node-tooltip-with-links",
+            "targetNodeIds": ["WebServer", "API"],
+            "matchFieldName": "node_id",
+            "matchPattern": "${id}",
+            "rules": [
+              {
+                "kind": "fillColor",
+                "colorFieldName": "cpu_usage",
+                "thresholdId": "cpu-threshold"
+              },
+              {
+                "kind": "tooltip",
+                "contentTemplate": "Server: ${node_id}\nCPU: ${cpu_usage}%\nMemory: ${memory_usage}%\nStatus: ${status}",
+                "links": [
+                  {
+                    "title": "Server Dashboard",
+                    "url": "https://grafana.com/docs?server=${__nodeId}",
+                    "openInNewTab": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "node-tooltip-no-content",
+            "targetNodeIds": ["Database", "Cache"],
+            "matchFieldName": "node_id",
+            "matchPattern": "${id}",
+            "rules": [
+              {
+                "kind": "fillColor",
+                "colorFieldName": "cpu_usage",
+                "thresholdId": "cpu-threshold"
+              },
+              {
+                "kind": "tooltip",
+                "links": [
+                  {
+                    "title": "View Logs",
+                    "url": "https://grafana.com/docs/logs?id=${__nodeId}",
+                    "openInNewTab": false
+                  },
+                  {
+                    "title": "View Metrics",
+                    "url": "https://grafana.com/docs/metrics?id=${__nodeId}",
+                    "openInNewTab": true
+                  }
+                ]
+              }
+            ]
+          }
+        ],
         "rankDirection": "LR"
       },
       "pluginVersion": "1.0.0",
@@ -485,12 +575,12 @@
             "type": "grafana-testdata-datasource",
             "uid": "db84e60d-b92a-4089-82cb-34842fb1754b"
           },
-          "rawFrameContent": "[\n  {\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"hostname\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"health_score\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"ServerA\", 95],\n      [1609462800000, \"ServerB\", 75],\n      [1609466400000, \"ServerC\", 45]\n    ]\n  },\n  {\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"server_name\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"cpu_usage\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"ServerD\", 62]\n    ]\n  },\n  {\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"node_id\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"memory_usage\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"EServer\", 38]\n    ]\n  },\n  {\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"link_id\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"bandwidth\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"ServerA__to__ServerB\", 850],\n      [1609462800000, \"ServerB__to__ServerC\", 450]\n    ]\n  },\n  {\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"connection\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"latency\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"ServerC__to__ServerD\", 25],\n      [1609462800000, \"ServerE__to__ServerA\", 15]\n    ]\n  }\n]",
+          "rawFrameContent": "[\n  {\n    \"columns\": [\n      {\"text\": \"Time\", \"type\": \"time\"},\n      {\"text\": \"node_id\", \"type\": \"string\"},\n      {\"text\": \"cpu_usage\", \"type\": \"number\"},\n      {\"text\": \"memory_usage\", \"type\": \"number\"},\n      {\"text\": \"status\", \"type\": \"string\"}\n    ],\n    \"rows\": [\n      [1609459200000, \"WebServer\", 45, 62, \"healthy\"],\n      [1609459200000, \"API\", 78, 71, \"healthy\"],\n      [1609459200000, \"Database\", 92, 88, \"warning\"],\n      [1609459200000, \"Cache\", 23, 34, \"healthy\"]\n    ]\n  },\n  {\n    \"columns\": [\n      {\"text\": \"Time\", \"type\": \"time\"},\n      {\"text\": \"edge_id\", \"type\": \"string\"},\n      {\"text\": \"latency_ms\", \"type\": \"number\"},\n      {\"text\": \"requests_per_sec\", \"type\": \"number\"},\n      {\"text\": \"connection_type\", \"type\": \"string\"},\n      {\"text\": \"status\", \"type\": \"string\"}\n    ],\n    \"rows\": [\n      [1609459200000, \"WebServer__to__API\", 12, 450, \"HTTPS\", \"active\"],\n      [1609459200000, \"API__to__Database\", 8, 320, \"SQL\", \"active\"],\n      [1609459200000, \"API__to__Cache\", 2, 850, \"Redis\", \"active\"],\n      [1609459200000, \"Cache__to__Database\", 15, 45, \"sync\", \"idle\"]\n    ]\n  }\n]",
           "refId": "A",
           "scenarioId": "raw_frame"
         }
       ],
-      "title": "Partial Match Demo (Autodetect)",
+      "title": "Tooltips & Datalinks Demo",
       "type": "grafana-graphviz-panel"
     }
   ],
