@@ -1,0 +1,92 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "description": "A recursive visualization of the Graphviz panel's own architecture - the system visualizing itself",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 15,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "dotDiagram": "digraph PluginArchitecture {\n  node [style=filled, fontcolor=white, fontname=\"Helvetica\"];\n  \n  // Input Layer\n  UserInput [label=\"<header> \ud83d\udc64 User Input|<builder> Builder|<code> Code|<query> Query\", shape=record];\n  \n  // Core Processing Cluster\n  subgraph cluster_processing {\n    label=<<FONT POINT-SIZE=\"12\"><I>Graphviz Processing</I></FONT>>;\n    style=\"rounded,dashed\";\n    color=\"#6a787a\";\n    fontcolor=\"#6a787a\";\n    \n    DOTParser [label=\"DOT Parser\\n\ud83d\udd0d\", shape=box];\n    Validator [label=\"DOT\\nValidator\\n\u2705\", shape=diamond];\n    \n    LayoutEngines [label=\"<header> \ud83c\udfaf Layout Engines|<dot> Hierarchical|<neato> Network|<fdp> Force Directed|<circo> Circular\", shape=record];\n  }\n  \n\n  \n  // Rendering Pipeline Cluster\n  subgraph cluster_rendering {\n    label=<<FONT POINT-SIZE=\"12\"><I>Panel Rendering Pipeline</I></FONT>>;\n    style=\"rounded,dashed\";\n    color=\"#6a787a\";\n    fontcolor=\"#6a787a\";\n    \n    SVGRenderer [label=\"SVG Renderer\\n\ud83c\udfa8\", shape=box];\n    ThemeSystem [label=\"Theme System\\n\ud83c\udf13\", shape=box];\n    HoverSystem [label=\"Hover & Click\\nHandlers \ud83d\uddb1\ufe0f\", shape=box];\n    PositionCalc [label=\"Position\\nCalculator\\n\ud83d\udcd0\", shape=box];\n    \n    // Define order within cluster\n    SVGRenderer -> ThemeSystem -> HoverSystem -> PositionCalc [style=invis];\n  }\n  \n  // Data Integration Cluster\n  subgraph cluster_data {\n    label=<<FONT POINT-SIZE=\"12\"><I>Grafana Data Integration</I></FONT>>;\n    style=\"rounded,dashed\";\n    color=\"#6a787a\";\n    fontcolor=\"#6a787a\";\n    \n    GrafanaDatasource [label=\"Grafana\\nDatasource(s)\\n\ud83d\udcca\ud83d\udcc8\", shape=cylinder];\n    \n    DataBindings [label=\"<header> \ud83d\udd17 Live Data Bindings|<colors> Color Overrides|<labels> Label Interpolation|<tooltips> Tooltips & Datalinks\", shape=record];\n  }\n  \n  // Output\n  FinalViz [label=\"Interactive\\nGraphviz\\nDiagram\\n\ud83e\ude84\u2728\", shape=box, penwidth=3, style=\"filled,rounded\", margin=\"0.5\"];\n  \n  // Flow - Rainbow gradient using solarized accent colors\n  UserInput -> DOTParser [color=\"#db7093\", penwidth=2.5];\n  \n  DOTParser -> Validator [color=\"#6c71c4\", penwidth=2.5];\n  Validator -> DOTParser [color=\"#6c71c4\", penwidth=2.5];\n  DOTParser -> LayoutEngines [color=\"#268bd2\", penwidth=2.5];\n  Validator -> LayoutEngines [color=\"#268bd2\", penwidth=2, style=dotted];\n  \n  LayoutEngines:dot -> SVGRenderer:w [color=\"#2aa198\", penwidth=2];\n  LayoutEngines:neato -> SVGRenderer:w [color=\"#2aa198\", penwidth=2];\n  LayoutEngines:fdp -> SVGRenderer:w [color=\"#2aa198\", penwidth=2];\n  LayoutEngines:circo -> SVGRenderer:w [color=\"#2aa198\", penwidth=2];\n  \n  SVGRenderer -> ThemeSystem [color=\"#32cd32\", penwidth=2.5];\n  SVGRenderer -> PositionCalc [color=\"#ff8c00\", penwidth=2.5];\n  SVGRenderer -> HoverSystem [color=\"#daa520\", penwidth=2.5];\n  PositionCalc -> HoverSystem [color=\"#ff8c00\", penwidth=2.5];\n  \n  ThemeSystem -> FinalViz [color=\"#ff4500\", penwidth=2.5];\n  PositionCalc -> FinalViz [color=\"#dc143c\", penwidth=2.5];\n  \n  GrafanaDatasource -> DataBindings:header:w [color=\"#2aa198\", penwidth=2.5, style=dotted];\n  \n  DataBindings:colors -> ThemeSystem [color=\"#9acd32\", penwidth=2, style=dotted];\n  DataBindings:labels -> FinalViz [color=\"#ff6347\", penwidth=2, style=dotted];\n  DataBindings:tooltips -> HoverSystem [color=\"#ffa500\", penwidth=2, style=dotted];\n  \n  FinalViz -> HoverSystem [color=\"#ff1493\", penwidth=2.5];\n  HoverSystem -> FinalViz [color=\"#ff00ff\", penwidth=2.5];\n}",
+        "layoutEngine": "dot",
+        "rankDirection": "LR"
+      },
+      "pluginVersion": "0.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "refId": "A",
+          "scenarioId": "random_walk"
+        }
+      ],
+      "title": "Graphviz Panel Plugin - Architecture",
+      "type": "grafana-graphviz-panel"
+    }
+  ],
+  "preload": false,
+  "refresh": "",
+  "schemaVersion": 42,
+  "tags": [
+    "showcase",
+    "meta",
+    "architecture"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Showcase",
+  "uid": "showcase-meta-architecture",
+  "version": 1
+}

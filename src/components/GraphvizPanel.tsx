@@ -310,6 +310,8 @@ export const GraphvizPanel: React.FC<GraphvizPanelProps> = ({
           onClearTriggers={handleClearTriggers}
           addNodeTrigger={options.builderModeActions?.addNodeTrigger}
           layoutEngine={options.layoutEngine}
+          rankDirection={options.rankDirection}
+          splineType={options.splineType}
           activeTool={options.builderModeActions?.activeTool}
         />
       )}
