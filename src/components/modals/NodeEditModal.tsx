@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Modal, Input, Button, Select, Field } from '@grafana/ui';
-import { getShapeOptions, toOptional } from '../../core/builderMode';
+import { getShapeOptions } from '../../core/builderMode';
 import { useModalForm } from '../../hooks/useModalForm';
 
 export interface NodeEditModalProps {
@@ -32,7 +32,7 @@ export const NodeEditModal: React.FC<NodeEditModalProps> = ({
   const shapeOptions = getShapeOptions();
 
   const handleSubmit = () => {
-    onSubmit(toOptional(values.nodeLabel), values.nodeShape);
+    onSubmit(values.nodeLabel, values.nodeShape);
     onDismiss();
   };
 

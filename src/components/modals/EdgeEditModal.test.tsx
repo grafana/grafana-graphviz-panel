@@ -67,4 +67,15 @@ describe('EdgeEditModal', () => {
 
     expect(screen.getByText(/Edit Edge: A → B/i)).toBeInTheDocument();
   });
+
+  it('should call onSubmit with empty string when label is cleared', () => {
+    render(<EdgeEditModal {...defaultProps} />);
+
+    const labelInput = screen.getByTestId('edge-edit-label-input');
+    fireEvent.change(labelInput, { target: { value: '' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /update edge/i }));
+
+    expect(defaultProps.onSubmit).toHaveBeenCalledWith('A__to__B', '');
+  });
 });

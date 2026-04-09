@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Modal, Input, Button, Field } from '@grafana/ui';
-import { formatEdgeId, toOptional } from '../../core/builderMode';
+import { formatEdgeId } from '../../core/builderMode';
 import { useModalForm } from '../../hooks/useModalForm';
 
 export interface EdgeEditModalProps {
@@ -32,7 +32,7 @@ export const EdgeEditModal: React.FC<EdgeEditModalProps> = ({
   }, [currentId, currentLabel, setValues]);
 
   const handleSubmit = () => {
-    onSubmit(toOptional(values.edgeId), toOptional(values.edgeLabel));
+    onSubmit(values.edgeId, values.edgeLabel);
     onDismiss();
   };
 
