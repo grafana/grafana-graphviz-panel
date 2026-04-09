@@ -76,4 +76,16 @@ describe('NodeEditModal', () => {
 
     expect(labelInput).toHaveValue('New Label');
   });
+
+  it('should call onSubmit with empty string when label is cleared', () => {
+    render(<NodeEditModal {...defaultProps} />);
+
+    const labelInput = screen.getByTestId('node-edit-label-input');
+    fireEvent.change(labelInput, { target: { value: '' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /update node/i }));
+
+    expect(defaultProps.onSubmit).toHaveBeenCalledWith('', 'box');
+    expect(defaultProps.onDismiss).toHaveBeenCalled();
+  });
 });
