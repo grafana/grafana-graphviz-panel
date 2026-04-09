@@ -3,7 +3,7 @@ import { PanelProps } from '@grafana/data';
 import { PanelOptions, InputMode } from 'types';
 import { css, cx } from '@emotion/css';
 import { useStyles2, useTheme2 } from '@grafana/ui';
-import { PanelDataErrorView, locationService } from '@grafana/runtime';
+import { locationService } from '@grafana/runtime';
 import { useGraphvizRenderPipeline, useNodeEdgeHover } from '../hooks';
 import { extractDotFromQuery } from '../integrations/grafanaData';
 import { ErrorDisplay, EmptyDiagramDisplay } from './states';
@@ -209,10 +209,6 @@ export const GraphvizPanel: React.FC<GraphvizPanelProps> = ({
       },
     });
   }, [options, onOptionsChange]);
-
-  if (data.series.length === 0) {
-    return <PanelDataErrorView fieldConfig={fieldConfig} panelId={id} data={data} needsStringField />;
-  }
 
   if (queryError) {
     const fieldName = options.dotQueryConfig?.fieldName || 'dot_diagram';
