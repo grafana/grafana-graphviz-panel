@@ -181,6 +181,21 @@ describe('builderMode pure functions', () => {
       expect(result).toContain('New Label');
       expect(result).not.toContain('Old');
     });
+
+    it('should delete node label when empty string is provided', () => {
+      const validDot = 'digraph G { A [label="Old Label"]; }';
+      const result = updateNodeInDot(validDot, 'A', { label: '' });
+
+      expect(result).not.toContain('Old Label');
+      expect(result).not.toContain('label=');
+    });
+
+    it('should delete node shape when empty string is provided', () => {
+      const validDot = 'digraph G { A [shape="box"]; }';
+      const result = updateNodeInDot(validDot, 'A', { shape: '' });
+
+      expect(result).not.toContain('shape=');
+    });
   });
 
   describe('addEdgeToDot error handling', () => {
@@ -333,6 +348,22 @@ describe('builderMode pure functions', () => {
       const result = updateEdgeInDot(invalid, 'A', 'B', { label: 'label' });
 
       expect(result).toBe(invalid);
+    });
+
+    it('should delete edge label when empty string is provided', () => {
+      const dot = 'digraph G { A -> B [label="old label"]; }';
+      const result = updateEdgeInDot(dot, 'A', 'B', { label: '' });
+
+      expect(result).not.toContain('old label');
+      expect(result).not.toContain('label=');
+    });
+
+    it('should delete edge id when empty string is provided', () => {
+      const dot = 'digraph G { A -> B [id="edge-1"]; }';
+      const result = updateEdgeInDot(dot, 'A', 'B', { id: '' });
+
+      expect(result).not.toContain('edge-1');
+      expect(result).not.toContain('id=');
     });
   });
 
