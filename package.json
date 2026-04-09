@@ -61,7 +61,7 @@
     "jest-environment-jsdom": "^29.5.0",
     "jest-monocart-coverage": "^1.1.1",
     "license-checker-evergreen": "^6.2.0",
-    "monocart-reporter": "2.9.21",
+    "monocart-reporter": "2.10.0",
     "prettier": "^2.8.7",
     "replace-in-file-webpack-plugin": "^1.0.6",
     "sass": "1.63.2",
