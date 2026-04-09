@@ -3,7 +3,7 @@
   "version": "0.0.2",
   "private": true,
   "author": "Grafana",
-  "license": "Apache-2.0",
+  "license": "AGPL-3.0",
   "engines": {
     "node": ">=24.11.0"
   },
@@ -16,7 +16,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint --cache .",
     "lint:fix": "npm run lint -- --fix && prettier --write --list-different .",
-    "check-licenses": "license-checker-evergreen --production --failOn 'GPL;LGPL;AGPL;CC-BY-NC'",
+    "check-licenses": "license-checker-evergreen --production --failOn 'GPL;LGPL;CC-BY-NC'",
     "e2e": "docker compose --profile playwright up --abort-on-container-exit",
     "e2e:llm": "docker compose run --rm -e PW_REPORTER=list -e PW_WORKERS=1 playwright npx playwright test",
     "e2e:ui": "npx playwright test --ui",

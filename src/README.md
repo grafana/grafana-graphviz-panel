@@ -295,4 +295,4 @@ digraph checkout {
 
 ## License
 
-Apache 2.0 License. See [LICENSE](https://github.com/grafana/grafana-graphviz-panel/blob/main/LICENSE) for details.
+AGPL-3.0 License. See [LICENSE](https://github.com/grafana/grafana-graphviz-panel/blob/main/LICENSE) for details.
