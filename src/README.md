@@ -3,6 +3,8 @@
 [![Grafana](https://img.shields.io/badge/Grafana-12.3%2B-orange)](https://grafana.com)
 [![License](https://img.shields.io/github/license/grafana/grafana-graphviz-panel)](LICENSE)
 
+> ℹ️ **Private Preview**: This plugin is currently in [Private Preview](https://grafana.com/docs/release-life-cycle/#private-preview) release status. It is not intended for production environments. Support from Grafana is limited, and no SLA is provided.
+
 Visualize relationships, flows, and architectures using the Graphviz DOT language with live metrics from any Grafana data source.
 
 Define diagrams as code, bind metrics to visual properties, and let Graphviz layout engines handle the rest. Perfect for service topologies, business processes, infrastructure architectures, and organizational structures that update automatically with your data.
