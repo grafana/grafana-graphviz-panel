@@ -1,5 +1,7 @@
 # Grafana Graphviz Panel
 
+> ℹ️ **Private Preview**: This plugin is currently in [Private Preview](https://grafana.com/docs/release-life-cycle/#private-preview) release status. It is not intended for production environments. Support from Grafana is limited, and no SLA is provided.
+
 Define flowcharts and diagrams as code using Graphviz DOT language, connect your metrics, and visualize them in your choice of layouts—no manual drawing needed. Perfect for technical architectures, business processes, and organizational structures. Diagrams update automatically with live data.
 
 ## Getting started
