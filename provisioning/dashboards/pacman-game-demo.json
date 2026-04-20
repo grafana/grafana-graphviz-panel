@@ -1,0 +1,798 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "description": "\ud83c\udfae Real-time Pacman game state machine showing transitions between Normal, Powered Up, Game Over, and Victory states. Watch as ghosts change from chasing to fleeing when Pacman eats a power pellet!",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 17,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "_assistantHelp": "",
+        "builderModeActions": {},
+        "dotDiagram": "digraph PacmanGame {\n  rankdir=LR;\n  node [fontname=\"Helvetica\", fontsize=12];\n  \n  // Start/End States (not in clusters)\n  Start [label=\"\ud83c\udfae START\\nInsert Coin\", shape=circle];\n  GameOver [label=\"\ud83e\udea6 END\\nGame Over\", shape=circle];\n  \n  // Pacman States Cluster\n  subgraph cluster_pacman {\n    label=\"PACMAN States\";\n    style=rounded;\n    \n    PacmanFleeing [label=\"\ud83d\udfe1 \u2190 \ud83d\udc7b\\nFleeing\", shape=box];\n    PacmanChasing [label=\"\ud83d\udfe1 \u2192 \ud83d\udc7b\\nChasing\", shape=box];\n    PacmanSpawning [label=\"\ud83d\udc80 Spawning\", shape=box];\n  }\n  \n  // Ghost States Cluster\n  subgraph cluster_ghost {\n    label=\"GHOST States\";\n    style=rounded;\n    \n    GhostChasing [label=\"\ud83d\udc7b \u2192 \ud83d\udfe1\\nChasing\", shape=box];\n    GhostFleeing [label=\"\ud83d\udc7b \u2190 \ud83d\udfe1\\nFleeing\", shape=box];\n    GhostSpawning [label=\"\ud83d\udc40 Spawning\", shape=box];\n  }\n  \n  // Pacman Transitions (all solid)\n  Start -> PacmanFleeing [label=\"Coin\\nInserted\", fontsize=10];\n  PacmanFleeing -> PacmanChasing [label=\"Eat Power\\nPellet\", fontsize=10];\n  PacmanChasing -> PacmanFleeing [label=\"Timer\\nExpires\", fontsize=10];\n  PacmanFleeing -> PacmanSpawning [label=\"Caught by\\nGhost\", fontsize=10];\n  PacmanSpawning -> PacmanFleeing [label=\"Respawn\\nTimer\", fontsize=10];\n  PacmanSpawning -> GameOver [label=\"No Lives\\nLeft\", fontsize=10];\n  \n  // Ghost Transitions (all solid)\n  GhostChasing -> GhostFleeing [label=\"Pacman\\nPowered Up\", fontsize=10];\n  GhostFleeing -> GhostChasing [label=\"Timer\\nExpires\", fontsize=10];\n  GhostFleeing -> GhostSpawning [label=\"Eaten by\\nPacman\", fontsize=10];\n  GhostSpawning -> GhostChasing [label=\"Return to\\nGhost House\", fontsize=10];\n  \n  // Cross-entity interactions (dashed, special colors)\n  GhostChasing -> PacmanSpawning [label=\"Ghost\\nCatches\", fontsize=10, style=dashed, color=red];\n  PacmanChasing -> GhostSpawning [label=\"Pacman\\nEats Ghost\", fontsize=10, style=dashed, color=\"#9370DB\"];\n}",
+        "dotQueryConfig": {
+          "fieldName": "dot_diagram"
+        },
+        "edgeOverrides": [
+          {
+            "id": "edge-Start__to__PacmanFleeing",
+            "targetEdgeIds": [
+              "Start__to__PacmanFleeing"
+            ],
+            "matchFieldName": "edge_Start__to__PacmanFleeing",
+            "matchPattern": "5",
+            "rules": [
+              {
+                "kind": "strokeWidth",
+                "widthFieldName": "edge_Start__to__PacmanFleeing"
+              }
+            ]
+          },
+          {
+            "id": "edge-PacmanFleeing__to__PacmanChasing",
+            "targetEdgeIds": [
+              "PacmanFleeing__to__PacmanChasing"
+            ],
+            "matchFieldName": "edge_PacmanFleeing__to__PacmanChasing",
+            "matchPattern": "5",
+            "rules": [
+              {
+                "kind": "strokeWidth",
+                "widthFieldName": "edge_PacmanFleeing__to__PacmanChasing"
+              }
+            ]
+          },
+          {
+            "id": "edge-PacmanChasing__to__PacmanFleeing",
+            "targetEdgeIds": [
+              "PacmanChasing__to__PacmanFleeing"
+            ],
+            "matchFieldName": "edge_PacmanChasing__to__PacmanFleeing",
+            "matchPattern": "5",
+            "rules": [
+              {
+                "kind": "strokeWidth",
+                "widthFieldName": "edge_PacmanChasing__to__PacmanFleeing"
+              }
+            ]
+          },
+          {
+            "id": "edge-PacmanFleeing__to__PacmanSpawning",
+            "targetEdgeIds": [
+              "PacmanFleeing__to__PacmanSpawning"
+            ],
+            "matchFieldName": "edge_PacmanFleeing__to__PacmanSpawning",
+            "matchPattern": "5",
+            "rules": [
+              {
+                "kind": "strokeWidth",
+                "widthFieldName": "edge_PacmanFleeing__to__PacmanSpawning"
+              }
+            ]
+          },
+          {
+            "id": "edge-PacmanSpawning__to__PacmanFleeing",
+            "targetEdgeIds": [
+              "PacmanSpawning__to__PacmanFleeing"
+            ],
+            "matchFieldName": "edge_PacmanSpawning__to__PacmanFleeing",
+            "matchPattern": "5",
+            "rules": [
+              {
+                "kind": "strokeWidth",
+                "widthFieldName": "edge_PacmanSpawning__to__PacmanFleeing"
+              }
+            ]
+          },
+          {
+            "id": "edge-PacmanSpawning__to__GameOver",
+            "targetEdgeIds": [
+              "PacmanSpawning__to__GameOver"
+            ],
+            "matchFieldName": "edge_PacmanSpawning__to__GameOver",
+            "matchPattern": "5",
+            "rules": [
+              {
+                "kind": "strokeWidth",
+                "widthFieldName": "edge_PacmanSpawning__to__GameOver"
+              }
+            ]
+          },
+          {
+            "id": "edge-GhostChasing__to__GhostFleeing",
+            "targetEdgeIds": [
+              "GhostChasing__to__GhostFleeing"
+            ],
+            "matchFieldName": "edge_GhostChasing__to__GhostFleeing",
+            "matchPattern": "5",
+            "rules": [
+              {
+                "kind": "strokeWidth",
+                "widthFieldName": "edge_GhostChasing__to__GhostFleeing"
+              }
+            ]
+          },
+          {
+            "id": "edge-GhostFleeing__to__GhostChasing",
+            "targetEdgeIds": [
+              "GhostFleeing__to__GhostChasing"
+            ],
+            "matchFieldName": "edge_GhostFleeing__to__GhostChasing",
+            "matchPattern": "5",
+            "rules": [
+              {
+                "kind": "strokeWidth",
+                "widthFieldName": "edge_GhostFleeing__to__GhostChasing"
+              }
+            ]
+          },
+          {
+            "id": "edge-GhostFleeing__to__GhostSpawning",
+            "targetEdgeIds": [
+              "GhostFleeing__to__GhostSpawning"
+            ],
+            "matchFieldName": "edge_GhostFleeing__to__GhostSpawning",
+            "matchPattern": "5",
+            "rules": [
+              {
+                "kind": "strokeWidth",
+                "widthFieldName": "edge_GhostFleeing__to__GhostSpawning"
+              }
+            ]
+          },
+          {
+            "id": "edge-GhostSpawning__to__GhostChasing",
+            "targetEdgeIds": [
+              "GhostSpawning__to__GhostChasing"
+            ],
+            "matchFieldName": "edge_GhostSpawning__to__GhostChasing",
+            "matchPattern": "5",
+            "rules": [
+              {
+                "kind": "strokeWidth",
+                "widthFieldName": "edge_GhostSpawning__to__GhostChasing"
+              }
+            ]
+          },
+          {
+            "id": "edge-GhostChasing__to__PacmanSpawning",
+            "targetEdgeIds": [
+              "GhostChasing__to__PacmanSpawning"
+            ],
+            "matchFieldName": "edge_GhostChasing__to__PacmanSpawning",
+            "matchPattern": "5",
+            "rules": [
+              {
+                "kind": "strokeWidth",
+                "widthFieldName": "edge_GhostChasing__to__PacmanSpawning"
+              }
+            ]
+          },
+          {
+            "id": "edge-PacmanChasing__to__GhostSpawning",
+            "targetEdgeIds": [
+              "PacmanChasing__to__GhostSpawning"
+            ],
+            "matchFieldName": "edge_PacmanChasing__to__GhostSpawning",
+            "matchPattern": "5",
+            "rules": [
+              {
+                "kind": "strokeWidth",
+                "widthFieldName": "edge_PacmanChasing__to__GhostSpawning"
+              }
+            ]
+          }
+        ],
+        "inputMode": "builder",
+        "layoutEngine": "dot",
+        "namedThresholds": [
+          {
+            "id": "cyan-threshold",
+            "name": "Cyan Highlight",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": 0
+              },
+              {
+                "color": "#00CED1",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "id": "yellow-threshold",
+            "name": "Yellow Highlight",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": 0
+              },
+              {
+                "color": "#DAA520",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "id": "red-threshold",
+            "name": "Red Highlight",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": 0
+              },
+              {
+                "color": "#DC143C",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "id": "purple-threshold",
+            "name": "Purple Highlight",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": 0
+              },
+              {
+                "color": "#9370DB",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "id": "gray-threshold",
+            "name": "Gray Highlight",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": 0
+              },
+              {
+                "color": "#808080",
+                "value": 1
+              }
+            ]
+          }
+        ],
+        "nodeOverrides": [
+          {
+            "id": "start-override",
+            "targetNodeIds": [
+              "Start"
+            ],
+            "matchFieldName": "Start",
+            "matchPattern": "1",
+            "rules": [
+              {
+                "kind": "fillColor",
+                "colorFieldName": "Start",
+                "thresholdId": "cyan-threshold"
+              }
+            ]
+          },
+          {
+            "id": "pacman-fleeing-override",
+            "targetNodeIds": [
+              "PacmanFleeing"
+            ],
+            "matchFieldName": "PacmanFleeing",
+            "matchPattern": "1",
+            "rules": [
+              {
+                "kind": "fillColor",
+                "colorFieldName": "PacmanFleeing",
+                "thresholdId": "yellow-threshold"
+              }
+            ]
+          },
+          {
+            "id": "pacman-chasing-override",
+            "targetNodeIds": [
+              "PacmanChasing"
+            ],
+            "matchFieldName": "PacmanChasing",
+            "matchPattern": "1",
+            "rules": [
+              {
+                "kind": "fillColor",
+                "colorFieldName": "PacmanChasing",
+                "thresholdId": "yellow-threshold"
+              }
+            ]
+          },
+          {
+            "id": "pacman-spawning-override",
+            "targetNodeIds": [
+              "PacmanSpawning"
+            ],
+            "matchFieldName": "PacmanSpawning",
+            "matchPattern": "1",
+            "rules": [
+              {
+                "kind": "fillColor",
+                "colorFieldName": "PacmanSpawning",
+                "thresholdId": "gray-threshold"
+              }
+            ]
+          },
+          {
+            "id": "ghost-chasing-override",
+            "targetNodeIds": [
+              "GhostChasing"
+            ],
+            "matchFieldName": "GhostChasing",
+            "matchPattern": "1",
+            "rules": [
+              {
+                "kind": "fillColor",
+                "colorFieldName": "GhostChasing",
+                "thresholdId": "red-threshold"
+              }
+            ]
+          },
+          {
+            "id": "ghost-fleeing-override",
+            "targetNodeIds": [
+              "GhostFleeing"
+            ],
+            "matchFieldName": "GhostFleeing",
+            "matchPattern": "1",
+            "rules": [
+              {
+                "kind": "fillColor",
+                "colorFieldName": "GhostFleeing",
+                "thresholdId": "purple-threshold"
+              }
+            ]
+          },
+          {
+            "id": "ghost-spawning-override",
+            "targetNodeIds": [
+              "GhostSpawning"
+            ],
+            "matchFieldName": "GhostSpawning",
+            "matchPattern": "1",
+            "rules": [
+              {
+                "kind": "fillColor",
+                "colorFieldName": "GhostSpawning",
+                "thresholdId": "gray-threshold"
+              }
+            ]
+          },
+          {
+            "id": "gameover-override",
+            "targetNodeIds": [
+              "GameOver"
+            ],
+            "matchFieldName": "GameOver",
+            "matchPattern": "1",
+            "rules": [
+              {
+                "kind": "fillColor",
+                "colorFieldName": "GameOver",
+                "thresholdId": "red-threshold"
+              }
+            ]
+          }
+        ],
+        "rankDirection": "LR",
+        "splineType": "true"
+      },
+      "pluginVersion": "0.0.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "refId": "A",
+          "scenarioId": "csv_content",
+          "csvContent": "Time,score,lives,game_state,Start,PacmanFleeing,PacmanChasing,PacmanSpawning,GameOver,GhostChasing,GhostFleeing,GhostSpawning,edge_Start__to__PacmanFleeing,edge_PacmanFleeing__to__PacmanChasing,edge_PacmanChasing__to__PacmanFleeing,edge_PacmanFleeing__to__PacmanSpawning,edge_PacmanSpawning__to__PacmanFleeing,edge_PacmanSpawning__to__GameOver,edge_GhostChasing__to__GhostFleeing,edge_GhostFleeing__to__GhostChasing,edge_GhostFleeing__to__GhostSpawning,edge_GhostSpawning__to__GhostChasing,edge_GhostChasing__to__PacmanSpawning,edge_PacmanChasing__to__GhostSpawning,stats_id\n1609459190000,0,1,Start,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459191000,0,1,Start,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459192000,0,1,Start,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459193000,0,1,Start,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459194000,0,1,Start,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459195000,0,1,Start,1,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459196000,20,1,,0,1,0,0,0,1,0,0,5,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459196500,40,1,,0,1,0,0,0,1,0,0,5,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459197000,60,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459198000,80,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459199000,100,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459200000,120,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459201000,140,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459202000,160,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459203000,180,1,,0,1,0,0,0,1,0,0,0,5,0,0,0,0,0,0,0,0,0,0,stats\n1609459204000,200,1,,0,1,0,0,0,1,0,0,0,5,0,0,0,0,5,0,0,0,0,0,stats\n1609459205000,220,1,,0,0,1,0,0,0,1,0,0,5,0,0,0,0,5,0,0,0,0,0,stats\n1609459206000,240,1,,0,0,1,0,0,0,0,1,0,5,0,0,0,0,5,0,0,0,0,0,stats\n1609459207000,260,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459208000,280,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459209000,300,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459210000,320,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459211000,340,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,5,stats\n1609459212000,360,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,5,0,0,5,stats\n1609459213000,480,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,5,0,0,5,stats\n1609459214000,500,1,,0,0,1,0,0,0,0,1,0,0,5,0,0,0,0,5,0,5,0,0,stats\n1609459215000,520,1,,0,1,0,0,0,0,0,1,0,0,5,0,0,0,0,5,0,5,0,0,stats\n1609459216000,540,1,,0,1,0,0,0,1,0,0,0,0,5,0,0,0,0,5,0,5,0,0,stats\n1609459217000,560,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,5,0,0,stats\n1609459218000,580,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459219000,600,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459220000,620,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459221000,640,1,,0,1,0,0,0,1,0,0,0,0,0,5,0,0,0,0,0,0,5,0,stats\n1609459222000,640,0,,0,0,0,1,0,1,0,0,0,0,0,5,0,0,0,0,0,0,5,0,stats\n1609459223000,640,0,,0,0,0,1,0,1,0,0,0,0,0,5,0,0,0,0,0,0,5,0,stats\n1609459224000,640,0,,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459225000,640,0,,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459226000,640,0,,0,0,0,1,0,1,0,0,0,0,0,0,0,5,0,0,0,0,0,0,stats\n1609459227000,640,0,GameOver,0,0,0,0,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,stats"
+        }
+      ],
+      "title": "Game State Machine",
+      "type": "grafana-graphviz-panel",
+      "transformations": [
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "fieldName": "Time",
+                "config": {
+                  "id": "between",
+                  "options": {
+                    "from": "${__from}",
+                    "to": "${__to}"
+                  }
+                }
+              }
+            ],
+            "type": "include",
+            "match": "any"
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "Time",
+                "desc": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "limit",
+          "options": {
+            "limitField": 1
+          }
+        }
+      ]
+    },
+    {
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 7,
+        "x": 17,
+        "y": 4
+      },
+      "id": 4,
+      "options": {
+        "inlineEditing": true,
+        "panZoom": false,
+        "root": {
+          "background": {
+            "color": {
+              "fixed": "transparent"
+            },
+            "image": {
+              "fixed": "https://img.itch.zone/aW1hZ2UvNjM1MTYyLzMzOTM0MjcuanBn/original/8rlKoM.jpg",
+              "mode": "fixed"
+            },
+            "size": "fill"
+          },
+          "border": {
+            "color": {
+              "fixed": "dark-green"
+            }
+          },
+          "constraint": {
+            "horizontal": "left",
+            "vertical": "top"
+          },
+          "elements": [],
+          "name": "Canvas Root",
+          "placement": {
+            "height": 100,
+            "left": 0,
+            "rotation": 0,
+            "top": 0,
+            "width": 100
+          },
+          "type": "frame"
+        },
+        "showAdvancedTypes": true,
+        "tooltip": {
+          "mode": "single"
+        },
+        "zoomToContent": false
+      },
+      "pluginVersion": "12.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "refId": "A",
+          "scenarioId": "csv_content",
+          "csvContent": "Time,score,lives,game_state,Start,PacmanFleeing,PacmanChasing,PacmanSpawning,GameOver,GhostChasing,GhostFleeing,GhostSpawning,edge_Start__to__PacmanFleeing,edge_PacmanFleeing__to__PacmanChasing,edge_PacmanChasing__to__PacmanFleeing,edge_PacmanFleeing__to__PacmanSpawning,edge_PacmanSpawning__to__PacmanFleeing,edge_PacmanSpawning__to__GameOver,edge_GhostChasing__to__GhostFleeing,edge_GhostFleeing__to__GhostChasing,edge_GhostFleeing__to__GhostSpawning,edge_GhostSpawning__to__GhostChasing,edge_GhostChasing__to__PacmanSpawning,edge_PacmanChasing__to__GhostSpawning,stats_id\n1609459190000,0,1,Start,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459191000,0,1,Start,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459192000,0,1,Start,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459193000,0,1,Start,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459194000,0,1,Start,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459195000,0,1,Start,1,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459196000,20,1,,0,1,0,0,0,1,0,0,5,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459196500,40,1,,0,1,0,0,0,1,0,0,5,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459197000,60,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459198000,80,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459199000,100,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459200000,120,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459201000,140,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459202000,160,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459203000,180,1,,0,1,0,0,0,1,0,0,0,5,0,0,0,0,0,0,0,0,0,0,stats\n1609459204000,200,1,,0,1,0,0,0,1,0,0,0,5,0,0,0,0,5,0,0,0,0,0,stats\n1609459205000,220,1,,0,0,1,0,0,0,1,0,0,5,0,0,0,0,5,0,0,0,0,0,stats\n1609459206000,240,1,,0,0,1,0,0,0,0,1,0,5,0,0,0,0,5,0,0,0,0,0,stats\n1609459207000,260,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459208000,280,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459209000,300,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459210000,320,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459211000,340,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,5,stats\n1609459212000,360,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,5,0,0,5,stats\n1609459213000,480,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,5,0,0,5,stats\n1609459214000,500,1,,0,0,1,0,0,0,0,1,0,0,5,0,0,0,0,5,0,5,0,0,stats\n1609459215000,520,1,,0,1,0,0,0,0,0,1,0,0,5,0,0,0,0,5,0,5,0,0,stats\n1609459216000,540,1,,0,1,0,0,0,1,0,0,0,0,5,0,0,0,0,5,0,5,0,0,stats\n1609459217000,560,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,5,0,0,stats\n1609459218000,580,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459219000,600,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459220000,620,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459221000,640,1,,0,1,0,0,0,1,0,0,0,0,0,5,0,0,0,0,0,0,5,0,stats\n1609459222000,640,0,,0,0,0,1,0,1,0,0,0,0,0,5,0,0,0,0,0,0,5,0,stats\n1609459223000,640,0,,0,0,0,1,0,1,0,0,0,0,0,5,0,0,0,0,0,0,5,0,stats\n1609459224000,640,0,,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459225000,640,0,,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459226000,640,0,,0,0,0,1,0,1,0,0,0,0,0,0,0,5,0,0,0,0,0,0,stats\n1609459227000,640,0,GameOver,0,0,0,0,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,stats"
+        }
+      ],
+      "title": "",
+      "type": "canvas",
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      }
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "description": "Live game statistics showing current score and lives remaining",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 7,
+        "x": 17,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "_assistantHelp": "",
+        "builderModeActions": {},
+        "dotDiagram": "digraph GameStats {\n  rankdir=TB;\n  node [fontname=\"Helvetica\", fontsize=12];\n  \n  Stats [shape=record];\n}",
+        "dotQueryConfig": {
+          "fieldName": "dot_diagram"
+        },
+        "edgeOverrides": [],
+        "inputMode": "builder",
+        "layoutEngine": "dot",
+        "namedThresholds": [],
+        "nodeOverrides": [
+          {
+            "id": "stats-display",
+            "targetNodeIds": [
+              "Stats"
+            ],
+            "matchFieldName": "stats_id",
+            "matchPattern": "stats",
+            "rules": [
+              {
+                "kind": "label",
+                "labelTemplate": "\ud83d\udcb0 Score: ${score} | \u2764\ufe0f Lives: ${lives}up"
+              }
+            ]
+          }
+        ],
+        "rankDirection": "TB",
+        "splineType": "true"
+      },
+      "pluginVersion": "0.0.3",
+      "targets": [
+        {
+          "csvContent": "Time,score,lives,game_state,Start,PacmanFleeing,PacmanChasing,PacmanSpawning,GameOver,GhostChasing,GhostFleeing,GhostSpawning,edge_Start__to__PacmanFleeing,edge_PacmanFleeing__to__PacmanChasing,edge_PacmanChasing__to__PacmanFleeing,edge_PacmanFleeing__to__PacmanSpawning,edge_PacmanSpawning__to__PacmanFleeing,edge_PacmanSpawning__to__GameOver,edge_GhostChasing__to__GhostFleeing,edge_GhostFleeing__to__GhostChasing,edge_GhostFleeing__to__GhostSpawning,edge_GhostSpawning__to__GhostChasing,edge_GhostChasing__to__PacmanSpawning,edge_PacmanChasing__to__GhostSpawning,stats_id\n1609459190000,0,1,Start,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459191000,0,1,Start,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459192000,0,1,Start,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459193000,0,1,Start,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459194000,0,1,Start,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459195000,0,1,Start,1,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459196000,20,1,,0,1,0,0,0,1,0,0,5,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459196500,40,1,,0,1,0,0,0,1,0,0,5,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459197000,60,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459198000,80,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459199000,100,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459200000,120,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459201000,140,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459202000,160,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459203000,180,1,,0,1,0,0,0,1,0,0,0,5,0,0,0,0,0,0,0,0,0,0,stats\n1609459204000,200,1,,0,1,0,0,0,1,0,0,0,5,0,0,0,0,5,0,0,0,0,0,stats\n1609459205000,220,1,,0,0,1,0,0,0,1,0,0,5,0,0,0,0,5,0,0,0,0,0,stats\n1609459206000,240,1,,0,0,1,0,0,0,0,1,0,5,0,0,0,0,5,0,0,0,0,0,stats\n1609459207000,260,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459208000,280,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459209000,300,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459210000,320,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459211000,340,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,5,stats\n1609459212000,360,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,5,0,0,5,stats\n1609459213000,480,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,5,0,0,5,stats\n1609459214000,500,1,,0,0,1,0,0,0,0,1,0,0,5,0,0,0,0,5,0,5,0,0,stats\n1609459215000,520,1,,0,1,0,0,0,0,0,1,0,0,5,0,0,0,0,5,0,5,0,0,stats\n1609459216000,540,1,,0,1,0,0,0,1,0,0,0,0,5,0,0,0,0,5,0,5,0,0,stats\n1609459217000,560,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,5,0,0,stats\n1609459218000,580,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459219000,600,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459220000,620,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459221000,640,1,,0,1,0,0,0,1,0,0,0,0,0,5,0,0,0,0,0,0,5,0,stats\n1609459222000,640,0,,0,0,0,1,0,1,0,0,0,0,0,5,0,0,0,0,0,0,5,0,stats\n1609459223000,640,0,,0,0,0,1,0,1,0,0,0,0,0,5,0,0,0,0,0,0,5,0,stats\n1609459224000,640,0,,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459225000,640,0,,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459226000,640,0,,0,0,0,1,0,1,0,0,0,0,0,0,0,5,0,0,0,0,0,0,stats\n1609459227000,640,0,GameOver,0,0,0,0,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,stats",
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "refId": "A",
+          "scenarioId": "csv_content"
+        }
+      ],
+      "title": "Live Game Stats",
+      "type": "grafana-graphviz-panel",
+      "transformations": [
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "fieldName": "Time",
+                "config": {
+                  "id": "between",
+                  "options": {
+                    "from": "${__from}",
+                    "to": "${__to}"
+                  }
+                }
+              }
+            ],
+            "type": "include",
+            "match": "any"
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "Time",
+                "desc": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "limit",
+          "options": {
+            "limitField": 1
+          }
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "description": "\ud83c\udfac Game state timeline - Scrub through time to see states change! Click and drag to zoom into specific moments!",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "custom": {
+            "axisPlacement": "auto",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 0,
+            "spanNulls": false
+          },
+          "mappings": [
+            {
+              "options": {
+                "GameOver": {
+                  "color": "#DC143C",
+                  "index": 3,
+                  "text": "\ud83d\udc80 Game Over"
+                },
+                "Normal": {
+                  "color": "#FFD700",
+                  "index": 1,
+                  "text": "\ud83d\udfe1 Normal"
+                },
+                "PoweredUp": {
+                  "color": "#4169E1",
+                  "index": 2,
+                  "text": "\ud83d\udd35 Powered Up"
+                },
+                "Start": {
+                  "color": "#00CED1",
+                  "index": 0,
+                  "text": "\ud83c\udfae Start"
+                },
+                "Victory": {
+                  "color": "#32CD32",
+                  "index": 4,
+                  "text": "\ud83c\udf89 Victory"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/^(Start|Pacman.*|Ghost.*|GameOver|edge_.*|stats_id)$/"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": true,
+                  "tooltip": true,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
+      "id": 6,
+      "options": {
+        "alignValue": "left",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "showValue": "auto",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.4.0",
+      "targets": [
+        {
+          "csvContent": "Time,score,lives,game_state,Start,PacmanFleeing,PacmanChasing,PacmanSpawning,GameOver,GhostChasing,GhostFleeing,GhostSpawning,edge_Start__to__PacmanFleeing,edge_PacmanFleeing__to__PacmanChasing,edge_PacmanChasing__to__PacmanFleeing,edge_PacmanFleeing__to__PacmanSpawning,edge_PacmanSpawning__to__PacmanFleeing,edge_PacmanSpawning__to__GameOver,edge_GhostChasing__to__GhostFleeing,edge_GhostFleeing__to__GhostChasing,edge_GhostFleeing__to__GhostSpawning,edge_GhostSpawning__to__GhostChasing,edge_GhostChasing__to__PacmanSpawning,edge_PacmanChasing__to__GhostSpawning,stats_id\n1609459190000,0,1,Start,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459191000,0,1,Start,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459192000,0,1,Start,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459193000,0,1,Start,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459194000,0,1,Start,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459195000,0,1,Start,1,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459196000,20,1,,0,1,0,0,0,1,0,0,5,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459196500,40,1,,0,1,0,0,0,1,0,0,5,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459197000,60,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459198000,80,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459199000,100,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459200000,120,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459201000,140,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459202000,160,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459203000,180,1,,0,1,0,0,0,1,0,0,0,5,0,0,0,0,0,0,0,0,0,0,stats\n1609459204000,200,1,,0,1,0,0,0,1,0,0,0,5,0,0,0,0,5,0,0,0,0,0,stats\n1609459205000,220,1,,0,0,1,0,0,0,1,0,0,5,0,0,0,0,5,0,0,0,0,0,stats\n1609459206000,240,1,,0,0,1,0,0,0,0,1,0,5,0,0,0,0,5,0,0,0,0,0,stats\n1609459207000,260,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459208000,280,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459209000,300,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459210000,320,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459211000,340,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,5,stats\n1609459212000,360,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,5,0,0,5,stats\n1609459213000,480,1,,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,5,0,0,5,stats\n1609459214000,500,1,,0,0,1,0,0,0,0,1,0,0,5,0,0,0,0,5,0,5,0,0,stats\n1609459215000,520,1,,0,1,0,0,0,0,0,1,0,0,5,0,0,0,0,5,0,5,0,0,stats\n1609459216000,540,1,,0,1,0,0,0,1,0,0,0,0,5,0,0,0,0,5,0,5,0,0,stats\n1609459217000,560,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,5,0,0,stats\n1609459218000,580,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459219000,600,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459220000,620,1,,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459221000,640,1,,0,1,0,0,0,1,0,0,0,0,0,5,0,0,0,0,0,0,5,0,stats\n1609459222000,640,0,,0,0,0,1,0,1,0,0,0,0,0,5,0,0,0,0,0,0,5,0,stats\n1609459223000,640,0,,0,0,0,1,0,1,0,0,0,0,0,5,0,0,0,0,0,0,5,0,stats\n1609459224000,640,0,,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459225000,640,0,,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,stats\n1609459226000,640,0,,0,0,0,1,0,1,0,0,0,0,0,0,0,5,0,0,0,0,0,0,stats\n1609459227000,640,0,GameOver,0,0,0,0,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,stats",
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "refId": "GameData",
+          "scenarioId": "csv_content"
+        }
+      ],
+      "title": "State Timeline (click and drag x-axis to time travel)",
+      "type": "state-timeline"
+    }
+  ],
+  "preload": false,
+  "refresh": "5s",
+  "schemaVersion": 42,
+  "tags": [
+    "demo",
+    "pacman",
+    "game",
+    "state-machine",
+    "showcase"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "1609459190000",
+    "to": "1609459260000"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "\ud83c\udfae Pacman Game Demo",
+  "uid": "pacman-game-demo",
+  "version": 16,
+  "weekStart": ""
+}
