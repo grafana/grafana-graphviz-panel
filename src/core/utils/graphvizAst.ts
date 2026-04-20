@@ -27,7 +27,21 @@ export function getEdgeId(edge: any): string | null {
 }
 
 export function findNodeById(model: GraphModel, nodeId: string): GraphNode | undefined {
-  return Array.from(model.nodes).find((n: any) => n.id === nodeId) as GraphNode | undefined;
+  const topLevelNode = Array.from(model.nodes).find((n: any) => n.id === nodeId) as GraphNode | undefined;
+  if (topLevelNode) {
+    return topLevelNode;
+  }
+
+  if (model.subgraphs) {
+    for (const subgraph of model.subgraphs) {
+      const subgraphNode = findNodeById(subgraph, nodeId);
+      if (subgraphNode) {
+        return subgraphNode;
+      }
+    }
+  }
+
+  return undefined;
 }
 
 export function collectAllNodeIds(model: GraphModel): Set<string> {
