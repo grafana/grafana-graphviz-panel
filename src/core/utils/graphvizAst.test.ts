@@ -136,6 +136,34 @@ describe('graphvizAst', () => {
       const node = findNodeById(model, 'NonExistent');
       expect(node).toBeUndefined();
     });
+
+    describe('subgraph support', () => {
+      it('should find nodes in subgraphs and at top level', () => {
+        const model = fromDot('digraph G { subgraph cluster_test { A; B; } C; }');
+        expect(findNodeById(model, 'A')).toBeDefined();
+        expect(findNodeById(model, 'B')).toBeDefined();
+        expect(findNodeById(model, 'C')).toBeDefined();
+      });
+
+      it('should find nodes in nested subgraphs', () => {
+        const model = fromDot('digraph G { subgraph cluster_outer { subgraph cluster_inner { A; } B; } C; }');
+        expect(findNodeById(model, 'A')).toBeDefined();
+        expect(findNodeById(model, 'B')).toBeDefined();
+        expect(findNodeById(model, 'C')).toBeDefined();
+      });
+
+      it('should return undefined for non-existent node in graph with subgraphs', () => {
+        const model = fromDot('digraph G { subgraph cluster_test { A; B; } C; }');
+        expect(findNodeById(model, 'NonExistent')).toBeUndefined();
+      });
+
+      it('should find first match when node exists at multiple levels', () => {
+        const model = fromDot('digraph G { A; subgraph cluster_test { A; } }');
+        const node = findNodeById(model, 'A');
+        expect(node).toBeDefined();
+        expect(node!.id).toBe('A');
+      });
+    });
   });
 
   describe('collectAllNodeIds', () => {
@@ -253,6 +281,35 @@ describe('graphvizAst', () => {
         expect(edgeIds.has('A__to__B:http')).toBe(true);
         expect(edgeIds.has('A__to__B:https')).toBe(true);
         expect(edgeIds.has('A__to__B:admin')).toBe(true);
+      });
+    });
+
+    describe('subgraph support', () => {
+      it('should collect edges connecting nodes in different subgraphs', () => {
+        const dot = `digraph G {
+          subgraph cluster_a { A; }
+          subgraph cluster_b { B; }
+          A -> B;
+        }`;
+        const model = fromDot(dot);
+        const edgeIds = collectAllEdgeIds(model);
+        expect(edgeIds.has('A__to__B')).toBe(true);
+      });
+
+      it('should handle nested subgraphs with edges', () => {
+        const dot = `digraph G {
+          A;
+          subgraph cluster_outer {
+            B;
+            subgraph cluster_inner { C; }
+          }
+          A -> B; B -> C;
+        }`;
+        const model = fromDot(dot);
+        const edgeIds = collectAllEdgeIds(model);
+        expect(edgeIds.size).toBe(2);
+        expect(edgeIds.has('A__to__B')).toBe(true);
+        expect(edgeIds.has('B__to__C')).toBe(true);
       });
     });
   });

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.4 [2026-04-20]
+
+### Bug Fixes
+
+- Fix node overrides not applying to nodes inside subgraph clusters
+
 ## 0.0.3 [2026-04-10]
 
 ### Bug Fixes
