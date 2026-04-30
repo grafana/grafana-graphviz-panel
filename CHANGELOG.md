@@ -1,20 +1,26 @@
 # Changelog
 
+## 0.0.5 [2026-04-30]
+
+### Bug Fixes
+
+- Fix default settings for Network, Force Directed, and Circular layout engines.
+
 ## 0.0.4 [2026-04-20]
 
 ### Bug Fixes
 
-- Fix node overrides not applying to nodes inside subgraph clusters
+- Fix node overrides not applying to nodes inside subgraph clusters.
 
 ## 0.0.3 [2026-04-10]
 
 ### Bug Fixes
 
-- Fix clearing labels via node/edge builder modals (#104)
+- Fix clearing labels via node/edge builder modals (#104).
 
 ### Documentation
 
-- Add Private Preview release status notice to README files
+- Add Private Preview release status notice to README files.
 
 ## 0.0.2 [2026-04-09]
 

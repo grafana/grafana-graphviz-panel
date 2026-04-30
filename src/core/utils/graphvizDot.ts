@@ -1,4 +1,5 @@
 import { fromDot } from 'ts-graphviz';
+import { LayoutEngine } from '../../types';
 
 export function isEmptyDiagram(dotDiagram: string): boolean {
   if (!dotDiagram || dotDiagram.trim() === '') {
@@ -36,12 +37,16 @@ export function extractGraphContent(dotString: string): string {
 }
 
 export function buildGraphAttributes(layoutEngine: string, rankDirection?: string, splineType?: string): string[] {
-  const attributes: string[] = [];
-  if (layoutEngine === 'dot' && rankDirection) {
-    attributes.push(`rankdir=${rankDirection}`);
+  switch (layoutEngine) {
+    case LayoutEngine.HIERARCHICAL:
+      return [`rankdir=${rankDirection}`, `splines=${splineType}`];
+
+    case LayoutEngine.NETWORK:
+    case LayoutEngine.FORCE_DIRECTED:
+    case LayoutEngine.CIRCULAR:
+      return ['overlap="scalexy"', 'sep="+20"', `splines=${splineType}`];
+
+    default:
+      return [];
   }
-  if (splineType) {
-    attributes.push(`splines=${splineType}`);
-  }
-  return attributes;
 }
