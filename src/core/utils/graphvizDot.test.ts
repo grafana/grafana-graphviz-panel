@@ -86,24 +86,44 @@ describe('graphvizDot', () => {
   });
 
   describe('buildGraphAttributes', () => {
-    const testCases = [
-      { name: 'should return empty when no attributes', engine: 'neato', expected: [] },
-      { name: 'should add rankdir for dot engine', engine: 'dot', rankdir: 'LR', expected: ['rankdir=LR'] },
-      { name: 'should not add rankdir for non-dot engine', engine: 'neato', rankdir: 'LR', expected: [] },
-      { name: 'should add splineType', engine: 'dot', splineType: 'ortho', expected: ['splines=ortho'] },
-      {
-        name: 'should add both attributes',
-        engine: 'dot',
-        rankdir: 'TB',
-        splineType: 'curved',
-        expected: ['rankdir=TB', 'splines=curved'],
-      },
-    ];
+    it('should add rankdir and splines for hierarchical engine', () => {
+      expect(buildGraphAttributes('dot', 'LR', 'ortho')).toEqual(['rankdir=LR', 'splines=ortho']);
+    });
 
-    testCases.forEach(({ name, engine, rankdir, splineType, expected }) => {
-      it(name, () => {
-        expect(buildGraphAttributes(engine, rankdir, splineType)).toEqual(expected);
-      });
+    it('should add overlap, sep, and splines for network engine', () => {
+      expect(buildGraphAttributes('neato', 'LR', 'curved')).toEqual([
+        'overlap="scalexy"',
+        'sep="+20"',
+        'splines=curved',
+      ]);
+    });
+
+    it('should add overlap, sep, and splines for force directed engine', () => {
+      expect(buildGraphAttributes('fdp', 'TB', 'polyline')).toEqual([
+        'overlap="scalexy"',
+        'sep="+20"',
+        'splines=polyline',
+      ]);
+    });
+
+    it('should add overlap, sep, and splines for circular engine', () => {
+      expect(buildGraphAttributes('circo', 'LR', 'ortho')).toEqual(['overlap="scalexy"', 'sep="+20"', 'splines=ortho']);
+    });
+
+    it('should add overlap, sep, and splines for force directed engine', () => {
+      expect(buildGraphAttributes('fdp', 'TB', 'polyline')).toEqual([
+        'overlap="scalexy"',
+        'sep="+20"',
+        'splines=polyline',
+      ]);
+    });
+
+    it('should add overlap, sep, and splines for circular engine', () => {
+      expect(buildGraphAttributes('circo', 'LR', 'ortho')).toEqual(['overlap="scalexy"', 'sep="+20"', 'splines=ortho']);
+    });
+
+    it('should return empty array for unknown engine', () => {
+      expect(buildGraphAttributes('unknown', 'LR', 'ortho')).toEqual([]);
     });
   });
 });
