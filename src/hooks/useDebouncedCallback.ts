@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 
-export const USER_INPUT_DEBOUNCE_MS = 500;
+export const USER_INPUT_DEBOUNCE_FAST_MS = 250;
+export const USER_INPUT_DEBOUNCE_SLOW_MS = 1000;
 
 export function useDebouncedCallback<T extends (...args: any[]) => void>(fn: T, delay: number): T {
   const fnRef = useRef(fn);

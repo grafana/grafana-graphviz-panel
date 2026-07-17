@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
-import { useDebouncedCallback, USER_INPUT_DEBOUNCE_MS } from './useDebouncedCallback';
+import { useDebouncedCallback, USER_INPUT_DEBOUNCE_FAST_MS, USER_INPUT_DEBOUNCE_SLOW_MS } from './useDebouncedCallback';
 
 describe('hooks/useDebouncedCallback', () => {
   beforeEach(() => {
@@ -12,7 +12,7 @@ describe('hooks/useDebouncedCallback', () => {
 
   it('should not call the callback immediately when invoked', () => {
     const fn = jest.fn();
-    const { result } = renderHook(() => useDebouncedCallback(fn, USER_INPUT_DEBOUNCE_MS));
+    const { result } = renderHook(() => useDebouncedCallback(fn, USER_INPUT_DEBOUNCE_FAST_MS));
 
     act(() => {
       result.current('red');
@@ -23,14 +23,14 @@ describe('hooks/useDebouncedCallback', () => {
 
   it('should call the callback after the delay has elapsed', () => {
     const fn = jest.fn();
-    const { result } = renderHook(() => useDebouncedCallback(fn, USER_INPUT_DEBOUNCE_MS));
+    const { result } = renderHook(() => useDebouncedCallback(fn, USER_INPUT_DEBOUNCE_FAST_MS));
 
     act(() => {
       result.current('red');
     });
 
     act(() => {
-      jest.advanceTimersByTime(USER_INPUT_DEBOUNCE_MS);
+      jest.advanceTimersByTime(USER_INPUT_DEBOUNCE_FAST_MS);
     });
 
     expect(fn).toHaveBeenCalledTimes(1);
@@ -39,14 +39,14 @@ describe('hooks/useDebouncedCallback', () => {
 
   it('should not call the callback before the delay has elapsed', () => {
     const fn = jest.fn();
-    const { result } = renderHook(() => useDebouncedCallback(fn, USER_INPUT_DEBOUNCE_MS));
+    const { result } = renderHook(() => useDebouncedCallback(fn, USER_INPUT_DEBOUNCE_FAST_MS));
 
     act(() => {
       result.current('red');
     });
 
     act(() => {
-      jest.advanceTimersByTime(USER_INPUT_DEBOUNCE_MS - 1);
+      jest.advanceTimersByTime(USER_INPUT_DEBOUNCE_FAST_MS - 1);
     });
 
     expect(fn).not.toHaveBeenCalled();
@@ -54,7 +54,7 @@ describe('hooks/useDebouncedCallback', () => {
 
   it('should debounce rapid calls and only invoke with the last argument', () => {
     const fn = jest.fn();
-    const { result } = renderHook(() => useDebouncedCallback(fn, USER_INPUT_DEBOUNCE_MS));
+    const { result } = renderHook(() => useDebouncedCallback(fn, USER_INPUT_DEBOUNCE_SLOW_MS));
 
     act(() => {
       result.current('rgb(255,');
@@ -63,7 +63,7 @@ describe('hooks/useDebouncedCallback', () => {
     });
 
     act(() => {
-      jest.advanceTimersByTime(USER_INPUT_DEBOUNCE_MS);
+      jest.advanceTimersByTime(USER_INPUT_DEBOUNCE_SLOW_MS);
     });
 
     expect(fn).toHaveBeenCalledTimes(1);
@@ -72,7 +72,7 @@ describe('hooks/useDebouncedCallback', () => {
 
   it('should reset the timer on each call within the delay window', () => {
     const fn = jest.fn();
-    const { result } = renderHook(() => useDebouncedCallback(fn, USER_INPUT_DEBOUNCE_MS));
+    const { result } = renderHook(() => useDebouncedCallback(fn, USER_INPUT_DEBOUNCE_SLOW_MS));
 
     act(() => {
       result.current('first');
@@ -93,7 +93,7 @@ describe('hooks/useDebouncedCallback', () => {
     expect(fn).not.toHaveBeenCalled();
 
     act(() => {
-      jest.advanceTimersByTime(USER_INPUT_DEBOUNCE_MS - 300);
+      jest.advanceTimersByTime(USER_INPUT_DEBOUNCE_SLOW_MS - 300);
     });
 
     expect(fn).toHaveBeenCalledTimes(1);
@@ -102,7 +102,7 @@ describe('hooks/useDebouncedCallback', () => {
 
   it('should not call the callback after unmount even if the delay elapses', () => {
     const fn = jest.fn();
-    const { result, unmount } = renderHook(() => useDebouncedCallback(fn, USER_INPUT_DEBOUNCE_MS));
+    const { result, unmount } = renderHook(() => useDebouncedCallback(fn, USER_INPUT_DEBOUNCE_FAST_MS));
 
     act(() => {
       result.current('red');
@@ -111,7 +111,7 @@ describe('hooks/useDebouncedCallback', () => {
     unmount();
 
     act(() => {
-      jest.advanceTimersByTime(USER_INPUT_DEBOUNCE_MS);
+      jest.advanceTimersByTime(USER_INPUT_DEBOUNCE_FAST_MS);
     });
 
     expect(fn).not.toHaveBeenCalled();
@@ -119,14 +119,14 @@ describe('hooks/useDebouncedCallback', () => {
 
   it('should allow multiple independent calls after each delay elapses', () => {
     const fn = jest.fn();
-    const { result } = renderHook(() => useDebouncedCallback(fn, USER_INPUT_DEBOUNCE_MS));
+    const { result } = renderHook(() => useDebouncedCallback(fn, USER_INPUT_DEBOUNCE_FAST_MS));
 
     act(() => {
       result.current('first');
     });
 
     act(() => {
-      jest.advanceTimersByTime(USER_INPUT_DEBOUNCE_MS);
+      jest.advanceTimersByTime(USER_INPUT_DEBOUNCE_FAST_MS);
     });
 
     act(() => {
@@ -134,7 +134,7 @@ describe('hooks/useDebouncedCallback', () => {
     });
 
     act(() => {
-      jest.advanceTimersByTime(USER_INPUT_DEBOUNCE_MS);
+      jest.advanceTimersByTime(USER_INPUT_DEBOUNCE_FAST_MS);
     });
 
     expect(fn).toHaveBeenCalledTimes(2);
