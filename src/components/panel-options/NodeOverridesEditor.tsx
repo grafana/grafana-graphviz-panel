@@ -26,6 +26,7 @@ import {
   FieldSet,
 } from '@grafana/ui';
 import { NodeOverride, StrokeColorRule, FillColorRule, TooltipRule, Rule, RuleKind, MatchMode } from '../../types';
+import { useDebouncedCallback, USER_INPUT_DEBOUNCE_SLOW_MS } from '../../hooks';
 import { autodetectMatchField, MatchDetectionResult, findMatchedRow } from '../../integrations/grafanaData';
 import { css } from '@emotion/css';
 import {
@@ -252,6 +253,11 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
       }
     },
     [mappings, detectionResults, onChange]
+  );
+
+  const debouncedUpdateRuleColor = useDebouncedCallback(
+    (mappingId: string, ruleIndex: number, color: string) => updateRule(mappingId, ruleIndex, { staticColor: color }),
+    USER_INPUT_DEBOUNCE_SLOW_MS
   );
 
   const mappingContainerStyle = css`
@@ -681,7 +687,7 @@ export const NodeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
                           <Field label="Static color">
                             <ColorPicker
                               color={rule.staticColor || '#FF0000'}
-                              onChange={(color) => updateRule(mapping.id, ruleIndex, { staticColor: color })}
+                              onChange={(color) => debouncedUpdateRuleColor(mapping.id, ruleIndex, color)}
                             />
                           </Field>
                         )}
