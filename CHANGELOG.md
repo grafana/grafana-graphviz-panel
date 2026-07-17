@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.0.6 [2026-07-17]
+
+### Bug Fixes
+
+- Fix numeric inputs in panel options not allowing deletion of `0` to type a new value.
+- Fix RGB colour inputs in node/edge override and threshold editors triggering render errors mid-typing.
+
 ## 0.0.5 [2026-04-30]
 
 ### Bug Fixes
