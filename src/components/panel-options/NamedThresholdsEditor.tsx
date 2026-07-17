@@ -3,6 +3,7 @@ import { StandardEditorProps } from '@grafana/data';
 import { Button, Input, ColorPicker, IconButton, Collapse, Icon } from '@grafana/ui';
 import { NamedThreshold, ThresholdStep } from '../../types';
 import { css } from '@emotion/css';
+import { useDebouncedCallback, USER_INPUT_DEBOUNCE_MS } from '../../hooks';
 
 interface Props extends StandardEditorProps<NamedThreshold[]> {}
 
@@ -62,6 +63,11 @@ export const NamedThresholdsEditor: React.FC<Props> = ({ value, onChange }) => {
       updateThreshold(thresholdId, { steps: updatedSteps });
     }
   };
+
+  const debouncedUpdateStepColor = useDebouncedCallback(
+    (thresholdId: string, stepIndex: number, color: string) => updateStep(thresholdId, stepIndex, { color }),
+    USER_INPUT_DEBOUNCE_MS
+  );
 
   const thresholdContainerStyle = css`
     margin-bottom: 16px;
@@ -152,7 +158,7 @@ export const NamedThresholdsEditor: React.FC<Props> = ({ value, onChange }) => {
                   <ColorPicker
                     data-testid={`threshold-${threshold.id}-step-${stepIndex}-color`}
                     color={step.color}
-                    onChange={(color) => updateStep(threshold.id, stepIndex, { color })}
+                    onChange={(color) => debouncedUpdateStepColor(threshold.id, stepIndex, color)}
                   />
                   {threshold.steps.length > 1 && (
                     <IconButton
