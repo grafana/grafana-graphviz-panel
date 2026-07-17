@@ -573,301 +573,304 @@ export const EdgeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
             </>
           )}
 
-          {mapping.rules.map((rule, ruleIndex) => (
-            <div key={ruleIndex} className={ruleContainerStyle}>
-              <div className={headerStyle}>
-                <strong>
-                  {rule.kind === RuleKind.STROKE_COLOR && 'Stroke Color Override'}
-                  {rule.kind === RuleKind.STROKE_WIDTH && 'Stroke Width Override'}
-                  {rule.kind === RuleKind.LABEL && 'Label Override'}
-                  {rule.kind === RuleKind.TOOLTIP && 'Tooltip'}
-                </strong>
-                <IconButton
-                  name="trash-alt"
-                  onClick={() => removeRule(mapping.id, ruleIndex)}
-                  tooltip="Remove override"
-                  size="sm"
-                />
-              </div>
-
-              {rule.kind === RuleKind.STROKE_COLOR &&
-                (() => {
-                  const sampleEdgeId = mapping.targetEdgeIds[0];
-                  const matchValue = mapping.matchPattern
-                    ? mapping.matchPattern.replace(/\$\{id\}/g, sampleEdgeId)
-                    : mapping.matchValue;
-
-                  const availableFields =
-                    mapping.matchFieldName && matchValue
-                      ? extractAllFieldsForMatchedRow(context.data, mapping.matchFieldName, matchValue)
-                      : numericFields;
-
-                  return (
-                    <>
-                      {mapping.matchFieldName ? (
-                        <>
-                          <Field label="Color field">
-                            <Select
-                              value={rule.colorFieldName}
-                              options={availableFields}
-                              onChange={(selection) => {
-                                updateRule(mapping.id, ruleIndex, { colorFieldName: selection?.value });
-                              }}
-                              placeholder="Select color field..."
-                              isOptionDisabled={(option) => option.isDisabled === true}
-                              formatOptionLabel={(option) => (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  <Icon name={getFieldTypeIconName(option.fieldType as any)} />
-                                  <span>{option.label}</span>
-                                </div>
-                              )}
-                            />
-                          </Field>
-
-                          <Field
-                            label="Threshold set"
-                            description="Optional: Use a named threshold set instead global panel thresholds"
-                          >
-                            <Combobox
-                              value={rule.thresholdId}
-                              options={
-                                [
-                                  ...(context.options?.namedThresholds || []).map((t: any) => ({
-                                    label: t.name,
-                                    value: t.id,
-                                  })),
-                                ] as any
-                              }
-                              onChange={(selection: any) =>
-                                updateRule(mapping.id, ruleIndex, { thresholdId: selection?.value })
-                              }
-                              placeholder="Field config thresholds"
-                              isClearable
-                            />
-                          </Field>
-                        </>
-                      ) : (
-                        <Field label="Static color">
-                          <ColorPicker
-                            color={rule.staticColor || '#FF0000'}
-                            onChange={(color) => debouncedUpdateRuleColor(mapping.id, ruleIndex, color)}
-                          />
-                        </Field>
-                      )}
-                    </>
-                  );
-                })()}
-
-              {rule.kind === RuleKind.STROKE_WIDTH &&
-                (() => {
-                  const sampleEdgeId = mapping.targetEdgeIds[0];
-                  const matchValue = mapping.matchPattern
-                    ? mapping.matchPattern.replace(/\$\{id\}/g, sampleEdgeId)
-                    : mapping.matchValue;
-
-                  const availableFields =
-                    mapping.matchFieldName && matchValue
-                      ? extractAllFieldsForMatchedRow(context.data, mapping.matchFieldName, matchValue)
-                      : numericFields;
-
-                  return (
-                    <>
-                      {mapping.matchFieldName ? (
-                        <>
-                          <Field label="Width field">
-                            <Select
-                              value={rule.widthFieldName}
-                              options={availableFields}
-                              onChange={(selection) => {
-                                updateRule(mapping.id, ruleIndex, { widthFieldName: selection?.value });
-                              }}
-                              placeholder="Select width field..."
-                              isOptionDisabled={(option) => option.isDisabled === true}
-                              formatOptionLabel={(option) => (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  <Icon name={getFieldTypeIconName(option.fieldType as any)} />
-                                  <span>{option.label}</span>
-                                </div>
-                              )}
-                            />
-                          </Field>
-                        </>
-                      ) : (
-                        <Field label="Static width (px)">
-                          <input
-                            type="number"
-                            value={widthInputValues[`${mapping.id}-${ruleIndex}`] ?? String(rule.staticWidth ?? 1)}
-                            onChange={(e) => {
-                              const raw = e.target.value;
-                              setWidthInputValues((prev) => ({
-                                ...prev,
-                                [`${mapping.id}-${ruleIndex}`]: raw,
-                              }));
-                            }}
-                            onBlur={(e) => {
-                              const raw = e.target.value;
-                              const parsed = parseFloat(raw);
-                              const committed = isNaN(parsed) ? 1 : parsed;
-                              updateRule(mapping.id, ruleIndex, { staticWidth: committed });
-                              setWidthInputValues((prev) => {
-                                const next = { ...prev };
-                                delete next[`${mapping.id}-${ruleIndex}`];
-                                return next;
-                              });
-                            }}
-                            min={0.1}
-                            max={5}
-                            step={0.5}
-                            style={{ width: '100%', padding: '6px' }}
-                          />
-                        </Field>
-                      )}
-                    </>
-                  );
-                })()}
-
-              {rule.kind === RuleKind.LABEL && (
-                <Field
-                  label="Label template"
-                  description="Use ${fieldName} to insert field values. Press Ctrl+Space to see available fields."
-                >
-                  <CodeEditor
-                    value={rule.labelTemplate || ''}
-                    language="plaintext"
-                    height="60px"
-                    showLineNumbers={false}
-                    showMiniMap={false}
-                    monacoOptions={{
-                      quickSuggestions: true,
-                      suggestOnTriggerCharacters: true,
-                    }}
-                    onChange={(value) => updateRule(mapping.id, ruleIndex, { labelTemplate: value })}
-                    onEditorDidMount={(editor: MonacoEditor, monaco: Monaco) => {
-                      registerEdgeLabelCompletion(monaco, context.data, mapping);
-                    }}
+          {mapping.rules.map((rule, ruleIndex) => {
+            const ruleKey = `${mapping.id}-${ruleIndex}`;
+            return (
+              <div key={ruleIndex} className={ruleContainerStyle}>
+                <div className={headerStyle}>
+                  <strong>
+                    {rule.kind === RuleKind.STROKE_COLOR && 'Stroke Color Override'}
+                    {rule.kind === RuleKind.STROKE_WIDTH && 'Stroke Width Override'}
+                    {rule.kind === RuleKind.LABEL && 'Label Override'}
+                    {rule.kind === RuleKind.TOOLTIP && 'Tooltip'}
+                  </strong>
+                  <IconButton
+                    name="trash-alt"
+                    onClick={() => removeRule(mapping.id, ruleIndex)}
+                    tooltip="Remove override"
+                    size="sm"
                   />
-                </Field>
-              )}
+                </div>
 
-              {rule.kind === RuleKind.TOOLTIP && (
-                <>
-                  <FieldSet label="Header">
-                    <InlineField label="Show timestamp" labelWidth={20}>
-                      <InlineSwitch
-                        value={rule.header?.showTimestamp ?? false}
-                        onChange={(e) => {
-                          updateRule(mapping.id, ruleIndex, {
-                            header: { ...rule.header, showTimestamp: e.currentTarget.checked },
-                          });
-                        }}
-                      />
-                    </InlineField>
+                {rule.kind === RuleKind.STROKE_COLOR &&
+                  (() => {
+                    const sampleEdgeId = mapping.targetEdgeIds[0];
+                    const matchValue = mapping.matchPattern
+                      ? mapping.matchPattern.replace(/\$\{id\}/g, sampleEdgeId)
+                      : mapping.matchValue;
 
-                    <InlineField label="Show edge ID" labelWidth={20}>
-                      <InlineSwitch
-                        value={rule.header?.showId ?? true}
-                        onChange={(e) => {
-                          updateRule(mapping.id, ruleIndex, {
-                            header: { ...rule.header, showId: e.currentTarget.checked },
-                          });
-                        }}
-                      />
-                    </InlineField>
-                  </FieldSet>
+                    const availableFields =
+                      mapping.matchFieldName && matchValue
+                        ? extractAllFieldsForMatchedRow(context.data, mapping.matchFieldName, matchValue)
+                        : numericFields;
 
-                  <FieldSet label="Content">
-                    <Field
-                      label="Content template (optional)"
-                      description="Use ${field_name} for data fields, ${__edgeId} for edge ID, ${__source} / ${__target} for endpoints"
-                    >
-                      <TextArea
-                        value={rule.content?.templates?.[0] || ''}
-                        placeholder="Edge: ${__source} → ${__target}&#10;Traffic: ${traffic}&#10;Status: ${status}"
-                        rows={3}
-                        onChange={(e) => {
-                          updateRule(mapping.id, ruleIndex, {
-                            content: { templates: [e.currentTarget.value] },
-                          });
-                        }}
-                      />
-                    </Field>
-                  </FieldSet>
-
-                  <FieldSet label="Footer">
-                    {rule.footer?.links && rule.footer.links.length > 0 && (
-                      <div style={{ marginBottom: 12 }}>
-                        {rule.footer.links.map((link, linkIndex) => (
-                          <div
-                            key={linkIndex}
-                            style={{
-                              marginBottom: 8,
-                              padding: 8,
-                              background: 'rgba(80, 80, 80, 0.1)',
-                              borderRadius: 4,
-                            }}
-                          >
-                            <div className={headerStyle}>
-                              <strong>Link {linkIndex + 1}</strong>
-                              <IconButton
-                                name="trash-alt"
-                                onClick={() => removeDataLinkFromTooltip(mapping.id, ruleIndex, linkIndex)}
-                                tooltip="Remove link"
-                                size="sm"
-                              />
-                            </div>
-                            <Field label="Title">
-                              <Input
-                                value={link.title}
-                                placeholder="Open Dashboard"
-                                onChange={(e) =>
-                                  updateDataLinkInTooltip(mapping.id, ruleIndex, linkIndex, {
-                                    title: e.currentTarget.value,
-                                  })
-                                }
+                    return (
+                      <>
+                        {mapping.matchFieldName ? (
+                          <>
+                            <Field label="Color field">
+                              <Select
+                                value={rule.colorFieldName}
+                                options={availableFields}
+                                onChange={(selection) => {
+                                  updateRule(mapping.id, ruleIndex, { colorFieldName: selection?.value });
+                                }}
+                                placeholder="Select color field..."
+                                isOptionDisabled={(option) => option.isDisabled === true}
+                                formatOptionLabel={(option) => (
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <Icon name={getFieldTypeIconName(option.fieldType as any)} />
+                                    <span>{option.label}</span>
+                                  </div>
+                                )}
                               />
                             </Field>
+
                             <Field
-                              label="URL"
-                              description="Use ${field_name} for data, ${__edgeId}, ${__source}, ${__target}, ${var-name} for dashboard variables"
+                              label="Threshold set"
+                              description="Optional: Use a named threshold set instead global panel thresholds"
                             >
-                              <Input
-                                value={link.url}
-                                placeholder="https://example.com?edge=${__edgeId}"
-                                onChange={(e) =>
-                                  updateDataLinkInTooltip(mapping.id, ruleIndex, linkIndex, {
-                                    url: e.currentTarget.value,
-                                  })
+                              <Combobox
+                                value={rule.thresholdId}
+                                options={
+                                  [
+                                    ...(context.options?.namedThresholds || []).map((t: any) => ({
+                                      label: t.name,
+                                      value: t.id,
+                                    })),
+                                  ] as any
                                 }
+                                onChange={(selection: any) =>
+                                  updateRule(mapping.id, ruleIndex, { thresholdId: selection?.value })
+                                }
+                                placeholder="Field config thresholds"
+                                isClearable
                               />
                             </Field>
-                            <InlineField label="Open in new tab" labelWidth={20}>
-                              <InlineSwitch
-                                value={link.openInNewTab ?? false}
-                                onChange={(e) =>
-                                  updateDataLinkInTooltip(mapping.id, ruleIndex, linkIndex, {
-                                    openInNewTab: e.currentTarget.checked,
-                                  })
-                                }
-                              />
-                            </InlineField>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                          </>
+                        ) : (
+                          <Field label="Static color">
+                            <ColorPicker
+                              color={rule.staticColor || '#FF0000'}
+                              onChange={(color) => debouncedUpdateRuleColor(mapping.id, ruleIndex, color)}
+                            />
+                          </Field>
+                        )}
+                      </>
+                    );
+                  })()}
 
-                    <Button
-                      icon="plus"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => addDataLinkToTooltip(mapping.id, ruleIndex)}
-                    >
-                      Add link
-                    </Button>
-                  </FieldSet>
-                </>
-              )}
-            </div>
-          ))}
+                {rule.kind === RuleKind.STROKE_WIDTH &&
+                  (() => {
+                    const sampleEdgeId = mapping.targetEdgeIds[0];
+                    const matchValue = mapping.matchPattern
+                      ? mapping.matchPattern.replace(/\$\{id\}/g, sampleEdgeId)
+                      : mapping.matchValue;
+
+                    const availableFields =
+                      mapping.matchFieldName && matchValue
+                        ? extractAllFieldsForMatchedRow(context.data, mapping.matchFieldName, matchValue)
+                        : numericFields;
+
+                    return (
+                      <>
+                        {mapping.matchFieldName ? (
+                          <>
+                            <Field label="Width field">
+                              <Select
+                                value={rule.widthFieldName}
+                                options={availableFields}
+                                onChange={(selection) => {
+                                  updateRule(mapping.id, ruleIndex, { widthFieldName: selection?.value });
+                                }}
+                                placeholder="Select width field..."
+                                isOptionDisabled={(option) => option.isDisabled === true}
+                                formatOptionLabel={(option) => (
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <Icon name={getFieldTypeIconName(option.fieldType as any)} />
+                                    <span>{option.label}</span>
+                                  </div>
+                                )}
+                              />
+                            </Field>
+                          </>
+                        ) : (
+                          <Field label="Static width (px)">
+                            <input
+                              type="number"
+                              value={widthInputValues[ruleKey] ?? String(rule.staticWidth ?? 1)}
+                              onChange={(e) => {
+                                const raw = e.target.value;
+                                setWidthInputValues((prev) => ({
+                                  ...prev,
+                                  [ruleKey]: raw,
+                                }));
+                              }}
+                              onBlur={(e) => {
+                                const raw = e.target.value;
+                                const parsed = parseFloat(raw);
+                                const committed = isNaN(parsed) ? 1 : parsed;
+                                updateRule(mapping.id, ruleIndex, { staticWidth: committed });
+                                setWidthInputValues((prev) => {
+                                  const next = { ...prev };
+                                  delete next[ruleKey];
+                                  return next;
+                                });
+                              }}
+                              min={0.1}
+                              max={5}
+                              step={0.5}
+                              style={{ width: '100%', padding: '6px' }}
+                            />
+                          </Field>
+                        )}
+                      </>
+                    );
+                  })()}
+
+                {rule.kind === RuleKind.LABEL && (
+                  <Field
+                    label="Label template"
+                    description="Use ${fieldName} to insert field values. Press Ctrl+Space to see available fields."
+                  >
+                    <CodeEditor
+                      value={rule.labelTemplate || ''}
+                      language="plaintext"
+                      height="60px"
+                      showLineNumbers={false}
+                      showMiniMap={false}
+                      monacoOptions={{
+                        quickSuggestions: true,
+                        suggestOnTriggerCharacters: true,
+                      }}
+                      onChange={(value) => updateRule(mapping.id, ruleIndex, { labelTemplate: value })}
+                      onEditorDidMount={(editor: MonacoEditor, monaco: Monaco) => {
+                        registerEdgeLabelCompletion(monaco, context.data, mapping);
+                      }}
+                    />
+                  </Field>
+                )}
+
+                {rule.kind === RuleKind.TOOLTIP && (
+                  <>
+                    <FieldSet label="Header">
+                      <InlineField label="Show timestamp" labelWidth={20}>
+                        <InlineSwitch
+                          value={rule.header?.showTimestamp ?? false}
+                          onChange={(e) => {
+                            updateRule(mapping.id, ruleIndex, {
+                              header: { ...rule.header, showTimestamp: e.currentTarget.checked },
+                            });
+                          }}
+                        />
+                      </InlineField>
+
+                      <InlineField label="Show edge ID" labelWidth={20}>
+                        <InlineSwitch
+                          value={rule.header?.showId ?? true}
+                          onChange={(e) => {
+                            updateRule(mapping.id, ruleIndex, {
+                              header: { ...rule.header, showId: e.currentTarget.checked },
+                            });
+                          }}
+                        />
+                      </InlineField>
+                    </FieldSet>
+
+                    <FieldSet label="Content">
+                      <Field
+                        label="Content template (optional)"
+                        description="Use ${field_name} for data fields, ${__edgeId} for edge ID, ${__source} / ${__target} for endpoints"
+                      >
+                        <TextArea
+                          value={rule.content?.templates?.[0] || ''}
+                          placeholder="Edge: ${__source} → ${__target}&#10;Traffic: ${traffic}&#10;Status: ${status}"
+                          rows={3}
+                          onChange={(e) => {
+                            updateRule(mapping.id, ruleIndex, {
+                              content: { templates: [e.currentTarget.value] },
+                            });
+                          }}
+                        />
+                      </Field>
+                    </FieldSet>
+
+                    <FieldSet label="Footer">
+                      {rule.footer?.links && rule.footer.links.length > 0 && (
+                        <div style={{ marginBottom: 12 }}>
+                          {rule.footer.links.map((link, linkIndex) => (
+                            <div
+                              key={linkIndex}
+                              style={{
+                                marginBottom: 8,
+                                padding: 8,
+                                background: 'rgba(80, 80, 80, 0.1)',
+                                borderRadius: 4,
+                              }}
+                            >
+                              <div className={headerStyle}>
+                                <strong>Link {linkIndex + 1}</strong>
+                                <IconButton
+                                  name="trash-alt"
+                                  onClick={() => removeDataLinkFromTooltip(mapping.id, ruleIndex, linkIndex)}
+                                  tooltip="Remove link"
+                                  size="sm"
+                                />
+                              </div>
+                              <Field label="Title">
+                                <Input
+                                  value={link.title}
+                                  placeholder="Open Dashboard"
+                                  onChange={(e) =>
+                                    updateDataLinkInTooltip(mapping.id, ruleIndex, linkIndex, {
+                                      title: e.currentTarget.value,
+                                    })
+                                  }
+                                />
+                              </Field>
+                              <Field
+                                label="URL"
+                                description="Use ${field_name} for data, ${__edgeId}, ${__source}, ${__target}, ${var-name} for dashboard variables"
+                              >
+                                <Input
+                                  value={link.url}
+                                  placeholder="https://example.com?edge=${__edgeId}"
+                                  onChange={(e) =>
+                                    updateDataLinkInTooltip(mapping.id, ruleIndex, linkIndex, {
+                                      url: e.currentTarget.value,
+                                    })
+                                  }
+                                />
+                              </Field>
+                              <InlineField label="Open in new tab" labelWidth={20}>
+                                <InlineSwitch
+                                  value={link.openInNewTab ?? false}
+                                  onChange={(e) =>
+                                    updateDataLinkInTooltip(mapping.id, ruleIndex, linkIndex, {
+                                      openInNewTab: e.currentTarget.checked,
+                                    })
+                                  }
+                                />
+                              </InlineField>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <Button
+                        icon="plus"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => addDataLinkToTooltip(mapping.id, ruleIndex)}
+                      >
+                        Add link
+                      </Button>
+                    </FieldSet>
+                  </>
+                )}
+              </div>
+            );
+          })}
 
           <Box marginTop={1.5}>
             {(() => {

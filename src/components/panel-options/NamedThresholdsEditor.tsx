@@ -145,48 +145,51 @@ export const NamedThresholdsEditor: React.FC<Props> = ({ value, onChange }) => {
           collapsible={true}
         >
           <div className={stepContainerStyle}>
-            {threshold.steps.map((step, stepIndex) => (
-              <div key={stepIndex} className={stepRowStyle}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
-                  <Input
-                    type="number"
-                    data-testid={`threshold-${threshold.id}-step-${stepIndex}-value`}
-                    value={stepInputValues[`${threshold.id}-${stepIndex}`] ?? String(step.value)}
-                    onChange={(e) => {
-                      const raw = e.currentTarget.value;
-                      setStepInputValues((prev) => ({
-                        ...prev,
-                        [`${threshold.id}-${stepIndex}`]: raw,
-                      }));
-                    }}
-                    onBlur={(e) => {
-                      const raw = e.currentTarget.value;
-                      const parsed = parseFloat(raw);
-                      const committed = isNaN(parsed) ? 0 : parsed;
-                      updateStep(threshold.id, stepIndex, { value: committed });
-                      setStepInputValues((prev) => {
-                        const next = { ...prev };
-                        delete next[`${threshold.id}-${stepIndex}`];
-                        return next;
-                      });
-                    }}
-                  />
-                  <ColorPicker
-                    data-testid={`threshold-${threshold.id}-step-${stepIndex}-color`}
-                    color={step.color}
-                    onChange={(color) => debouncedUpdateStepColor(threshold.id, stepIndex, color)}
-                  />
-                  {threshold.steps.length > 1 && (
-                    <IconButton
-                      name="trash-alt"
-                      onClick={() => removeStep(threshold.id, stepIndex)}
-                      tooltip="Remove step"
-                      size="sm"
+            {threshold.steps.map((step, stepIndex) => {
+              const stepKey = `${threshold.id}-${stepIndex}`;
+              return (
+                <div key={stepIndex} className={stepRowStyle}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
+                    <Input
+                      type="number"
+                      data-testid={`threshold-${threshold.id}-step-${stepIndex}-value`}
+                      value={stepInputValues[stepKey] ?? String(step.value)}
+                      onChange={(e) => {
+                        const raw = e.currentTarget.value;
+                        setStepInputValues((prev) => ({
+                          ...prev,
+                          [stepKey]: raw,
+                        }));
+                      }}
+                      onBlur={(e) => {
+                        const raw = e.currentTarget.value;
+                        const parsed = parseFloat(raw);
+                        const committed = isNaN(parsed) ? 0 : parsed;
+                        updateStep(threshold.id, stepIndex, { value: committed });
+                        setStepInputValues((prev) => {
+                          const next = { ...prev };
+                          delete next[stepKey];
+                          return next;
+                        });
+                      }}
                     />
-                  )}
+                    <ColorPicker
+                      data-testid={`threshold-${threshold.id}-step-${stepIndex}-color`}
+                      color={step.color}
+                      onChange={(color) => debouncedUpdateStepColor(threshold.id, stepIndex, color)}
+                    />
+                    {threshold.steps.length > 1 && (
+                      <IconButton
+                        name="trash-alt"
+                        onClick={() => removeStep(threshold.id, stepIndex)}
+                        tooltip="Remove step"
+                        size="sm"
+                      />
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             <Button
               icon="plus"
               onClick={() => addStep(threshold.id)}
