@@ -143,7 +143,8 @@ test.describe('Create Diagram From Scratch', () => {
     });
 
     await test.step('Change layout to Left to Right', async () => {
-      const layoutDirectionInput = page.locator('#grafana-graphviz-panel-rankDirection');
+      const layoutDirectionInput = page.getByRole('combobox', { name: /Layout direction/i });
+      await layoutDirectionInput.scrollIntoViewIfNeeded();
       await layoutDirectionInput.click();
       await page.getByText('Left to Right', { exact: true }).click();
       await page.waitForTimeout(1000);
