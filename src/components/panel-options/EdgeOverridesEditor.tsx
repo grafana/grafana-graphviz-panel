@@ -42,6 +42,7 @@ interface Props extends StandardEditorProps<EdgeOverride[]> {}
 export const EdgeOverridesEditor: React.FC<Props> = ({ value, onChange, context }) => {
   const mappings = useMemo(() => value || [], [value]);
   const [detectionResults, setDetectionResults] = useState<Map<string, MatchDetectionResult | undefined>>(new Map());
+  const [widthInputValues, setWidthInputValues] = useState<Record<string, string>>({});
 
   const addMapping = () => {
     const newMapping: EdgeOverride = {
@@ -695,10 +696,25 @@ export const EdgeOverridesEditor: React.FC<Props> = ({ value, onChange, context 
                         <Field label="Static width (px)">
                           <input
                             type="number"
-                            value={rule.staticWidth || 1}
-                            onChange={(e) =>
-                              updateRule(mapping.id, ruleIndex, { staticWidth: parseFloat(e.target.value) || 1 })
-                            }
+                            value={widthInputValues[`${mapping.id}-${ruleIndex}`] ?? String(rule.staticWidth ?? 1)}
+                            onChange={(e) => {
+                              const raw = e.target.value;
+                              setWidthInputValues((prev) => ({
+                                ...prev,
+                                [`${mapping.id}-${ruleIndex}`]: raw,
+                              }));
+                            }}
+                            onBlur={(e) => {
+                              const raw = e.target.value;
+                              const parsed = parseFloat(raw);
+                              const committed = isNaN(parsed) ? 1 : parsed;
+                              updateRule(mapping.id, ruleIndex, { staticWidth: committed });
+                              setWidthInputValues((prev) => {
+                                const next = { ...prev };
+                                delete next[`${mapping.id}-${ruleIndex}`];
+                                return next;
+                              });
+                            }}
                             min={0.1}
                             max={5}
                             step={0.5}

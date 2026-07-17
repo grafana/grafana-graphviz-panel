@@ -11,6 +11,7 @@ export const NamedThresholdsEditor: React.FC<Props> = ({ value, onChange }) => {
   const thresholds = value || [];
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
   const [editingNameId, setEditingNameId] = useState<string | null>(null);
+  const [stepInputValues, setStepInputValues] = useState<Record<string, string>>({});
 
   const addThreshold = () => {
     const newThreshold: NamedThreshold = {
@@ -150,10 +151,25 @@ export const NamedThresholdsEditor: React.FC<Props> = ({ value, onChange }) => {
                   <Input
                     type="number"
                     data-testid={`threshold-${threshold.id}-step-${stepIndex}-value`}
-                    value={step.value}
-                    onChange={(e) =>
-                      updateStep(threshold.id, stepIndex, { value: parseFloat(e.currentTarget.value) || 0 })
-                    }
+                    value={stepInputValues[`${threshold.id}-${stepIndex}`] ?? String(step.value)}
+                    onChange={(e) => {
+                      const raw = e.currentTarget.value;
+                      setStepInputValues((prev) => ({
+                        ...prev,
+                        [`${threshold.id}-${stepIndex}`]: raw,
+                      }));
+                    }}
+                    onBlur={(e) => {
+                      const raw = e.currentTarget.value;
+                      const parsed = parseFloat(raw);
+                      const committed = isNaN(parsed) ? 0 : parsed;
+                      updateStep(threshold.id, stepIndex, { value: committed });
+                      setStepInputValues((prev) => {
+                        const next = { ...prev };
+                        delete next[`${threshold.id}-${stepIndex}`];
+                        return next;
+                      });
+                    }}
                   />
                   <ColorPicker
                     data-testid={`threshold-${threshold.id}-step-${stepIndex}-color`}

@@ -306,6 +306,7 @@ describe('NamedThresholdsEditor', () => {
 
       const inputs = screen.getAllByRole('spinbutton');
       fireEvent.change(inputs[0], { target: { value: '10' } });
+      fireEvent.blur(inputs[0], { target: { value: '10' } });
 
       expect(mockOnChange).toHaveBeenCalledWith([
         expect.objectContaining({
@@ -330,6 +331,7 @@ describe('NamedThresholdsEditor', () => {
 
       const input = screen.getByRole('spinbutton');
       fireEvent.change(input, { target: { value: '' } });
+      fireEvent.blur(input, { target: { value: '' } });
 
       expect(mockOnChange).toHaveBeenCalledWith([
         expect.objectContaining({
