@@ -346,6 +346,40 @@
           "rawFrameContent": "[\n  {\n    \"columns\": [\n      {\n        \"text\": \"time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"dot_source\",\n        \"type\": \"string\"\n      }\n    ],\n    \"rows\": [\n      [\n        1609459200000,\n        \"digraph QueryMode { subgraph cluster_dashboard { label=\\\"Dashboard\\\"; Refresh [label=\\\"Refresh DateTime\\\"]; subgraph cluster_panel { label=\\\"Panel\\\"; Extract [label=\\\"extractDotFromQuery()\\\"]; Render [label=\\\"Render Diagram\\\"]; } } subgraph cluster_datasource { label=\\\"Datasource\\\"; Database [shape=cylinder]; Query [label=\\\"Execute Query\\\"]; Field [label=\\\"Return String Field\\\"]; } Database -> Query; Query -> Field; Field -> Extract; Extract -> Render; Render -> Refresh; Refresh -> Query; }\"\n      ]\n    ]\n  }\n]"
         }
       ]
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 22
+      },
+      "id": 10,
+      "title": "Code Mode - Zoom And Pan Enabled",
+      "type": "grafana-graphviz-panel",
+      "options": {
+        "inputMode": "code",
+        "dotDiagram": "digraph ZoomPan { A [label=\"Service A\"]; B [label=\"Service B\"]; C [label=\"Service C\"]; A -> B; B -> C; A -> C; }",
+        "layoutEngine": "dot",
+        "rankDirection": "LR",
+        "enableZoomPan": true,
+        "edgeOverrides": [],
+        "nodeOverrides": [],
+        "namedThresholds": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource"
+          },
+          "refId": "A",
+          "scenarioId": "csv_content",
+          "csvContent": "time,value\n1,1"
+        }
+      ]
     }
   ],
   "schemaVersion": 42,

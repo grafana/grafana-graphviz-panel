@@ -152,6 +152,14 @@ export const plugin = new PanelPlugin<PanelOptions>(GraphvizPanel).setPanelOptio
         ],
       },
     })
+    .addBooleanSwitch({
+      path: 'enableZoomPan',
+      name: 'Zoom & pan',
+      description:
+        'Zoom the rendered diagram with the mouse wheel and pan by dragging. Double-click to reset the view. Disabled in builder mode.',
+      defaultValue: false,
+      category: ['Diagram'],
+    })
     .addCustomEditor({
       id: 'assistantHelp',
       path: '_assistantHelp',

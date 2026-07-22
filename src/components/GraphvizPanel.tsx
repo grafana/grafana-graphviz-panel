@@ -4,7 +4,7 @@ import { PanelOptions, InputMode } from 'types';
 import { css, cx } from '@emotion/css';
 import { useStyles2, useTheme2 } from '@grafana/ui';
 import { locationService } from '@grafana/runtime';
-import { useGraphvizRenderPipeline, useNodeEdgeHover } from '../hooks';
+import { useGraphvizRenderPipeline, useNodeEdgeHover, useZoomPan } from '../hooks';
 import { extractDotFromQuery } from '../integrations/grafanaData';
 import { ErrorDisplay, EmptyDiagramDisplay } from './states';
 import { BuilderModeOverlay } from './BuilderModeOverlay';
@@ -93,6 +93,8 @@ export const GraphvizPanel: React.FC<GraphvizPanelProps> = ({
   const [tooltipHovered, setTooltipHovered] = useState(false);
 
   const { hoverState, clearPinned } = useNodeEdgeHover(svgRef, true, svgRendered);
+
+  useZoomPan(svgRef, (options.enableZoomPan ?? false) && !isBuilderMode, svgRendered);
 
   const tooltipData = useMemo(() => {
     if (!hoverState.id) {

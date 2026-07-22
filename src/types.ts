@@ -151,4 +151,5 @@ export interface PanelOptions {
   edgeOverrides: EdgeOverride[];
   nodeOverrides: NodeOverride[];
   builderModeActions?: BuilderModeActions;
+  enableZoomPan?: boolean;
 }
