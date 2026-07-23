@@ -276,6 +276,20 @@ describe('builderMode pure functions', () => {
       const boxOption = options.find((opt: any) => opt.value === 'box');
       expect(boxOption?.label).toBe('Box');
     });
+
+    it('should use distinct icons instead of the temporary rocket placeholder', () => {
+      const { getShapeOptions } = require('./builderMode');
+      const options = getShapeOptions();
+
+      expect(options.find((opt: any) => opt.value === 'diamond')?.icon).toBe('sitemap');
+      expect(options.find((opt: any) => opt.value === 'triangle')?.icon).toBe('exclamation-triangle');
+      expect(options.find((opt: any) => opt.value === 'pentagon')?.icon).toBe('shield');
+      expect(options.find((opt: any) => opt.value === 'hexagon')?.icon).toBe('cube');
+      expect(options.find((opt: any) => opt.value === 'rectangle')?.icon).toBe('window');
+      expect(options.find((opt: any) => opt.value === 'octagon')?.icon).toBe('stopwatch');
+      expect(options.find((opt: any) => opt.value === 'parallelogram')?.icon).toBe('table');
+      expect(options.find((opt: any) => opt.value === 'trapezium')?.icon).toBe('filter');
+    });
   });
 
   describe('parseNodesFromDot', () => {
