@@ -7,13 +7,16 @@ interface GraphContainer {
   subgraphs?: Iterable<GraphContainer>;
 }
 
-function hasGraphContent(graph: GraphContainer): boolean {
-  if (!Array.from(graph.nodes).length && !Array.from(graph.edges).length) {
-    return Array.from(graph.subgraphs ?? []).some(hasGraphContent);
-  }
-
-  return true;
-}
+﻿function hasGraphContent(graph: GraphContainer): boolean {
+﻿  const hasNodes = Array.from(graph.nodes).length > 0;
+﻿  const hasEdges = Array.from(graph.edges).length > 0;
+﻿  if (hasNodes || hasEdges) {
+﻿    return true;
+﻿  }
+﻿  
+﻿  return Array.from(graph.subgraphs ?? [])
+﻿    .some(hasGraphContent);
+﻿  }
 
 export function isEmptyDiagram(dotDiagram: string): boolean {
   if (!dotDiagram || dotDiagram.trim() === '') {

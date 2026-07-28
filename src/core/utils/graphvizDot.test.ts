@@ -23,6 +23,11 @@ describe('graphvizDot', () => {
         input: 'digraph G { subgraph cluster_empty {} }',
         expected: true,
       },
+      {
+        name: 'should return false for graph with edges in a top-level subgraph',
+        input: 'digraph G { subgraph cluster_A { A -> B; } }',
+        expected: false,
+      },
       { name: 'should return false for invalid DOT syntax', input: 'not valid dot', expected: false },
     ];
 
