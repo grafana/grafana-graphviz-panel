@@ -2,6 +2,25 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { NodeEditModal } from './NodeEditModal';
 
+jest.mock('@grafana/ui', () => ({
+  ...jest.requireActual('@grafana/ui'),
+  Combobox: ({
+    onChange,
+    value,
+    'data-testid': testId,
+  }: {
+    onChange: (option: { value: string } | null) => void;
+    value: string | null;
+    'data-testid': string;
+  }) => (
+    <input
+      data-testid={testId}
+      value={value ?? ''}
+      onChange={(e) => onChange(e.target.value ? { value: e.target.value } : null)}
+    />
+  ),
+}));
+
 describe('NodeEditModal', () => {
   const defaultProps = {
     isOpen: true,
@@ -86,6 +105,49 @@ describe('NodeEditModal', () => {
     fireEvent.click(screen.getByRole('button', { name: /update node/i }));
 
     expect(defaultProps.onSubmit).toHaveBeenCalledWith('', 'box');
+    expect(defaultProps.onDismiss).toHaveBeenCalled();
+  });
+
+  it('should show error for invalid shape name', () => {
+    render(<NodeEditModal {...defaultProps} />);
+
+    const shapeInput = screen.getByTestId('node-edit-shape-select');
+    fireEvent.change(shapeInput, { target: { value: 'notashape' } });
+
+    expect(screen.getByText(/'notashape' is not a valid Graphviz shape/i)).toBeInTheDocument();
+  });
+
+  it('should block submit when shape is invalid', () => {
+    render(<NodeEditModal {...defaultProps} />);
+
+    const shapeInput = screen.getByTestId('node-edit-shape-select');
+    fireEvent.change(shapeInput, { target: { value: 'notashape' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /update node/i }));
+
+    expect(defaultProps.onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('should clear shape error when valid shape is entered', () => {
+    render(<NodeEditModal {...defaultProps} />);
+
+    const shapeInput = screen.getByTestId('node-edit-shape-select');
+    fireEvent.change(shapeInput, { target: { value: 'notashape' } });
+    expect(screen.getByText(/'notashape' is not a valid Graphviz shape/i)).toBeInTheDocument();
+
+    fireEvent.change(shapeInput, { target: { value: 'circle' } });
+    expect(screen.queryByText(/is not a valid Graphviz shape/i)).not.toBeInTheDocument();
+  });
+
+  it('should reset shape error on dismiss', () => {
+    render(<NodeEditModal {...defaultProps} />);
+
+    const shapeInput = screen.getByTestId('node-edit-shape-select');
+    fireEvent.change(shapeInput, { target: { value: 'notashape' } });
+    expect(screen.getByText(/'notashape' is not a valid Graphviz shape/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
+
     expect(defaultProps.onDismiss).toHaveBeenCalled();
   });
 });
