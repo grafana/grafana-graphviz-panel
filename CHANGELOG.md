@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.0.7 [2026-07-30]
+
+### Features
+
+- Upgrade `@grafana/ui` to 13.x, enabling use of the `Combobox` component.
+- Replace shape `Select` with `Combobox` in node builder modals, supporting freeform input of any valid Graphviz shape name with validation.
+- Expand node shape picker to include all polygon-based Graphviz shapes with human-readable labels.
+
+### Bug Fixes
+
+- Fix `plaintext`, `none`, and `underline` node shapes rendering with an unwanted filled box due to graph-level `style=filled` default being applied.
+- Fix `doublecircle`, `doubleoctagon`, and `tripleoctagon` shapes rendering as single circles — outer concentric ellipses are now correctly left unfilled.
+- Fix `lightgrey` (Graphviz default fill) not being recognised as a default color during SVG theming.
+
 ## 0.0.6 [2026-07-17]
 
 ### Bug Fixes
