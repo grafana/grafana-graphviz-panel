@@ -8,6 +8,26 @@ describe('graphvizDot', () => {
       { name: 'should return true for graph with no nodes or edges', input: 'digraph G {}', expected: true },
       { name: 'should return false for graph with nodes', input: 'digraph G { A; }', expected: false },
       { name: 'should return false for graph with edges', input: 'digraph G { A -> B; }', expected: false },
+      {
+        name: 'should return false for graph with nodes in a top-level subgraph',
+        input: 'digraph G { subgraph cluster_services { api; worker; } }',
+        expected: false,
+      },
+      {
+        name: 'should return false for graph with nodes in nested subgraphs',
+        input: 'digraph G { subgraph cluster_platform { subgraph cluster_services { api; } } }',
+        expected: false,
+      },
+      {
+        name: 'should return true for graph with only empty subgraphs',
+        input: 'digraph G { subgraph cluster_empty {} }',
+        expected: true,
+      },
+      {
+        name: 'should return false for graph with edges in a top-level subgraph',
+        input: 'digraph G { subgraph cluster_A { A -> B; } }',
+        expected: false,
+      },
       { name: 'should return false for invalid DOT syntax', input: 'not valid dot', expected: false },
     ];
 
