@@ -199,7 +199,7 @@ The panel supports all Graphviz DOT features including:
 - **[HTML-like labels](https://graphviz.org/doc/info/shapes.html#html)** - Rich text formatting with tables
 - **[Record-based nodes](https://graphviz.org/doc/info/shapes.html#record)** - Structured node layouts with ports
 - **[Subgraphs and clusters](https://graphviz.org/doc/info/lang.html#subgraphs-and-clusters)** - Group related nodes visually
-- **[Node shapes](https://graphviz.org/doc/info/shapes.html)** - All shapes are supported in code mode. The builder mode shape picker omits `polygon`, `record`, and `Mrecord`, and collapses aliases (`oval`, `none`, `plain`, `rect`, `rectangle`) to their canonical forms.
+- **[Node shapes](https://graphviz.org/doc/info/shapes.html)** - All shapes are supported. The builder mode shape picker includes `polygon`, `record`, and `Mrecord` with a note that they require additional configuration, and lists aliases (`oval`, `none`, `plain`, `rect`, `rectangle`) with descriptions identifying their canonical equivalents.
 
 ### Generate Diagrams-as-Code from Infrastructure-as-Code
 

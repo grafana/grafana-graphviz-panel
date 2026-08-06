@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Modal, Input, Button, Field, Combobox } from '@grafana/ui';
-import { getShapeOptions, isValidShapeName, toOptional } from '../../core/builderMode';
+import { getShapeOptions, toOptional } from '../../core/builderMode';
 import { useModalForm } from '../../hooks/useModalForm';
 
 export interface NodeFormModalProps {
@@ -17,19 +17,7 @@ export const NodeFormModal: React.FC<NodeFormModalProps> = ({ isOpen, existingNo
     nodeShape: undefined as string | undefined,
   });
 
-  const [shapeError, setShapeError] = useState<string | undefined>();
-
   const shapeOptions = getShapeOptions();
-
-  const handleShapeChange = (val: { value: string } | null) => {
-    const shape = val?.value;
-    if (shape && !isValidShapeName(shape)) {
-      setShapeError(`'${shape}' is not a valid Graphviz shape`);
-    } else {
-      setShapeError(undefined);
-    }
-    handleChange('nodeShape')(shape);
-  };
 
   const handleSubmit = () => {
     if (!values.nodeId.trim()) {
@@ -42,16 +30,11 @@ export const NodeFormModal: React.FC<NodeFormModalProps> = ({ isOpen, existingNo
       return;
     }
 
-    if (shapeError) {
-      return;
-    }
-
     onSubmit(values.nodeId, toOptional(values.nodeLabel), values.nodeShape);
     resetForm();
   };
 
   const handleDismiss = () => {
-    setShapeError(undefined);
     resetForm();
     onDismiss();
   };
@@ -80,19 +63,13 @@ export const NodeFormModal: React.FC<NodeFormModalProps> = ({ isOpen, existingNo
           onChange={(e) => handleChange('nodeLabel')(e.currentTarget.value)}
         />
       </Field>
-      <Field
-        label="Shape (optional)"
-        description="Shape for the node. By default, it'll be rendered as a box"
-        invalid={!!shapeError}
-        error={shapeError}
-      >
+      <Field label="Shape (optional)" description="Shape for the node. By default, it'll be rendered as a box">
         <Combobox
           data-testid="node-form-shape-select"
           options={shapeOptions}
-          placeholder="Select or type a shape"
+          placeholder="Select a shape"
           value={values.nodeShape ?? null}
-          onChange={handleShapeChange}
-          createCustomValue
+          onChange={(val) => handleChange('nodeShape')(val?.value)}
           isClearable
         />
       </Field>

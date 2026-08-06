@@ -3,15 +3,15 @@ import { findNodeById } from './utils/graphvizAst';
 
 export const ALL_GRAPHVIZ_SHAPES = new Set([
   'box',
-  // 'polygon', -- requires additional attributes (sides, skew, distortion) not currently supported
+  'polygon',
   'ellipse',
-  // 'oval', -- NOTE: alias of ellipse
+  'oval',
   'circle',
   'point',
   'egg',
   'triangle',
   'plaintext',
-  // 'plain', -- NOTE: alias of plaintext (enforces zero margin)
+  'plain',
   'diamond',
   'trapezium',
   'parallelogram',
@@ -29,11 +29,11 @@ export const ALL_GRAPHVIZ_SHAPES = new Set([
   'Mdiamond',
   'Msquare',
   'Mcircle',
-  // 'rect', -- NOTE: alias of box
-  // 'rectangle', -- NOTE: alias of box
+  'rect',
+  'rectangle',
   'square',
   'star',
-  // 'none', -- NOTE: alias of plaintext
+  'none',
   'underline',
   'cylinder',
   'note',
@@ -61,11 +61,9 @@ export const ALL_GRAPHVIZ_SHAPES = new Set([
   'rarrow',
   'larrow',
   'lpromoter',
-  // 'record',  -- requires special label syntax not currently supported
-  // 'Mrecord', -- requires special label syntax not currently supported
+  'record',
+  'Mrecord',
 ]);
-
-export const isValidShapeName = (name: string): boolean => ALL_GRAPHVIZ_SHAPES.has(name);
 
 const SHAPE_LABELS: Record<string, string> = {
   box: 'Box',
@@ -131,10 +129,22 @@ const SHAPE_LABELS: Record<string, string> = {
   Mrecord: 'Record (rounded)',
 };
 
+const EXTRA_CONFIG_SHAPES = new Set(['polygon', 'record', 'Mrecord']);
+const ALIAS_DESCRIPTIONS: Record<string, string> = {
+  oval: 'Alias of ellipse',
+  plain: 'Alias of plaintext (enforces zero margin)',
+  none: 'Alias of plaintext',
+  rect: 'Alias of box',
+  rectangle: 'Alias of box',
+};
+
 export const getShapeOptions = () =>
   Array.from(ALL_GRAPHVIZ_SHAPES).map((shape) => ({
     label: SHAPE_LABELS[shape] ?? shape.charAt(0).toUpperCase() + shape.slice(1),
     value: shape,
+    description:
+      ALIAS_DESCRIPTIONS[shape] ??
+      (EXTRA_CONFIG_SHAPES.has(shape) ? 'Requires additional attributes — best configured in code mode' : undefined),
   }));
 
 export const formatEdgeId = (source: string, target: string, sourcePort?: string, targetPort?: string): string => {

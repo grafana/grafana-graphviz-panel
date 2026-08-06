@@ -108,46 +108,14 @@ describe('NodeEditModal', () => {
     expect(defaultProps.onDismiss).toHaveBeenCalled();
   });
 
-  it('should show error for invalid shape name', () => {
+  it('should submit with updated shape', () => {
     render(<NodeEditModal {...defaultProps} />);
 
     const shapeInput = screen.getByTestId('node-edit-shape-select');
-    fireEvent.change(shapeInput, { target: { value: 'notashape' } });
-
-    expect(screen.getByText(/'notashape' is not a valid Graphviz shape/i)).toBeInTheDocument();
-  });
-
-  it('should block submit when shape is invalid', () => {
-    render(<NodeEditModal {...defaultProps} />);
-
-    const shapeInput = screen.getByTestId('node-edit-shape-select');
-    fireEvent.change(shapeInput, { target: { value: 'notashape' } });
+    fireEvent.change(shapeInput, { target: { value: 'circle' } });
 
     fireEvent.click(screen.getByRole('button', { name: /update node/i }));
 
-    expect(defaultProps.onSubmit).not.toHaveBeenCalled();
-  });
-
-  it('should clear shape error when valid shape is entered', () => {
-    render(<NodeEditModal {...defaultProps} />);
-
-    const shapeInput = screen.getByTestId('node-edit-shape-select');
-    fireEvent.change(shapeInput, { target: { value: 'notashape' } });
-    expect(screen.getByText(/'notashape' is not a valid Graphviz shape/i)).toBeInTheDocument();
-
-    fireEvent.change(shapeInput, { target: { value: 'circle' } });
-    expect(screen.queryByText(/is not a valid Graphviz shape/i)).not.toBeInTheDocument();
-  });
-
-  it('should reset shape error on dismiss', () => {
-    render(<NodeEditModal {...defaultProps} />);
-
-    const shapeInput = screen.getByTestId('node-edit-shape-select');
-    fireEvent.change(shapeInput, { target: { value: 'notashape' } });
-    expect(screen.getByText(/'notashape' is not a valid Graphviz shape/i)).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
-
-    expect(defaultProps.onDismiss).toHaveBeenCalled();
+    expect(defaultProps.onSubmit).toHaveBeenCalledWith('Server 1', 'circle');
   });
 });

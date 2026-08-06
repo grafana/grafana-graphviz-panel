@@ -118,41 +118,7 @@ describe('NodeFormModal', () => {
     expect(defaultProps.onSubmit).not.toHaveBeenCalled();
   });
 
-  it('should show error for invalid shape name', () => {
-    render(<NodeFormModal {...defaultProps} />);
-
-    const shapeInput = screen.getByTestId('node-form-shape-select');
-    fireEvent.change(shapeInput, { target: { value: 'notashape' } });
-
-    expect(screen.getByText(/'notashape' is not a valid Graphviz shape/i)).toBeInTheDocument();
-  });
-
-  it('should block submit when shape is invalid', () => {
-    render(<NodeFormModal {...defaultProps} />);
-
-    const idInput = screen.getByTestId('node-form-id-input');
-    fireEvent.change(idInput, { target: { value: 'server3' } });
-
-    const shapeInput = screen.getByTestId('node-form-shape-select');
-    fireEvent.change(shapeInput, { target: { value: 'notashape' } });
-
-    fireEvent.click(screen.getByRole('button', { name: /add node/i }));
-
-    expect(defaultProps.onSubmit).not.toHaveBeenCalled();
-  });
-
-  it('should clear shape error when valid shape is entered', () => {
-    render(<NodeFormModal {...defaultProps} />);
-
-    const shapeInput = screen.getByTestId('node-form-shape-select');
-    fireEvent.change(shapeInput, { target: { value: 'notashape' } });
-    expect(screen.getByText(/'notashape' is not a valid Graphviz shape/i)).toBeInTheDocument();
-
-    fireEvent.change(shapeInput, { target: { value: 'circle' } });
-    expect(screen.queryByText(/is not a valid Graphviz shape/i)).not.toBeInTheDocument();
-  });
-
-  it('should submit with valid custom shape', () => {
+  it('should submit with selected shape', () => {
     render(<NodeFormModal {...defaultProps} />);
 
     const idInput = screen.getByTestId('node-form-id-input');
