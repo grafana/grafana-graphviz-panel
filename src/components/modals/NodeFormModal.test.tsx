@@ -2,6 +2,25 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { NodeFormModal } from './NodeFormModal';
 
+jest.mock('@grafana/ui', () => ({
+  ...jest.requireActual('@grafana/ui'),
+  Combobox: ({
+    onChange,
+    value,
+    'data-testid': testId,
+  }: {
+    onChange: (option: { value: string } | null) => void;
+    value: string | null;
+    'data-testid': string;
+  }) => (
+    <input
+      data-testid={testId}
+      value={value ?? ''}
+      onChange={(e) => onChange(e.target.value ? { value: e.target.value } : null)}
+    />
+  ),
+}));
+
 describe('NodeFormModal', () => {
   const defaultProps = {
     isOpen: true,
@@ -97,5 +116,19 @@ describe('NodeFormModal', () => {
 
     expect(screen.getByText(/Node ID is required/i)).toBeInTheDocument();
     expect(defaultProps.onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('should submit with selected shape', () => {
+    render(<NodeFormModal {...defaultProps} />);
+
+    const idInput = screen.getByTestId('node-form-id-input');
+    fireEvent.change(idInput, { target: { value: 'server3' } });
+
+    const shapeInput = screen.getByTestId('node-form-shape-select');
+    fireEvent.change(shapeInput, { target: { value: 'octagon' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /add node/i }));
+
+    expect(defaultProps.onSubmit).toHaveBeenCalledWith('server3', undefined, 'octagon');
   });
 });

@@ -147,6 +147,102 @@ describe('theming', () => {
       });
     });
 
+    describe('ellipse node theming', () => {
+      it('should theme a single ellipse node fill and stroke', () => {
+        const svg = createSvgElement(`
+          <g class="node"><ellipse fill="white" stroke="black"/></g>
+        `);
+
+        applySvgTheming(svg, darkTheme);
+
+        const ellipse = svg.querySelector('g.node ellipse');
+        expect(ellipse?.getAttribute('fill')).toBe(darkTheme.colors.background.secondary);
+        expect(ellipse?.getAttribute('stroke')).toBe(darkTheme.colors.text.secondary);
+      });
+
+      it('should only fill the innermost ellipse for multi-ellipse nodes (doublecircle)', () => {
+        const svg = createSvgElement(`
+          <g class="node">
+            <ellipse fill="none" stroke="black" rx="18" ry="18"/>
+            <ellipse fill="none" stroke="black" rx="22" ry="22"/>
+          </g>
+        `);
+
+        applySvgTheming(svg, darkTheme);
+
+        const ellipses = svg.querySelectorAll('g.node ellipse');
+        expect(ellipses[0].getAttribute('fill')).toBe(darkTheme.colors.background.secondary);
+        expect(ellipses[1].getAttribute('fill')).toBe('none');
+      });
+
+      it('should theme stroke on all ellipses in a multi-ellipse node', () => {
+        const svg = createSvgElement(`
+          <g class="node">
+            <ellipse fill="none" stroke="black" rx="18" ry="18"/>
+            <ellipse fill="none" stroke="black" rx="22" ry="22"/>
+          </g>
+        `);
+
+        applySvgTheming(svg, darkTheme);
+
+        const ellipses = svg.querySelectorAll('g.node ellipse');
+        expect(ellipses[0].getAttribute('stroke')).toBe(darkTheme.colors.text.secondary);
+        expect(ellipses[1].getAttribute('stroke')).toBe(darkTheme.colors.text.secondary);
+      });
+    });
+
+    describe('node polyline and path theming', () => {
+      it('should theme stroke on g.node polyline', () => {
+        const svg = createSvgElement(`
+          <g class="node"><polyline stroke="black" fill="none"/></g>
+        `);
+
+        applySvgTheming(svg, darkTheme);
+
+        expect(svg.querySelector('g.node polyline')?.getAttribute('stroke')).toBe(darkTheme.colors.text.secondary);
+      });
+
+      it('should preserve custom stroke on g.node polyline', () => {
+        const svg = createSvgElement(`
+          <g class="node"><polyline stroke="#FF0000" fill="none"/></g>
+        `);
+
+        applySvgTheming(svg, darkTheme);
+
+        expect(svg.querySelector('g.node polyline')?.getAttribute('stroke')).toBe('#FF0000');
+      });
+
+      it('should theme fill on g.node path with default fill', () => {
+        const svg = createSvgElement(`
+          <g class="node"><path stroke="black" fill="white"/></g>
+        `);
+
+        applySvgTheming(svg, darkTheme);
+
+        expect(svg.querySelector('g.node path')?.getAttribute('fill')).toBe(darkTheme.colors.background.secondary);
+      });
+
+      it('should preserve fill="none" on g.node path', () => {
+        const svg = createSvgElement(`
+          <g class="node"><path stroke="black" fill="none"/></g>
+        `);
+
+        applySvgTheming(svg, darkTheme);
+
+        expect(svg.querySelector('g.node path')?.getAttribute('fill')).toBe('none');
+      });
+
+      it('should preserve custom fill on g.node path', () => {
+        const svg = createSvgElement(`
+          <g class="node"><path stroke="black" fill="#aabbcc"/></g>
+        `);
+
+        applySvgTheming(svg, darkTheme);
+
+        expect(svg.querySelector('g.node path')?.getAttribute('fill')).toBe('#aabbcc');
+      });
+    });
+
     describe('native SVG tooltips', () => {
       it('should remove all title elements to prevent native browser tooltips', () => {
         const svg = createSvgElement(`

@@ -39,9 +39,8 @@ export async function createNode(
   }
 
   if (options.shape) {
-    const shapeSelect = page.getByTestId('node-form-shape-select');
-    await shapeSelect.click();
-    await page.waitForTimeout(TIMING.TOOL_ACTIVATE);
+    const shapeInput = page.getByTestId('node-form-shape-select');
+    await shapeInput.fill(options.shape);
     const option = page.getByRole('option', { name: options.shape, exact: true });
     await expect(option).toBeVisible();
     await option.click();
@@ -77,9 +76,8 @@ export async function testDuplicateNodeValidation(
   await idInput.fill(newNodeId);
 
   if (shape) {
-    const shapeSelect = page.getByTestId('node-form-shape-select');
-    await shapeSelect.click();
-    await page.waitForTimeout(TIMING.TOOL_ACTIVATE);
+    const shapeInput = page.getByTestId('node-form-shape-select');
+    await shapeInput.fill(shape);
     const option = page.getByRole('option', { name: shape, exact: true });
     await expect(option).toBeVisible();
     await option.click();
@@ -196,9 +194,11 @@ export async function editNode(
   }
 
   if (options.newShape) {
-    const shapeSelect = page.getByTestId('node-edit-shape-select');
-    await shapeSelect.click();
-    await page.getByText(options.newShape, { exact: true }).click();
+    const shapeInput = page.getByTestId('node-edit-shape-select');
+    await shapeInput.fill(options.newShape);
+    const option = page.getByRole('option', { name: options.newShape, exact: true });
+    await expect(option).toBeVisible();
+    await option.click();
   }
 
   await submitModal(page, 'Update Node');
