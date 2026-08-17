@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Modal, Input, Button, Select, Field } from '@grafana/ui';
+import { Modal, Input, Button, Field, Combobox } from '@grafana/ui';
 import { getShapeOptions } from '../../core/builderMode';
 import { useModalForm } from '../../hooks/useModalForm';
 
@@ -58,12 +58,13 @@ export const NodeEditModal: React.FC<NodeEditModalProps> = ({
         />
       </Field>
       <Field label="Shape" description="Shape for the node.">
-        <Select
+        <Combobox
           data-testid="node-edit-shape-select"
           options={shapeOptions}
-          placeholder="Select shape (optional)"
-          value={values.nodeShape}
+          placeholder="Select a shape"
+          value={values.nodeShape ?? null}
           onChange={(val) => handleChange('nodeShape')(val?.value)}
+          isClearable
         />
       </Field>
       <Modal.ButtonRow>

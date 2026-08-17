@@ -206,7 +206,7 @@ test('Code mode - Empty diagram - displays empty message with code example in ed
   });
 
   await test.step('Trigger editor blur to save changes', async () => {
-    await page.getByText('Layout engine').click();
+    await page.getByTestId(TEST_IDS.OPTIONS_GROUP_DIAGRAM).getByText('Layout engine').first().click();
     await page.waitForTimeout(1000);
   });
 

@@ -41,6 +41,8 @@ const DEFAULT_NODE_STYLE = 'rounded,filled';
 const DEFAULT_NODE_SHAPE = 'box';
 const FILL_COLOR_ALPHA = '60';
 
+const BORDER_SUPPRESSING_SHAPES = new Set(['plaintext', 'plain', 'none', 'underline']);
+
 function applyThemeDefaults(model: any, theme: GrafanaTheme2): void {
   const nodeDefaults: Record<string, string> = {
     fontname: theme.typography.fontFamily,
@@ -132,6 +134,17 @@ function applyThemeDefaults(model: any, theme: GrafanaTheme2): void {
   for (const [key, value] of Object.entries(edgeDefaults)) {
     if (!model.attributes.edge.get(key)) {
       model.attributes.edge.set(key, value as any);
+    }
+  }
+
+  // Override style/fill for nodes with border-suppressing shapes so graph-level
+  // style=filled doesn't cause Graphviz to render an unwanted filled background.
+  for (const node of model.nodes) {
+    const shape = node.attributes.get('shape') as string | undefined;
+    if (shape && BORDER_SUPPRESSING_SHAPES.has(shape)) {
+      node.attributes.set('style', '' as any);
+      node.attributes.set('fillcolor', 'none' as any);
+      node.attributes.set('color', 'none' as any);
     }
   }
 }

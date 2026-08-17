@@ -25,7 +25,7 @@ export function applySvgTheming(svgElement: SVGSVGElement, theme: GrafanaTheme2)
 
   svg.selectAll('polygon[fill="white"]').attr('fill', 'none');
 
-  svg.selectAll('ellipse').each(function () {
+  svg.selectAll('ellipse:not(g.node ellipse)').each(function () {
     const element = d3.select(this);
     if (isDefaultColor(element.attr('stroke'))) {
       element.attr('stroke', edgeColor);
@@ -33,6 +33,26 @@ export function applySvgTheming(svgElement: SVGSVGElement, theme: GrafanaTheme2)
     if (isDefaultColor(element.attr('fill'))) {
       element.attr('fill', theme.colors.background.secondary);
     }
+  });
+
+  svg.selectAll('g.node').each(function () {
+    const nodeGroup = d3.select(this);
+    const ellipses = nodeGroup.selectAll('ellipse');
+    const ellipseCount = ellipses.size();
+
+    ellipses.each(function (_, i) {
+      const element = d3.select(this);
+      if (isDefaultColor(element.attr('stroke'))) {
+        element.attr('stroke', edgeColor);
+      }
+      if (ellipseCount === 1 || i === 0) {
+        if (isDefaultColor(element.attr('fill'))) {
+          element.attr('fill', theme.colors.background.secondary);
+        }
+      } else {
+        element.attr('fill', 'none');
+      }
+    });
   });
 
   svg.selectAll('g.node polygon').each(function () {

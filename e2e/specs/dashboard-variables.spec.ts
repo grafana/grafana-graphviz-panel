@@ -13,8 +13,7 @@ test('Dashboard variables - Diagrams with node/edge overrides', async ({
   });
 
   await test.step('Verify initial variable value', async () => {
-    const variableValue = page.getByText('Environment').locator('..').getByText('production');
-    await expect(variableValue).toBeVisible();
+    await expect(page).toHaveURL(/var-environment=production/);
   });
 
   await test.step('Verify variable in Application Server Status SVG', async () => {
@@ -60,8 +59,7 @@ test('Dashboard variables - Diagram without overrides', async ({
   });
 
   await test.step('Verify initial variable value is production', async () => {
-    const variableValue = page.getByText('Environment').locator('..').getByText('production');
-    await expect(variableValue).toBeVisible();
+    await expect(page).toHaveURL(/var-environment=production/);
   });
 
   await test.step('Verify Hostname panel exists', async () => {

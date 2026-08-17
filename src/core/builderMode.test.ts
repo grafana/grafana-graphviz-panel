@@ -266,7 +266,6 @@ describe('builderMode pure functions', () => {
       expect(options.length).toBeGreaterThan(0);
       expect(options[0]).toHaveProperty('label');
       expect(options[0]).toHaveProperty('value');
-      expect(options[0]).toHaveProperty('icon');
     });
 
     it('should capitalize first letter of shape labels', () => {

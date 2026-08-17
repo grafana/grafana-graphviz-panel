@@ -9,6 +9,8 @@ describe('graphvizColors', () => {
       { name: 'should return true for none', input: 'none', expected: true },
       { name: 'should return true for #000000', input: '#000000', expected: true },
       { name: 'should return true for #ffffff (case insensitive)', input: '#ffffff', expected: true },
+      { name: 'should return true for lightgrey', input: 'lightgrey', expected: true },
+      { name: 'should return true for lightgray', input: 'lightgray', expected: true },
       { name: 'should return false for custom colors', input: 'red', expected: false },
       { name: 'should return false for custom hex', input: '#ff0000', expected: false },
       { name: 'should return false for rgb syntax', input: 'rgb(255, 0, 0)', expected: false },

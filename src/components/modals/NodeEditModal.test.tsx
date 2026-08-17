@@ -2,6 +2,25 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { NodeEditModal } from './NodeEditModal';
 
+jest.mock('@grafana/ui', () => ({
+  ...jest.requireActual('@grafana/ui'),
+  Combobox: ({
+    onChange,
+    value,
+    'data-testid': testId,
+  }: {
+    onChange: (option: { value: string } | null) => void;
+    value: string | null;
+    'data-testid': string;
+  }) => (
+    <input
+      data-testid={testId}
+      value={value ?? ''}
+      onChange={(e) => onChange(e.target.value ? { value: e.target.value } : null)}
+    />
+  ),
+}));
+
 describe('NodeEditModal', () => {
   const defaultProps = {
     isOpen: true,
@@ -87,5 +106,16 @@ describe('NodeEditModal', () => {
 
     expect(defaultProps.onSubmit).toHaveBeenCalledWith('', 'box');
     expect(defaultProps.onDismiss).toHaveBeenCalled();
+  });
+
+  it('should submit with updated shape', () => {
+    render(<NodeEditModal {...defaultProps} />);
+
+    const shapeInput = screen.getByTestId('node-edit-shape-select');
+    fireEvent.change(shapeInput, { target: { value: 'circle' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /update node/i }));
+
+    expect(defaultProps.onSubmit).toHaveBeenCalledWith('Server 1', 'circle');
   });
 });

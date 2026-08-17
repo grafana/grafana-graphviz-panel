@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Input, Button, Select, Field } from '@grafana/ui';
+import { Modal, Input, Button, Field, Combobox } from '@grafana/ui';
 import { getShapeOptions, toOptional } from '../../core/builderMode';
 import { useModalForm } from '../../hooks/useModalForm';
 
@@ -64,12 +64,13 @@ export const NodeFormModal: React.FC<NodeFormModalProps> = ({ isOpen, existingNo
         />
       </Field>
       <Field label="Shape (optional)" description="Shape for the node. By default, it'll be rendered as a box">
-        <Select
+        <Combobox
           data-testid="node-form-shape-select"
           options={shapeOptions}
-          placeholder="Select shape"
-          value={values.nodeShape}
+          placeholder="Select a shape"
+          value={values.nodeShape ?? null}
           onChange={(val) => handleChange('nodeShape')(val?.value)}
+          isClearable
         />
       </Field>
       <Modal.ButtonRow>

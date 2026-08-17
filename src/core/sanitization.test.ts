@@ -1,4 +1,4 @@
-import { applyGraphDefaults, deriveEdgeIds } from './sanitization';
+import { applyGraphDefaults, deriveEdgeIds, normalizeNodePathStyling } from './sanitization';
 import { createTheme, GrafanaTheme2 } from '@grafana/data';
 
 describe('sanitization', () => {
@@ -95,6 +95,17 @@ describe('sanitization', () => {
       expect(result).not.toContain('filled');
       expect(result).not.toContain('fillcolor');
     });
+
+    it.each(['plaintext', 'plain', 'none', 'underline'])(
+      'should suppress fill/style for per-node border-suppressing shape: %s',
+      (shape) => {
+        const dot = `digraph G { a [shape=${shape}] }`;
+        const result = applyGraphDefaults(dot, theme);
+        expect(result).toContain(shape);
+        expect(result).toMatch(/fillcolor\s*=\s*["']?none["']?/);
+        expect(result).toMatch(/\bcolor\s*=\s*["']?none["']?/);
+      }
+    );
 
     it('should handle HTML labels with selective font attributes', () => {
       const dot = `digraph G {
@@ -223,6 +234,33 @@ describe('sanitization', () => {
       expect(result).toContain('B__to__A:p1');
       expect(result).toContain('B__to__A:p2');
       expect(result).not.toContain('B__to__A"');
+    });
+  });
+
+  describe('normalizeNodePathStyling', () => {
+    function createSvgSelection(content: string) {
+      const { JSDOM } = require('jsdom');
+      const dom = new JSDOM(`<svg>${content}</svg>`, { contentType: 'image/svg+xml' });
+      const d3 = require('d3-selection');
+      return d3.select(dom.window.document.querySelector('svg') as SVGSVGElement);
+    }
+
+    it('should mark path with custom fill', () => {
+      const svg = createSvgSelection('<g class="node"><path fill="#aabbcc"/></g>');
+      normalizeNodePathStyling(svg);
+      expect(svg.select('g.node path').attr('data-has-custom-fill')).toBe('true');
+    });
+
+    it('should not mark path with default fill', () => {
+      const svg = createSvgSelection('<g class="node"><path fill="white"/></g>');
+      normalizeNodePathStyling(svg);
+      expect(svg.select('g.node path').attr('data-has-custom-fill')).toBeNull();
+    });
+
+    it('should not mark path with fill="none"', () => {
+      const svg = createSvgSelection('<g class="node"><path fill="none"/></g>');
+      normalizeNodePathStyling(svg);
+      expect(svg.select('g.node path').attr('data-has-custom-fill')).toBeNull();
     });
   });
 });
