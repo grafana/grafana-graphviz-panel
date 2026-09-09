@@ -1,23 +1,19 @@
 import { useEffect, RefObject, useState } from 'react';
-import { GrafanaTheme2, PanelData, FieldConfigSource } from '@grafana/data';
+import { FieldConfigSource, GrafanaTheme2, InterpolateFunction, PanelData } from '@grafana/data';
 import * as d3 from 'd3-selection';
 import { validateDotSyntax, ValidationErrorInfo } from '../core/validation';
 import { applyGraphDefaults, normalizeNodePathStyling, deriveNodeIds, deriveEdgeIds } from '../core/sanitization';
 import {
-  applyEdgeStyleOverrides,
-  applyNodeStyleOverrides,
-  applyDataDrivenColors,
-  applyDataDrivenWidths,
-  applyDataDrivenNodeLabels,
-  applyDataDrivenEdgeLabels,
-  interpolateAllNodeLabels,
-  interpolateAllEdgeLabels,
+  applyNodeStyleDefaults,
+  applyFieldDrivenNodeVisuals,
+  applyFieldDrivenNodeLabels,
+  applyFieldDrivenEdgeVisuals,
+  applyFieldDrivenEdgeLabels,
 } from '../core/overrides';
-import { processDataFieldBindings, processWidthRules } from '../integrations/grafanaData';
+import { enhanceDataWithFieldConfig } from '../integrations/grafanaData';
 import { renderDotToSvg } from '../core/dot';
 import { applySvgTheming } from '../integrations/grafanaTheme';
 import { getOrCreateSvgDefinitions, applyBlurGlowFilter, applyNodeGradient } from '../core/utils/svgFilters';
-import { EdgeOverride, NodeOverride, NamedThreshold } from '../types';
 
 export interface RenderError {
   message: string;
@@ -26,23 +22,8 @@ export interface RenderError {
 
 /**
  * Hook that orchestrates the Graphviz rendering pipeline.
- * Transforms DOT diagrams through validation, styling, data-driven overrides,
- * label interpolation, SVG rendering, and theme application.
- *
- * @param svgRef - React ref to the container element where SVG will be rendered
- * @param dotDiagram - The DOT notation string to render
- * @param layoutEngine - Graphviz layout engine (dot, neato, fdp, etc.)
- * @param rankDirection - The direction of the graph layout (TB, BT, LR, RL)
- * @param splineType - Edge routing style
- * @param edgeOverrides - Array of edge style mappings to apply
- * @param nodeOverrides - Array of node style mappings to apply
- * @param namedThresholds - Named threshold sets for color mapping
- * @param data - Panel data from datasource
- * @param fieldConfig - Field configuration including thresholds
- * @param theme - The Grafana theme object for styling
- * @param isEditMode - Whether panel is in edit mode
- * @param replaceVariables - Function to replace dashboard variables
- * @returns Error state if rendering fails
+ * Transforms DOT diagrams through validation, style defaults, field-driven
+ * visuals, label interpolation, SVG rendering, and theme application.
  */
 export function useGraphvizRenderPipeline(
   svgRef: RefObject<HTMLDivElement | null>,
@@ -50,14 +31,11 @@ export function useGraphvizRenderPipeline(
   layoutEngine: string,
   rankDirection: string,
   splineType: string | undefined,
-  edgeOverrides: EdgeOverride[],
-  nodeOverrides: NodeOverride[],
-  namedThresholds: NamedThreshold[],
   data: PanelData,
-  fieldConfig: FieldConfigSource,
+  fieldConfig: FieldConfigSource | undefined,
   theme: GrafanaTheme2,
   isEditMode: boolean,
-  replaceVariables?: (value: string) => string
+  replaceVariables?: InterpolateFunction
 ): RenderError | null {
   const [renderError, setRenderError] = useState<RenderError | null>(null);
   useEffect(() => {
@@ -69,7 +47,6 @@ export function useGraphvizRenderPipeline(
     const renderPipeline = async () => {
       try {
         const validationResult = await validateDotSyntax(dotDiagram);
-
         if (!validationResult.isValid) {
           setRenderError({
             message: validationResult.error || 'Unknown error',
@@ -78,30 +55,18 @@ export function useGraphvizRenderPipeline(
           return;
         }
 
+        const enhancedData = enhanceDataWithFieldConfig(data, fieldConfig, theme, replaceVariables);
+        const series = enhancedData.series ?? [];
+
         const defaultedDot = applyGraphDefaults(dotDiagram, theme);
         const dotWithNodeIds = deriveNodeIds(defaultedDot);
         const dotWithEdgeIds = deriveEdgeIds(dotWithNodeIds);
-        const dotWithEdgeStyles = applyEdgeStyleOverrides(dotWithEdgeIds, edgeOverrides);
-        const dotWithNodeStyles = applyNodeStyleOverrides(dotWithEdgeStyles, nodeOverrides);
+        const dotWithNodeDefaults = applyNodeStyleDefaults(dotWithEdgeIds);
 
-        const dataDrivenColors = processDataFieldBindings(
-          data,
-          fieldConfig,
-          nodeOverrides,
-          edgeOverrides,
-          namedThresholds,
-          theme
-        );
-        const dotWithDataColors = applyDataDrivenColors(dotWithNodeStyles, dataDrivenColors);
-
-        const dataDrivenWidths = processWidthRules(data, edgeOverrides);
-        const dotWithDataWidths = applyDataDrivenWidths(dotWithDataColors, dataDrivenWidths);
-
-        const dotWithNodeLabels = applyDataDrivenNodeLabels(dotWithDataWidths, nodeOverrides, data, replaceVariables);
-        const dotWithEdgeLabels = applyDataDrivenEdgeLabels(dotWithNodeLabels, edgeOverrides, data, replaceVariables);
-
-        const dotWithAllNodeLabels = interpolateAllNodeLabels(dotWithEdgeLabels, data, replaceVariables);
-        const dotWithAllLabels = interpolateAllEdgeLabels(dotWithAllNodeLabels, data, replaceVariables);
+        const dotWithNodeVisuals = applyFieldDrivenNodeVisuals(dotWithNodeDefaults, series, theme);
+        const dotWithEdgeVisuals = applyFieldDrivenEdgeVisuals(dotWithNodeVisuals, series, theme);
+        const dotWithNodeLabels = applyFieldDrivenNodeLabels(dotWithEdgeVisuals, series, replaceVariables);
+        const dotWithAllLabels = applyFieldDrivenEdgeLabels(dotWithNodeLabels, series, replaceVariables);
 
         const svg = await renderDotToSvg(dotWithAllLabels, layoutEngine, rankDirection, splineType);
 
@@ -137,9 +102,6 @@ export function useGraphvizRenderPipeline(
     layoutEngine,
     rankDirection,
     splineType,
-    edgeOverrides,
-    nodeOverrides,
-    namedThresholds,
     data,
     fieldConfig,
     theme,

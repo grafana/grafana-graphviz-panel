@@ -101,13 +101,25 @@ export const GraphvizPanel: React.FC<GraphvizPanelProps> = ({
 
     let result = null;
     if (hoverState.type === 'node') {
-      result = resolveNodeTooltipData(hoverState.id, options.nodeOverrides || [], data, replaceVariables, timeZone);
+      result = resolveNodeTooltipData(
+        hoverState.id,
+        options.nodeTooltipTemplate,
+        data.series ?? [],
+        replaceVariables,
+        timeZone
+      );
     } else if (hoverState.type === 'edge') {
-      result = resolveEdgeTooltipData(hoverState.id, options.edgeOverrides || [], data, replaceVariables, timeZone);
+      result = resolveEdgeTooltipData(
+        hoverState.id,
+        options.edgeTooltipTemplate,
+        data.series ?? [],
+        replaceVariables,
+        timeZone
+      );
     }
 
     return result;
-  }, [hoverState, options.nodeOverrides, options.edgeOverrides, data, replaceVariables, timeZone]);
+  }, [hoverState, options.nodeTooltipTemplate, options.edgeTooltipTemplate, data, replaceVariables, timeZone]);
 
   const showTooltip = (hoverState.id !== null || tooltipHovered) && tooltipData !== null;
 
@@ -117,9 +129,6 @@ export const GraphvizPanel: React.FC<GraphvizPanelProps> = ({
     options.layoutEngine,
     options.rankDirection,
     options.splineType,
-    options.edgeOverrides || [],
-    options.nodeOverrides || [],
-    options.namedThresholds || [],
     data,
     fieldConfig,
     theme,
