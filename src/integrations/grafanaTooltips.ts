@@ -1,7 +1,8 @@
-import { PanelData, TimeZone, dateTimeFormat } from '@grafana/data';
-import { NodeOverride, EdgeOverride, RuleKind } from '../types';
-import { findMatchedRow } from './grafanaData';
-import { resolveTemplate, resolveDataLinks, ResolvedDataLink } from '../core/interpolation';
+import { DataFrame, Field, InterpolateFunction, TimeZone, dateTimeFormat } from '@grafana/data';
+import { findFieldForMark, readLatestValue } from './grafanaData';
+import { ResolvedDataLink } from '../core/interpolation';
+
+const INTERPOLATION_REGEX = /\$\{([^}]+)\}/g;
 
 export interface TooltipData {
   title?: string;
@@ -11,173 +12,114 @@ export interface TooltipData {
 
 function parseEdgeId(edgeId: string): { source: string; target: string } {
   const parts = edgeId.split('__to__');
-  return {
-    source: parts[0] || '',
-    target: parts[1] || '',
-  };
+  return { source: parts[0] || '', target: parts[1] || '' };
 }
 
+function buildContext(field: Field | undefined, reserved: Record<string, string>): Record<string, unknown> {
+  const context: Record<string, unknown> = { ...reserved };
+  if (!field) {
+    return context;
+  }
+  const value = readLatestValue(field);
+  const display = field.display ? field.display(value) : undefined;
+  context[field.name] = display?.text ?? (value == null ? '' : String(value));
+  context.__value = display?.text ?? value;
+  context.__field = field.name;
+  context.__displayName = field.config?.displayName ?? field.name;
+  if (field.labels) {
+    for (const [key, val] of Object.entries(field.labels)) {
+      context[key] = val;
+    }
+  }
+  return context;
+}
+
+function interpolate(
+  template: string,
+  context: Record<string, unknown>,
+  replaceVariables?: InterpolateFunction
+): string {
+  let result = template;
+  if (replaceVariables) {
+    result = replaceVariables(result);
+  }
+  return result.replace(INTERPOLATION_REGEX, (_match, key) => {
+    const value = context[key];
+    if (value == null) {
+      return '';
+    }
+    return String(value);
+  });
+}
+
+/**
+ * Resolves tooltip content for a node using a panel-level template. The
+ * template can reference `${__value}`, `${__field}`, `${__displayName}`,
+ * `${__nodeId}`, and any field labels or the field's own name.
+ */
 export function resolveNodeTooltipData(
   nodeId: string,
-  overrides: NodeOverride[],
-  data: PanelData,
-  replaceVariables: (str: string) => string,
+  template: string | undefined,
+  series: DataFrame[],
+  replaceVariables?: InterpolateFunction,
   timeZone?: TimeZone
 ): TooltipData | null {
-  const matchedOverrides = overrides.filter((o) => o.targetNodeIds.includes(nodeId));
-
-  if (matchedOverrides.length === 0) {
+  if (!template || template.trim().length === 0) {
     return null;
   }
 
-  let lastTooltipRule = null;
-  let lastRowData: Record<string, any> | null = null;
-  let lastContext = null;
+  const field = findFieldForMark(series, nodeId);
+  const value = field ? readLatestValue(field) : undefined;
+  const context = buildContext(field, { __nodeId: nodeId });
 
-  for (const override of matchedOverrides) {
-    const tooltipRule = override.rules.find((r) => r.kind === RuleKind.TOOLTIP);
-
-    if (!tooltipRule) {
-      continue;
-    }
-
-    const matchValue = override.matchPattern
-      ? override.matchPattern.replace(/\$\{id\}/g, nodeId)
-      : override.matchValue || nodeId;
-
-    const hasFieldNameMatch = override.matchFieldName !== undefined;
-    const rowData = hasFieldNameMatch ? findMatchedRow(data.series, override.matchFieldName!, matchValue) : {};
-    const rowLookupFailed = !rowData && hasFieldNameMatch;
-
-    if (rowLookupFailed) {
-      continue;
-    }
-
-    lastTooltipRule = tooltipRule;
-    lastRowData = rowData || null;
-    lastContext = { nodeId };
-  }
-
-  if (!lastTooltipRule || !lastContext) {
+  const content = interpolate(template, context, replaceVariables);
+  if (!content.trim()) {
     return null;
   }
 
-  const contentTemplate = lastTooltipRule.content?.templates?.[0];
-  const content = contentTemplate
-    ? resolveTemplate(contentTemplate, lastRowData || {}, lastContext, replaceVariables)
-    : '';
-
-  const tooltipLinks = lastTooltipRule.footer?.links || [];
-  const links = resolveDataLinks(tooltipLinks, lastRowData || {}, lastContext, replaceVariables);
-
-  if (!content.trim() && links.length === 0) {
-    return null;
-  }
-
-  let title: string | undefined;
-  const showId = lastTooltipRule.header?.showId !== false;
-  const showTimestamp = lastTooltipRule.header?.showTimestamp && lastRowData && lastRowData.Time !== undefined;
-
-  if (showTimestamp || showId) {
-    const titleParts: string[] = [];
-    if (showTimestamp) {
-      const formattedTime = dateTimeFormat(lastRowData!.Time, { timeZone });
-      titleParts.push(`Time: ${formattedTime}`);
+  const titleParts = [`Node: ${nodeId}`];
+  if (field && typeof value === 'number' && value != null) {
+    // Include time hint only if labels contain a Time entry (rare in wide form)
+    const timeLabel = field.labels?.Time;
+    if (timeLabel) {
+      titleParts.unshift(`Time: ${dateTimeFormat(timeLabel, { timeZone })}`);
     }
-    if (showId) {
-      titleParts.push(`Node: ${nodeId}`);
-    }
-    title = titleParts.join('\n');
   }
 
   return {
-    title,
+    title: titleParts.join('\n'),
     content,
-    links,
+    links: [],
   };
 }
 
+/**
+ * Resolves tooltip content for an edge using a panel-level template.
+ * Supports `${__edgeId}`, `${__source}`, `${__target}` reserved placeholders.
+ */
 export function resolveEdgeTooltipData(
   edgeId: string,
-  overrides: EdgeOverride[],
-  data: PanelData,
-  replaceVariables: (str: string) => string,
-  timeZone?: TimeZone
+  template: string | undefined,
+  series: DataFrame[],
+  replaceVariables?: InterpolateFunction,
+  _timeZone?: TimeZone
 ): TooltipData | null {
-  const matchedOverrides = overrides.filter((o) => o.targetEdgeIds.includes(edgeId));
-
-  if (matchedOverrides.length === 0) {
+  if (!template || template.trim().length === 0) {
     return null;
   }
 
   const { source, target } = parseEdgeId(edgeId);
-  let lastTooltipRule = null;
-  let lastRowData: Record<string, any> | null = null;
-  let lastContext = null;
+  const field = findFieldForMark(series, edgeId);
+  const context = buildContext(field, { __edgeId: edgeId, __source: source, __target: target });
 
-  for (const override of matchedOverrides) {
-    const tooltipRule = override.rules.find((r) => r.kind === RuleKind.TOOLTIP);
-
-    if (!tooltipRule) {
-      continue;
-    }
-
-    const matchValue = override.matchPattern
-      ? override.matchPattern.replace(/\$\{id\}/g, edgeId)
-      : override.matchValue || edgeId;
-
-    const hasFieldNameMatch = override.matchFieldName !== undefined;
-    const rowData = hasFieldNameMatch ? findMatchedRow(data.series, override.matchFieldName!, matchValue) : {};
-    const rowLookupFailed = !rowData && hasFieldNameMatch;
-
-    if (rowLookupFailed) {
-      continue;
-    }
-
-    lastTooltipRule = tooltipRule;
-    lastRowData = rowData || null;
-    lastContext = {
-      edgeId,
-      source,
-      target,
-    };
-  }
-
-  if (!lastTooltipRule || !lastContext) {
+  const content = interpolate(template, context, replaceVariables);
+  if (!content.trim()) {
     return null;
-  }
-
-  const contentTemplate = lastTooltipRule.content?.templates?.[0];
-  const content = contentTemplate
-    ? resolveTemplate(contentTemplate, lastRowData || {}, lastContext, replaceVariables)
-    : '';
-
-  const tooltipLinks = lastTooltipRule.footer?.links || [];
-  const links = resolveDataLinks(tooltipLinks, lastRowData || {}, lastContext, replaceVariables);
-
-  if (!content.trim() && links.length === 0) {
-    return null;
-  }
-
-  let title: string | undefined;
-  const showId = lastTooltipRule.header?.showId !== false;
-  const showTimestamp = lastTooltipRule.header?.showTimestamp && lastRowData && lastRowData.Time !== undefined;
-
-  if (showTimestamp || showId) {
-    const titleParts: string[] = [];
-    if (showTimestamp) {
-      const formattedTime = dateTimeFormat(lastRowData!.Time, { timeZone });
-      titleParts.push(`Time: ${formattedTime}`);
-    }
-    if (showId) {
-      titleParts.push(`Edge: ${source} → ${target}`);
-    }
-    title = titleParts.join('\n');
   }
 
   return {
-    title,
+    title: `Edge: ${source} \u2192 ${target}`,
     content,
-    links,
+    links: [],
   };
 }

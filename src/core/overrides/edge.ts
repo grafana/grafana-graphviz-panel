@@ -1,7 +1,8 @@
 import { fromDot, toDot } from 'ts-graphviz';
-import { EdgeOverride, RuleKind } from '../../types';
-import { DataDrivenWidths } from '../../integrations/grafanaData';
+import { DataFrame, GrafanaTheme2 } from '@grafana/data';
 import { getEdgeId } from '../utils/graphvizAst';
+import { findFieldForMark, readLatestValue } from '../../integrations/grafanaData';
+import { interpolateLabelWithVariables, hasInterpolation } from '../interpolation';
 
 const MIN_EDGE_WIDTH = 0.1;
 const MAX_EDGE_WIDTH = 5;
@@ -14,51 +15,102 @@ export function calculateEdgeWidthAndArrowSize(width: number): { width: number; 
   return { width: clampedWidth, arrowSize };
 }
 
-export function applyEdgeStyleOverrides(dotString: string, edgeOverrides: EdgeOverride[]): string {
-  if (!edgeOverrides || edgeOverrides.length === 0) {
+/**
+ * Field-driven edge visuals.
+ *
+ * For each edge in the DOT model, looks up a same-named DataFrame field
+ * (using the edge's derived ID such as `source__to__target`). When a match is
+ * found, applies threshold-driven color from the field's display processor
+ * and edge width from the field's numeric value.
+ */
+export function applyFieldDrivenEdgeVisuals(dotString: string, series: DataFrame[], _theme: GrafanaTheme2): string {
+  if (!series || series.length === 0) {
     return dotString;
   }
 
   const model = fromDot(dotString);
 
-  for (const mapping of edgeOverrides) {
-    const colorRules = mapping.rules.filter((r) => r.kind === RuleKind.STROKE_COLOR);
+  for (const edge of model.edges) {
+    const edgeId = getEdgeId(edge);
+    if (!edgeId) {
+      continue;
+    }
+    const field = findFieldForMark(series, edgeId);
+    if (!field) {
+      continue;
+    }
+    const value = readLatestValue(field);
+    if (value == null) {
+      continue;
+    }
 
-    colorRules.forEach((rule) => {
-      if (rule.staticColor) {
-        for (const edge of model.edges) {
-          const targets: any[] = edge.targets;
-          for (let i = 0; i < targets.length - 1; i++) {
-            const edgeId = getEdgeId(edge);
-
-            if (edgeId && mapping.targetEdgeIds.includes(edgeId)) {
-              edge.attributes.set('color', rule.staticColor);
-            }
-          }
-        }
+    if (field.display) {
+      const display = field.display(value);
+      if (display.color) {
+        edge.attributes.set('color', display.color);
       }
-    });
+    }
+
+    const numericValue = Number(value);
+    if (Number.isFinite(numericValue)) {
+      const { width, arrowSize } = calculateEdgeWidthAndArrowSize(numericValue);
+      edge.attributes.set('penwidth', width);
+      edge.attributes.set('arrowsize', arrowSize);
+    }
   }
 
   return toDot(model);
 }
 
-export function applyDataDrivenWidths(dotString: string, dataDrivenWidths: DataDrivenWidths): string {
+/**
+ * Interpolates existing edge labels that contain `${fieldName}` placeholders.
+ */
+export function applyFieldDrivenEdgeLabels(
+  dotString: string,
+  series: DataFrame[],
+  replaceVariables?: (value: string) => string
+): string {
+  if (!series || series.length === 0) {
+    return dotString;
+  }
+
   const model = fromDot(dotString);
 
   for (const edge of model.edges) {
+    const currentLabel = edge.attributes.get('label');
+    if (!currentLabel || !hasInterpolation(currentLabel)) {
+      continue;
+    }
     const edgeId = getEdgeId(edge);
-
-    if (edgeId) {
-      const width = dataDrivenWidths.edgeWidths.get(edgeId);
-      if (width !== undefined) {
-        const { width: clampedWidth, arrowSize } = calculateEdgeWidthAndArrowSize(width);
-
-        edge.attributes.set('penwidth', clampedWidth);
-        edge.attributes.set('arrowsize', arrowSize);
-      }
+    if (!edgeId) {
+      continue;
+    }
+    const field = findFieldForMark(series, edgeId);
+    const context = buildLabelContext(field);
+    const interpolated = interpolateLabelWithVariables(currentLabel, context, replaceVariables);
+    if (interpolated !== currentLabel) {
+      edge.attributes.set('label', interpolated);
     }
   }
 
   return toDot(model);
+}
+
+function buildLabelContext(field: import('@grafana/data').Field | undefined): Record<string, any> {
+  const context: Record<string, any> = {};
+  if (!field) {
+    return context;
+  }
+  const value = readLatestValue(field);
+  const displayed = field.display ? field.display(value) : undefined;
+  context[field.name] = displayed?.text ?? (value == null ? '' : String(value));
+  context.__value = displayed?.text ?? value;
+  context.__field = field.name;
+  context.__displayName = field.config?.displayName ?? field.name;
+  if (field.labels) {
+    for (const [key, val] of Object.entries(field.labels)) {
+      context[key] = val;
+    }
+  }
+  return context;
 }
