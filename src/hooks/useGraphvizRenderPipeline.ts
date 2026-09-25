@@ -35,7 +35,9 @@ export function useGraphvizRenderPipeline(
   fieldConfig: FieldConfigSource | undefined,
   theme: GrafanaTheme2,
   isEditMode: boolean,
-  replaceVariables?: InterpolateFunction
+  replaceVariables?: InterpolateFunction,
+  scaleNodePenWidth?: boolean,
+  scaleEdgePenWidth?: boolean
 ): RenderError | null {
   const [renderError, setRenderError] = useState<RenderError | null>(null);
   useEffect(() => {
@@ -63,8 +65,8 @@ export function useGraphvizRenderPipeline(
         const dotWithEdgeIds = deriveEdgeIds(dotWithNodeIds);
         const dotWithNodeDefaults = applyNodeStyleDefaults(dotWithEdgeIds);
 
-        const dotWithNodeVisuals = applyFieldDrivenNodeVisuals(dotWithNodeDefaults, series, theme);
-        const dotWithEdgeVisuals = applyFieldDrivenEdgeVisuals(dotWithNodeVisuals, series, theme);
+        const dotWithNodeVisuals = applyFieldDrivenNodeVisuals(dotWithNodeDefaults, series, theme, scaleNodePenWidth);
+        const dotWithEdgeVisuals = applyFieldDrivenEdgeVisuals(dotWithNodeVisuals, series, theme, scaleEdgePenWidth);
         const dotWithNodeLabels = applyFieldDrivenNodeLabels(dotWithEdgeVisuals, series, replaceVariables);
         const dotWithAllLabels = applyFieldDrivenEdgeLabels(dotWithNodeLabels, series, replaceVariables);
 
@@ -108,6 +110,8 @@ export function useGraphvizRenderPipeline(
     svgRef,
     isEditMode,
     replaceVariables,
+    scaleNodePenWidth,
+    scaleEdgePenWidth,
   ]);
 
   return renderError;

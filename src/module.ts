@@ -4,6 +4,8 @@ import { GraphvizPanel } from './components/GraphvizPanel';
 import { DotDiagramEditor, BuilderModeEditor } from './components/panel-options';
 import { AssistantHelpEditor } from './components/assistant';
 
+const PEN_WIDTH_CATEGORY = ['Pen width scaling'];
+
 export const plugin = new PanelPlugin<PanelOptions>(GraphvizPanel)
   .useFieldConfig({
     standardOptions: {
@@ -129,6 +131,20 @@ export const plugin = new PanelPlugin<PanelOptions>(GraphvizPanel)
           'Tooltip content for edges. Supports ${fieldName}, ${__value}, ${__field}, ${__displayName}, ${__edgeId}, ${__source}, ${__target}, and dashboard variables.',
         defaultValue: '',
         category: ['Tooltips'],
+      })
+      .addBooleanSwitch({
+        path: 'scaleNodePenWidth',
+        name: 'Scale node border width from data',
+        description: 'When enabled, node border thickness scales linearly with the mapped field value.',
+        defaultValue: false,
+        category: PEN_WIDTH_CATEGORY,
+      })
+      .addBooleanSwitch({
+        path: 'scaleEdgePenWidth',
+        name: 'Scale edge stroke width from data',
+        description: 'When enabled, edge stroke thickness scales linearly with the mapped field value.',
+        defaultValue: false,
+        category: PEN_WIDTH_CATEGORY,
       })
       .addCustomEditor({
         id: 'assistantHelp',

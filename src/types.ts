@@ -52,5 +52,7 @@ export interface PanelOptions {
   rankDirection: RankDirection;
   nodeTooltipTemplate?: string;
   edgeTooltipTemplate?: string;
+  scaleNodePenWidth?: boolean;
+  scaleEdgePenWidth?: boolean;
   builderModeActions?: BuilderModeActions;
 }

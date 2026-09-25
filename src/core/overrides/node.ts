@@ -1,10 +1,11 @@
 import { fromDot, toDot } from 'ts-graphviz';
-import { DataFrame, GrafanaTheme2 } from '@grafana/data';
+import { DataFrame, Field, GrafanaTheme2 } from '@grafana/data';
 import { collectAllNodeIds, findNodeById } from '../utils/graphvizAst';
 import { addStyleToCommaList } from './color';
-import { getEffectiveNodeAttribute } from '../utils/graphvizAttributes';
+import { getEffectiveNodeAttribute, resolveValueBounds } from '../utils/graphvizAttributes';
 import { findFieldForMark, readLatestValue } from '../../integrations/grafanaData';
 import { interpolateLabelWithVariables, hasInterpolation } from '../interpolation';
+import { computePenWidth } from './edge';
 
 const CLUSTER_PREFIX = 'cluster_';
 const DEFAULT_NODE_FONT_SIZE = '15';
@@ -49,24 +50,28 @@ export function applyNodeStyleDefaults(dotString: string): string {
  * the pure-fieldConfig path: threshold color, per-field overrides, unit, and
  * mappings all live on the field itself.
  */
-export function applyFieldDrivenNodeVisuals(dotString: string, series: DataFrame[], _theme: GrafanaTheme2): string {
+export function applyFieldDrivenNodeVisuals(
+  dotString: string,
+  series: DataFrame[],
+  _theme: GrafanaTheme2,
+  scalePenWidth?: boolean
+): string {
   if (!series || series.length === 0) {
     return dotString;
   }
 
   const model = fromDot(dotString);
+  const nodeIds = collectAllNodeIds(model);
+  const nodeFields = collectNodeFields(series, nodeIds);
+  const bounds = scalePenWidth ? resolveValueBounds(nodeFields, {}) : {};
 
-  for (const nodeId of collectAllNodeIds(model)) {
+  for (const nodeId of Array.from(nodeIds)) {
     const field = findFieldForMark(series, nodeId);
-    if (!field || !field.display) {
+    if (!field) {
       continue;
     }
     const value = readLatestValue(field);
     if (value == null) {
-      continue;
-    }
-    const display = field.display(value);
-    if (!display.color) {
       continue;
     }
 
@@ -74,13 +79,38 @@ export function applyFieldDrivenNodeVisuals(dotString: string, series: DataFrame
     if (!node) {
       continue;
     }
-    const existingStyle = getEffectiveNodeAttribute(node, model, 'style');
-    const newStyle = addStyleToCommaList(existingStyle, 'filled');
-    node.attributes.set('fillcolor', display.color);
-    node.attributes.set('style', newStyle as any);
+
+    if (field.display) {
+      const display = field.display(value);
+      if (display.color) {
+        const existingStyle = getEffectiveNodeAttribute(node, model, 'style');
+        const newStyle = addStyleToCommaList(existingStyle, 'filled');
+        node.attributes.set('fillcolor', display.color);
+        node.attributes.set('style', newStyle as any);
+      }
+    }
+
+    if (scalePenWidth) {
+      const penWidth = computePenWidth(value, bounds);
+      if (penWidth != null) {
+        node.attributes.set('penwidth', penWidth);
+      }
+    }
   }
 
   return toDot(model);
+}
+
+function collectNodeFields(series: DataFrame[], nodeIds: Set<string>): Field[] {
+  const fields: Field[] = [];
+  for (const frame of series) {
+    for (const field of frame.fields) {
+      if (nodeIds.has(field.name)) {
+        fields.push(field);
+      }
+    }
+  }
+  return fields;
 }
 
 /**

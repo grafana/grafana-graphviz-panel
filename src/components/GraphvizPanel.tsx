@@ -133,7 +133,9 @@ export const GraphvizPanel: React.FC<GraphvizPanelProps> = ({
     fieldConfig,
     theme,
     isEditMode,
-    replaceVariables
+    replaceVariables,
+    options.scaleNodePenWidth,
+    options.scaleEdgePenWidth
   );
 
   // Trigger a state update after SVG is rendered to re-run hover hook
